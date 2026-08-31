@@ -91,14 +91,13 @@ export function Footer() {
 
           <div>
             <h3 className="caption font-semibold text-text-tertiary uppercase tracking-wider mb-3">
-              About
+              Resources
             </h3>
             <ul className="space-y-2">
               <li>
-                <span className="body-sm text-text-secondary">100% Client-Side</span>
-              </li>
-              <li>
-                <span className="body-sm text-text-secondary">No Upload Required</span>
+                <Link href="/about" className="body-sm text-text-secondary hover:text-text-primary transition-colors">
+                  About Us
+                </Link>
               </li>
               <li>
                 <Link href="/pdf-tools" className="body-sm text-text-secondary hover:text-text-primary transition-colors">
@@ -108,6 +107,21 @@ export function Footer() {
               <li>
                 <Link href="/word-tools" className="body-sm text-text-secondary hover:text-text-primary transition-colors">
                   All Word Tools
+                </Link>
+              </li>
+              <li>
+                <Link href="/image-tools" className="body-sm text-text-secondary hover:text-text-primary transition-colors">
+                  All Image Tools
+                </Link>
+              </li>
+              <li>
+                <Link href="/privacy" className="body-sm text-text-secondary hover:text-text-primary transition-colors">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/terms" className="body-sm text-text-secondary hover:text-text-primary transition-colors">
+                  Terms of Service
                 </Link>
               </li>
             </ul>
