@@ -122,8 +122,10 @@ export const metadata: Metadata = {
     // bing: "your-bing-verification-code",
   },
   icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon-16x16.png",
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
     apple: "/apple-touch-icon.png",
   },
   manifest: "/site.webmanifest",
