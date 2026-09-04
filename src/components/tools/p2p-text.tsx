@@ -304,6 +304,7 @@ export default function P2PTextTool() {
         peer.on("connection", (conn) => attachConn(conn));
         peer.on("open", () => settle("open"));
         peer.on("error", (err) => {
+          if (settled) return; // room is live — broker hiccups don't affect the chat
           if (err.type === "unavailable-id") {
             settle("taken"); // that code is in use — roll a fresh one
           } else if (err.type === "browser-incompatible") {
@@ -372,6 +373,7 @@ export default function P2PTextTool() {
         attachConn(conn);
       });
       peer.on("error", (err) => {
+        if (connRef.current?.open) return; // link is live — broker hiccups don't affect the chat
         if (err.type === "peer-unavailable") {
           setError(`No chat room found with code ${code}. Double-check the code with your friend — rooms disappear when the host closes the page.`);
           setBusy(false);
