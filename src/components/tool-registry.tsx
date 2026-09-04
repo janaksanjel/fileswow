@@ -238,6 +238,8 @@ const toolComponents: Record<string, ComponentType<ToolUIProps>> = {
   "signature-manager": dynamic(() => import("./tools/signature-manager"), { ssr: false }) as any,
   "recent-tools": dynamic(() => import("./tools/recent-tools"), { ssr: false }) as any,
   "command-palette": dynamic(() => import("./tools/command-palette"), { ssr: false }) as any,
+  // Text tools
+  "p2p-text": dynamic(() => import("./tools/p2p-text"), { ssr: false }) as any,
 };
 
 export function getToolComponent(slug: string) {

@@ -1986,6 +1986,20 @@ const icons: Record<string, (props: { size: number; className: string }) => JSX.
       <path d="M38 4l4 4-24 24H14v-8L38 4z" fill="#F59E0B" />
     </svg>
   ),
+  "p2p-text": ({ size, className }) => (
+    <svg width={size} height={size} viewBox="0 0 48 48" className={className}>
+      <rect x="4" y="6" width="14" height="36" rx="3" fill="#8B5CF6" />
+      <rect x="30" y="6" width="14" height="36" rx="3" fill="#06B6D4" />
+      <rect x="7" y="10" width="8" height="2" rx="1" fill="#fff" opacity="0.6" />
+      <rect x="33" y="10" width="8" height="2" rx="1" fill="#fff" opacity="0.6" />
+      <rect x="7" y="15" width="8" height="2" rx="1" fill="#fff" opacity="0.4" />
+      <rect x="33" y="15" width="8" height="2" rx="1" fill="#fff" opacity="0.4" />
+      <path d="M18 22h8" stroke="#F59E0B" strokeWidth="2.5" strokeLinecap="round" />
+      <path d="M23 17l6 5-6 5" fill="none" stroke="#F59E0B" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M30 30h-8" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" />
+      <path d="M25 25l-6 5 6 5" fill="none" stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  ),
 
 };
 

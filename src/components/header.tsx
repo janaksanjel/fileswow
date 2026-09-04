@@ -75,6 +75,7 @@ export function Header() {
               {navLink("/pdf-tools", "PDF Tools")}
               {navLink("/word-tools", "Word Tools")}
               {navLink("/image-tools", "Image Tools")}
+              {navLink("/text-tools", "Text Tools")}
             </nav>
 
             {/* Right side */}
@@ -138,6 +139,7 @@ export function Header() {
                 ["/pdf-tools", "PDF Tools"],
                 ["/word-tools", "Word Tools"],
                 ["/image-tools", "Image Tools"],
+                ["/text-tools", "Text Tools"],
               ].map(([href, label]) => (
                 <Link
                   key={href}

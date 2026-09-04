@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: ToolPageProps): Promise<Metad
   const tool = getToolBySlug(slug);
   if (!tool) return {};
 
-  const categoryLabel = tool.category === "pdf" ? "PDF" : tool.category === "word" ? "Word" : tool.category === "image" ? "Image" : "Cross-format";
+  const categoryLabel = tool.category === "pdf" ? "PDF" : tool.category === "word" ? "Word" : tool.category === "image" ? "Image" : tool.category === "text" ? "Text" : "Cross-format";
 
   return {
     title: `${tool.name} — Free Online ${categoryLabel} Tool`,
@@ -57,7 +57,7 @@ export default async function ToolPage({ params }: ToolPageProps) {
   if (!tool) notFound();
 
   const relatedTools = getRelatedTools(tool);
-  const categoryLabel = tool.category === "pdf" ? "PDF Tools" : tool.category === "word" ? "Word Tools" : tool.category === "image" ? "Image Tools" : "Tools";
+  const categoryLabel = tool.category === "pdf" ? "PDF Tools" : tool.category === "word" ? "Word Tools" : tool.category === "image" ? "Image Tools" : tool.category === "text" ? "Text Tools" : "Tools";
   const subCategoryLabel = SUB_CATEGORY_LABELS[tool.subCategory] || tool.subCategory;
 
   // SoftwareApplication schema

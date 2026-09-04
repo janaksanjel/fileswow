@@ -2,7 +2,7 @@
 // DO NOT hardcode tool lists elsewhere; always import from here.
 
 export type ToolTier = 1 | 2 | 3;
-export type ToolCategory = 'pdf' | 'word' | 'image' | 'cross';
+export type ToolCategory = 'pdf' | 'word' | 'image' | 'text' | 'cross';
 
 export interface ToolDef {
   slug: string;
@@ -34,7 +34,8 @@ export type SubCategory =
   | 'filters'
   | 'adjust'
   | 'effects'
-  | 'annotate';
+  | 'annotate'
+  | 'transfer';
 
 export const SUB_CATEGORY_LABELS: Record<SubCategory, string> = {
   organize: 'Organize',
@@ -53,6 +54,7 @@ export const SUB_CATEGORY_LABELS: Record<SubCategory, string> = {
   adjust: 'Adjust & Color',
   effects: 'Enhance & Style',
   annotate: 'Annotate & Draw',
+  transfer: 'Send & Transfer',
 };
 
 // ─── PDF Tools (81) ────────────────────────────────────────────────
@@ -3196,13 +3198,45 @@ const imageTools: ToolDef[] = [
   },
 ];
 
+// ─── Text Tools (1) ─────────────────────────────────────────────────
+
+const textTools: ToolDef[] = [
+  {
+    slug: 'p2p-text',
+    name: 'P2P Chat',
+    description: 'Chat instantly between two devices — encrypted, browser to browser, no account needed.',
+    category: 'text',
+    subCategory: 'transfer',
+    tier: 1,
+    engine: 'WebRTC (PeerJS)',
+    icon: '🔗',
+    relatedSlugs: ['pdf-to-text', 'word-to-text', 'side-by-side-diff'],
+    howItWorks: [
+      'Open this page on both devices (laptop, phone, tablet).',
+      'On the first device, click "Create a room". You get a 4-character code — send it to the other device through any app (message, WhatsApp, email, etc.).',
+      'On the second device, enter that 4-character code (or open the invite link) and click "Join chat".',
+      'That\'s it — the connection happens automatically. Once the chat screen appears, type away. Messages flow directly between the two browsers over an encrypted WebRTC link.',
+      'Nothing is stored — close both tabs and the session is gone.',
+    ],
+    faq: [
+      { q: 'Does my chat pass through a server?', a: 'No. Your messages go directly between the two devices over an encrypted WebRTC data channel. A free public broker only handles the one-time handshake that lets the two browsers find each other by the 4-character code — it never sees your messages.' },
+      { q: 'Why a 4-character code?', a: 'The code is the room key. Anyone who has the code can join, so keep it between you and your friend. Codes are released as soon as the host closes the page, so a code you receive is always fresh.' },
+      { q: 'What if my code is taken?', a: 'A code frees up when the host leaves, so collisions are rare. If the tool generates a code that is already in use, it quietly picks a new one for you.' },
+      { q: 'Do both devices need to be on the same Wi-Fi?', a: 'No. It works across the internet. The connection is tried directly first; if your network blocks that, a free relay (TURN) is used automatically.' },
+      { q: 'Is the chat encrypted?', a: 'Yes. WebRTC data channels use DTLS encryption, so nobody in between — including the broker or relay — can read your messages.' },
+      { q: 'How much can I send per message?', a: 'Messages are chunked automatically, so even long pasted text (up to ~200,000 characters per message) transfers fine. For very large documents, use the PDF and Word tools instead.' },
+    ],
+  },
+];
+
 // ─── Catalog export ─────────────────────────────────────────────────
 
-export const ALL_TOOLS: ToolDef[] = [...pdfTools, ...wordTools, ...imageTools, ...crossTools];
+export const ALL_TOOLS: ToolDef[] = [...pdfTools, ...wordTools, ...imageTools, ...textTools, ...crossTools];
 
 export const PDF_TOOLS = pdfTools;
 export const WORD_TOOLS = wordTools;
 export const IMAGE_TOOLS = imageTools;
+export const TEXT_TOOLS = textTools;
 export const CROSS_TOOLS = crossTools;
 
 export function getToolBySlug(slug: string): ToolDef | undefined {
@@ -3225,3 +3259,4 @@ export function getRelatedTools(tool: ToolDef): ToolDef[] {
 export const PDF_SUB_CATEGORIES: SubCategory[] = ['organize', 'edit', 'convert', 'security', 'sign', 'form', 'image', 'info', 'utility', 'batch'];
 export const WORD_SUB_CATEGORIES: SubCategory[] = ['organize', 'edit', 'convert', 'security', 'sign', 'image', 'info', 'utility'];
 export const IMAGE_SUB_CATEGORIES: SubCategory[] = ['convert', 'crop', 'rotate', 'filters', 'adjust', 'effects', 'annotate', 'info', 'utility'];
+export const TEXT_SUB_CATEGORIES: SubCategory[] = ['transfer'];

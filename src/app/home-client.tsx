@@ -11,6 +11,7 @@ interface HomeClientProps {
   pdfTools: ToolDef[];
   wordTools: ToolDef[];
   imageTools: ToolDef[];
+  textTools: ToolDef[];
   crossTools: ToolDef[];
 }
 
@@ -18,7 +19,7 @@ const PDF_SECTIONS: SubCategory[] = ["organize", "convert", "edit", "security", 
 const WORD_SECTIONS: SubCategory[] = ["organize", "convert", "edit", "security", "sign", "image", "info", "utility"];
 const IMAGE_SECTIONS: SubCategory[] = ["convert", "crop", "rotate", "filters", "adjust", "effects", "annotate", "info", "utility"];
 
-export function HomeClient({ pdfTools, wordTools, imageTools, crossTools }: HomeClientProps) {
+export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTools }: HomeClientProps) {
   const [activeTab, setActiveTab] = useState<"pdf" | "word" | "image">("pdf");
   const [heroQuery, setHeroQuery] = useState("");
   const [heroResults, setHeroResults] = useState<Array<{ tool: ToolDef; score: number }>>([]);
@@ -155,6 +156,18 @@ export function HomeClient({ pdfTools, wordTools, imageTools, crossTools }: Home
           </p>
         </div>
       </section>
+
+      {/* Text tools */}
+      {textTools.length > 0 && (
+        <section className="max-w-6xl mx-auto px-4 sm:px-6 mb-12">
+          <SectionLabel label="Text Tools" count={textTools.length} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {textTools.map((tool, i) => (
+              <ToolCard key={tool.slug} tool={tool} index={i} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Cross-format tools */}
       {crossTools.length > 0 && (

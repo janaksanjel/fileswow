@@ -21,10 +21,10 @@ export function ToolShell({ tool, relatedTools = [], children }: ToolShellProps)
         </Link>
         <span>/</span>
         <Link
-          href={tool.category === "pdf" ? "/pdf-tools" : tool.category === "word" ? "/word-tools" : "/image-tools"}
+          href={tool.category === "pdf" ? "/pdf-tools" : tool.category === "word" ? "/word-tools" : tool.category === "text" ? "/text-tools" : "/image-tools"}
           className="hover:text-text-primary transition-colors"
         >
-          {tool.category === "pdf" ? "PDF Tools" : tool.category === "word" ? "Word Tools" : "Image Tools"}
+          {tool.category === "pdf" ? "PDF Tools" : tool.category === "word" ? "Word Tools" : tool.category === "text" ? "Text Tools" : "Image Tools"}
         </Link>
         <span>/</span>
         <span className="text-text-secondary">{tool.name}</span>

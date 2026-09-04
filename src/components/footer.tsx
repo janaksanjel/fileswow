@@ -5,7 +5,7 @@ export function Footer() {
     <footer className="border-t-2 border-border-strong bg-bg-surface">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
         {/* Links grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 sm:gap-12 mb-10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8 sm:gap-10 mb-10">
           <div>
             <h3 className="caption font-extrabold text-text-secondary uppercase tracking-wider mb-3">
               PDF Tools
@@ -46,6 +46,24 @@ export function Footer() {
                   </Link>
                 </li>
               ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="caption font-extrabold text-text-secondary uppercase tracking-wider mb-3">
+              Text Tools
+            </h3>
+            <ul className="space-y-1.5">
+              <li>
+                <Link href="/tools/p2p-text" className="body-sm text-text-secondary hover:text-text-primary transition-colors">
+                  P2P Chat
+                </Link>
+              </li>
+              <li>
+                <Link href="/text-tools" className="body-sm text-text-secondary hover:text-text-primary transition-colors">
+                  All Text Tools
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -93,6 +111,11 @@ export function Footer() {
               <li>
                 <Link href="/image-tools" className="body-sm text-text-secondary hover:text-text-primary transition-colors">
                   All Image Tools
+                </Link>
+              </li>
+              <li>
+                <Link href="/text-tools" className="body-sm text-text-secondary hover:text-text-primary transition-colors">
+                  All Text Tools
                 </Link>
               </li>
               <li>

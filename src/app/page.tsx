@@ -5,6 +5,7 @@ export default function HomePage() {
   const pdfTools = getToolsByCategory("pdf");
   const wordTools = getToolsByCategory("word");
   const imageTools = getToolsByCategory("image");
+  const textTools = getToolsByCategory("text");
   const crossTools = getToolsByCategory("cross");
 
   const homeJsonLd = {
@@ -40,6 +41,13 @@ export default function HomePage() {
           url: "https://fileswow.com/image-tools",
           description: `${imageTools.length} free image tools`,
         },
+        {
+          "@type": "ListItem",
+          position: 4,
+          name: "Text Tools",
+          url: "https://fileswow.com/text-tools",
+          description: `${textTools.length} free text tools`,
+        },
       ],
     },
   };
@@ -50,7 +58,7 @@ export default function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(homeJsonLd) }}
       />
-      <HomeClient pdfTools={pdfTools} wordTools={wordTools} imageTools={imageTools} crossTools={crossTools} />
+      <HomeClient pdfTools={pdfTools} wordTools={wordTools} imageTools={imageTools} textTools={textTools} crossTools={crossTools} />
     </>
   );
 }

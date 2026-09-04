@@ -137,6 +137,7 @@ export function getCategoryColor(category: string): string {
     case "pdf": return "bg-accent/10 text-accent";
     case "word": return "bg-warning/10 text-warning";
     case "image": return "bg-accent-blue/10 text-accent-blue";
+    case "text": return "bg-success/10 text-success";
     case "cross": return "bg-text-tertiary/10 text-text-tertiary";
     default: return "bg-text-tertiary/10 text-text-tertiary";
   }
