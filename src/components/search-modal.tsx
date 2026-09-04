@@ -19,7 +19,6 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // Focus input when opened
   useEffect(() => {
     if (open) {
       setQuery("");
@@ -29,7 +28,6 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
     }
   }, [open]);
 
-  // Search as user types
   useEffect(() => {
     if (!query.trim()) {
       setResults([]);
@@ -43,7 +41,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
       setResults(found);
       setSelectedIndex(0);
       setIsSearching(false);
-    }, 80); // Debounce 80ms
+    }, 80);
 
     return () => clearTimeout(timer);
   }, [query]);
@@ -56,7 +54,6 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
     [onClose, router]
   );
 
-  // Keyboard navigation
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       switch (e.key) {
@@ -82,7 +79,6 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
     [results, selectedIndex, navigateTo, onClose]
   );
 
-  // Scroll selected item into view
   useEffect(() => {
     const list = listRef.current;
     if (!list) return;
@@ -92,49 +88,24 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
     }
   }, [selectedIndex]);
 
-  // Global keyboard shortcut
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        e.preventDefault();
-        if (open) {
-          onClose();
-        }
-        // The parent will handle opening
-      }
-    };
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [open, onClose]);
-
   if (!open) return null;
-
-  const matchTypeLabel = (type: SearchResult["matchType"]) => {
-    switch (type) {
-      case "exact": return "Exact";
-      case "starts-with": return "Starts with";
-      case "contains": return "Contains";
-      case "fuzzy": return "Similar";
-    }
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-fade-in"
+        className="absolute inset-0 bg-black/60"
         onClick={onClose}
       />
 
       {/* Modal */}
       <div className="relative w-full max-w-xl mx-4 animate-fade-in-up">
-        <div className="rounded-2xl bg-bg-surface border border-border-strong shadow-2xl overflow-hidden">
+        <div className="bg-bg-surface border-2 border-border-strong shadow-[8px_8px_0_var(--shadow-color)] overflow-hidden">
           {/* Search Input */}
-          <div className="flex items-center gap-3 px-5 py-4 border-b border-border-base">
-            {/* Search icon */}
+          <div className="flex items-center gap-3 px-4 py-3 border-b-2 border-border-strong">
             <svg
-              width="20"
-              height="20"
+              width="16"
+              height="16"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -153,60 +124,50 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Search tools... (e.g. merge, compress, convert)"
-              className="flex-1 bg-transparent text-text-primary text-[15px] placeholder:text-text-tertiary outline-none"
+              placeholder="Search tools..."
+              className="flex-1 bg-transparent text-text-primary text-[14px] placeholder:text-text-tertiary outline-none"
             />
 
-            {/* Shortcut hint */}
-            <kbd className="hidden sm:flex items-center gap-1 px-2 py-0.5 rounded bg-bg-elevated border border-border-base text-[11px] text-text-tertiary font-mono">
+            <kbd className="hidden sm:flex items-center px-1.5 py-0.5 bg-bg-elevated border-2 border-border-strong text-[10px] font-bold text-text-tertiary font-mono">
               ESC
             </kbd>
           </div>
 
           {/* Results */}
-          <div ref={listRef} className="max-h-[400px] overflow-y-auto">
+          <div ref={listRef} className="max-h-[360px] overflow-y-auto">
             {query.trim() && results.length === 0 && !isSearching && (
-              <div className="px-5 py-8 text-center">
-                <p className="text-sm text-text-secondary">No tools found for &ldquo;{query}&rdquo;</p>
-                <p className="text-xs text-text-tertiary mt-1">Try a different search term</p>
+              <div className="px-4 py-8 text-center">
+                <p className="text-sm text-text-secondary">No tools found</p>
+                <p className="text-xs text-text-tertiary mt-1">Try a different term</p>
               </div>
             )}
 
             {isSearching && query.trim() && (
-              <div className="px-5 py-6 text-center">
-                <div className="w-5 h-5 border-2 border-accent/30 border-t-accent rounded-full animate-spin-slow mx-auto" />
+              <div className="px-4 py-6 text-center">
+                <div className="w-4 h-4 border-2 border-accent/30 border-t-accent rounded-full animate-spin-slow mx-auto" />
               </div>
             )}
 
             {results.length > 0 && (
-              <div className="py-2">
-                {/* Results header */}
-                <div className="px-4 py-1.5">
-                  <span className="text-[11px] text-text-tertiary uppercase tracking-wider font-medium">
-                    {results.length} result{results.length !== 1 ? "s" : ""}
-                  </span>
-                </div>
-
+              <div className="py-1">
                 {results.map((result, i) => (
                   <button
                     key={result.tool.slug}
                     onClick={() => navigateTo(result.tool.slug)}
                     onMouseEnter={() => setSelectedIndex(i)}
-                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
+                    className={`w-full flex items-center gap-3 px-3 py-2 text-left transition-colors ${
                       i === selectedIndex
-                        ? "bg-accent-subtle"
+                        ? "bg-bg-elevated"
                         : "hover:bg-bg-hover"
                     }`}
                   >
-                    {/* Icon */}
-                    <div className="w-9 h-9 rounded-lg flex items-center justify-center bg-bg-elevated border border-border-base shrink-0">
-                      <ToolIcon name={result.tool.slug} size={18} className="text-text-secondary" />
+                    <div className="w-8 h-8 flex items-center justify-center bg-bg-elevated border-2 border-border-strong shrink-0">
+                      <ToolIcon name={result.tool.slug} size={16} className="text-text-secondary" />
                     </div>
 
-                    {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className={`text-[13px] font-semibold ${i === selectedIndex ? "text-accent" : "text-text-primary"} truncate`}>
+                        <span className={`text-[13px] font-medium ${i === selectedIndex ? "text-accent" : "text-text-primary"} truncate`}>
                           {highlightMatch(result.tool.name, query)}
                         </span>
                         <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${getCategoryColor(result.tool.category)}`}>
@@ -218,31 +179,17 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
                       </p>
                     </div>
 
-                    {/* Score badge */}
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-[9px] text-text-tertiary">
-                        {matchTypeLabel(result.matchType)}
-                      </span>
-                      <div className="w-8 h-1.5 rounded-full bg-bg-elevated overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-accent/60"
-                          style={{ width: `${result.score}%` }}
-                        />
-                      </div>
-                    </div>
-
-                    {/* Arrow on selected */}
                     {i === selectedIndex && (
                       <svg
-                        width="14"
-                        height="14"
+                        width="12"
+                        height="12"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        className="text-accent shrink-0"
+                        className="text-text-secondary shrink-0"
                       >
                         <line x1="5" y1="12" x2="19" y2="12" />
                         <polyline points="12 5 19 12 12 19" />
@@ -254,32 +201,28 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
             )}
 
             {!query.trim() && (
-              <div className="px-5 py-8 text-center">
-                <p className="text-sm text-text-secondary mb-1">Start typing to search tools</p>
+              <div className="px-4 py-6 text-center">
+                <p className="text-sm text-text-secondary mb-1">Type to search</p>
                 <p className="text-xs text-text-tertiary">
-                  Try: &ldquo;merge&rdquo;, &ldquo;compress&rdquo;, &ldquo;convert&rdquo;, &ldquo;sign&rdquo;
+                  Try &ldquo;merge&rdquo;, &ldquo;compress&rdquo;, or &ldquo;convert&rdquo;
                 </p>
               </div>
             )}
           </div>
 
           {/* Footer */}
-          <div className="flex items-center justify-between px-5 py-2.5 border-t border-border-base bg-bg-elevated/30">
-            <div className="flex items-center gap-3 text-[10px] text-text-tertiary">
+          <div className="flex items-center justify-between px-4 py-2 border-t-2 border-border-strong">
+            <div className="flex items-center gap-3 text-[10px] font-medium text-text-tertiary">
               <span className="flex items-center gap-1">
-                <kbd className="px-1 py-0.5 rounded bg-bg-elevated border border-border-base font-mono">↑↓</kbd>
+                <kbd className="px-1 py-0.5 bg-bg-elevated border-2 border-border-strong font-mono">↑↓</kbd>
                 navigate
               </span>
               <span className="flex items-center gap-1">
-                <kbd className="px-1 py-0.5 rounded bg-bg-elevated border border-border-base font-mono">↵</kbd>
+                <kbd className="px-1 py-0.5 bg-bg-elevated border-2 border-border-strong font-mono">↵</kbd>
                 open
               </span>
-              <span className="flex items-center gap-1">
-                <kbd className="px-1 py-0.5 rounded bg-bg-elevated border border-border-base font-mono">esc</kbd>
-                close
-              </span>
             </div>
-            <span className="text-[10px] text-text-tertiary">FilesWow.com</span>
+            <span className="text-[10px] font-bold text-text-tertiary">FilesWow</span>
           </div>
         </div>
       </div>
@@ -287,9 +230,6 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
   );
 }
 
-/**
- * Highlight matching characters in the tool name
- */
 function highlightMatch(name: string, query: string): React.ReactNode {
   if (!query.trim()) return name;
 
@@ -298,7 +238,6 @@ function highlightMatch(name: string, query: string): React.ReactNode {
   const parts: React.ReactNode[] = [];
   let lastIdx = 0;
 
-  // Find all occurrences of query chars in sequence
   let qi = 0;
   const matchIndices: number[] = [];
 
@@ -311,15 +250,13 @@ function highlightMatch(name: string, query: string): React.ReactNode {
 
   if (matchIndices.length === 0) return name;
 
-  // Build highlighted string
   let i = 0;
   while (i < name.length) {
     if (matchIndices.includes(i)) {
-      // Find consecutive matches
       let end = i + 1;
       while (matchIndices.includes(end)) end++;
       parts.push(
-        <span key={`m-${i}`} className="text-accent font-bold underline decoration-accent/30 underline-offset-2">
+        <span key={`m-${i}`} className="text-accent font-medium">
           {name.slice(i, end)}
         </span>
       );

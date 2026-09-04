@@ -34,7 +34,6 @@ export default function AboutPage() {
       />
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
-        {/* Breadcrumb */}
         <nav className="flex items-center gap-1.5 text-xs text-text-tertiary mb-8">
           <Link href="/" className="hover:text-text-primary transition-colors">
             Home
@@ -43,9 +42,12 @@ export default function AboutPage() {
           <span className="text-text-secondary">About</span>
         </nav>
 
-        <h1 className="heading-xl text-text-primary mb-6">
-          About FilesWow.com
-        </h1>
+        <div className="flex items-start gap-4 mb-6">
+          <span className="hidden sm:flex w-4 self-stretch bg-accent border-2 border-border-strong shadow-[3px_3px_0_var(--shadow-color)] shrink-0" aria-hidden="true" />
+          <h1 className="heading-xl text-text-primary">
+            About FilesWow.com
+          </h1>
+        </div>
 
         <div className="space-y-6 body-md text-text-secondary leading-relaxed">
           <p>
@@ -116,7 +118,7 @@ export default function AboutPage() {
             upload your files to a server to get things done.
           </p>
 
-          <div className="pt-6 flex flex-wrap gap-3">
+          <div className="pt-4 flex flex-wrap gap-3">
             <Link href="/pdf-tools" className="btn-primary">
               Browse PDF Tools
             </Link>

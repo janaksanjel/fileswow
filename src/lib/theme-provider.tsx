@@ -17,7 +17,7 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: "dark",
+  theme: "light",
   toggle: () => {},
   set: () => {},
 });
@@ -27,7 +27,7 @@ export function useTheme() {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("dark");
+  const [theme, setTheme] = useState<Theme>("light");
   const [mounted, setMounted] = useState(false);
 
   // Read stored preference or system preference on mount
@@ -37,9 +37,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       setTheme(stored);
     } else if (
       window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: light)").matches
+      window.matchMedia("(prefers-color-scheme: dark)").matches
     ) {
-      setTheme("light");
+      setTheme("dark");
     }
     setMounted(true);
   }, []);

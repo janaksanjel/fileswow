@@ -36,9 +36,12 @@ export default function TermsPage() {
           <span className="text-text-secondary">Terms of Service</span>
         </nav>
 
-        <h1 className="heading-xl text-text-primary mb-6">
-          Terms of Service
-        </h1>
+        <div className="flex items-start gap-4 mb-6">
+          <span className="hidden sm:flex w-4 self-stretch bg-accent border-2 border-border-strong shadow-[3px_3px_0_var(--shadow-color)] shrink-0" aria-hidden="true" />
+          <h1 className="heading-xl text-text-primary">
+            Terms of Service
+          </h1>
+        </div>
 
         <div className="space-y-6 body-md text-text-secondary leading-relaxed">
           <p>
@@ -126,7 +129,7 @@ export default function TermsPage() {
             Questions about these terms? Contact us at{" "}
             <a
               href="mailto:legal@fileswow.com"
-              className="text-accent hover:text-accent-light transition-colors"
+              className="font-bold text-text-primary underline decoration-accent decoration-[3px] underline-offset-2 hover:bg-accent-subtle transition-colors"
             >
               legal@fileswow.com
             </a>

@@ -146,7 +146,7 @@ export function PdfPreview({ file, className = "", onPagesLoaded }: PdfPreviewPr
   return (
     <div className={`relative ${className}`}>
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-3 py-2 bg-bg-elevated rounded-t-xl border border-border-base border-b-0">
+      <div className="flex items-center justify-between px-3 py-2 bg-bg-elevated border-2 border-border-strong border-b-0">
         <div className="flex items-center gap-2">
           <button
             onClick={() => scrollToPage(Math.max(1, currentPage - 1))}
@@ -193,7 +193,7 @@ export function PdfPreview({ file, className = "", onPagesLoaded }: PdfPreviewPr
       {/* Pages container */}
       <div
         ref={containerRef}
-        className="max-h-[500px] overflow-y-auto rounded-b-xl border border-border-base bg-gray-800/50"
+        className="max-h-[500px] overflow-y-auto border-2 border-t-0 border-border-strong bg-bg-elevated"
       >
         <div className="flex flex-col items-center gap-3 py-4">
           {pages.map((pageNum) => (
@@ -210,7 +210,7 @@ export function PdfPreview({ file, className = "", onPagesLoaded }: PdfPreviewPr
                 isActive={Math.abs(pageNum - currentPage) <= 1}
               />
               {/* Page number label */}
-              <div className="absolute bottom-1 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded bg-black/60 text-[9px] text-white/70 font-mono">
+              <div className="absolute bottom-1 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-bg-surface border-2 border-border-strong text-[9px] font-extrabold text-text-tertiary font-mono">
                 {pageNum}
               </div>
             </div>

@@ -135,9 +135,9 @@ export function searchTools(query: string, maxResults: number = 12): SearchResul
 export function getCategoryColor(category: string): string {
   switch (category) {
     case "pdf": return "bg-accent/10 text-accent";
-    case "word": return "bg-accent-blue/10 text-accent-blue";
-    case "image": return "bg-green-500/10 text-green-400";
-    case "cross": return "bg-purple-500/10 text-purple-400";
+    case "word": return "bg-warning/10 text-warning";
+    case "image": return "bg-accent-blue/10 text-accent-blue";
+    case "cross": return "bg-text-tertiary/10 text-text-tertiary";
     default: return "bg-text-tertiary/10 text-text-tertiary";
   }
 }

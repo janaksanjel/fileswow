@@ -23,8 +23,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#06080f" },
-    { media: "(prefers-color-scheme: light)", color: "#f0f2f5" },
+    { media: "(prefers-color-scheme: dark)", color: "#10140f" },
+    { media: "(prefers-color-scheme: light)", color: "#f4efe6" },
   ],
 };
 
@@ -40,7 +40,6 @@ export const metadata: Metadata = {
   description:
     "100+ free PDF, Word, and image tools. Merge, split, compress, convert, edit, and transform documents — entirely in your browser. No upload required. 100% private.",
   keywords: [
-    // Primary keywords
     "free PDF tools",
     "online PDF editor",
     "merge PDF free",
@@ -49,7 +48,6 @@ export const metadata: Metadata = {
     "PDF to Word",
     "Word to PDF",
     "free online PDF converter",
-    // Long-tail keywords
     "no upload PDF tools",
     "client-side PDF editor",
     "private PDF tools no server",
@@ -59,11 +57,9 @@ export const metadata: Metadata = {
     "PDF watermark free online",
     "OCR PDF free browser",
     "remove background image free",
-    // Brand keywords
     "FilesWow",
     "FilesWow.com",
     "fileswow free tools",
-    // Category keywords
     "free document tools online",
     "PDF tools no registration",
     "Word to HTML converter",
@@ -115,12 +111,6 @@ export const metadata: Metadata = {
       "max-snippet": -1,
     },
   },
-  verification: {
-    // Add your verification codes here:
-    // google: "your-google-verification-code",
-    // yandex: "your-yandex-verification-code",
-    // bing: "your-bing-verification-code",
-  },
   icons: {
     icon: "/favicon.svg",
     apple: "/apple-touch-icon.png",
@@ -150,8 +140,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     "@type": "WebSite",
     name: "FilesWow.com",
     url: SITE_URL,
-    description:
-      "100+ free PDF, Word, and image tools. Processed entirely in your browser.",
+    description: "100+ free PDF, Word, and image tools. Processed entirely in your browser.",
     potentialAction: {
       "@type": "SearchAction",
       target: {
@@ -169,8 +158,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     applicationCategory: "UtilitiesApplication",
     operatingSystem: "Web Browser",
     url: SITE_URL,
-    description:
-      "100+ free PDF, Word, and image processing tools. Client-side, private, no upload required.",
+    description: "100+ free PDF, Word, and image processing tools. Client-side, private, no upload required.",
     offers: {
       "@type": "Offer",
       price: "0",
@@ -194,7 +182,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t)}else if(window.matchMedia&&window.matchMedia('(prefers-color-scheme:light)').matches){document.documentElement.setAttribute('data-theme','light')}}catch(e){}})()`,
+            __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark'){document.documentElement.setAttribute('data-theme',t)}else if(window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches){document.documentElement.setAttribute('data-theme','dark')}}catch(e){}})()`,
           }}
         />
         <script
@@ -212,7 +200,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
-        {/* Google Analytics (gtag.js) */}
         <script async src="https://www.googletagmanager.com/gtag/js?id=G-RGZ4FLC926" />
         <script
           dangerouslySetInnerHTML={{
@@ -223,7 +210,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-screen bg-bg-base text-text-primary antialiased">
         <ThemeProvider>
           <Header />
-          <main className="min-h-[calc(100vh-3.5rem)]" id="main-content">{children}</main>
+          <main className="min-h-[calc(100vh-3rem)]" id="main-content">{children}</main>
           <Footer />
           <FloatingActionButton />
         </ThemeProvider>

@@ -1,72 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <defs>
-    <!-- Rich gradient background -->
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0a5c36;stop-opacity:1" />
-      <stop offset="50%" style="stop-color:#166534;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#0f5132;stop-opacity:1" />
-    </linearGradient>
-    <!-- Subtle inner shadow -->
-    <radialGradient id="innerShadow" cx="30%" cy="30%" r="70%">
-      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.08" />
-      <stop offset="100%" style="stop-color:#000000;stop-opacity:0.15" />
-    </radialGradient>
-    <!-- Document shadow -->
-    <filter id="docShadow" x="-10%" y="-10%" width="130%" height="130%">
-      <feDropShadow dx="2" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.3"/>
-    </filter>
-    <!-- Highlight glow -->
-    <linearGradient id="highlight" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.25" />
-      <stop offset="50%" style="stop-color:#ffffff;stop-opacity:0.05" />
-      <stop offset="100%" style="stop-color:#000000;stop-opacity:0.1" />
-    </linearGradient>
-  </defs>
-  
-  <!-- Main background with rounded corners -->
-  <rect width="512" height="512" rx="88" ry="88" fill="url(#bg)"/>
-  
-  <!-- Inner shadow overlay -->
-  <rect width="512" height="512" rx="88" ry="88" fill="url(#innerShadow)"/>
-  
-  <!-- Subtle noise texture pattern -->
-  <rect width="512" height="512" rx="88" ry="88" fill="url(#highlight)"/>
-  
-  <!-- Main document shape -->
-  <g filter="url(#docShadow)" transform="translate(100, 55)">
-    <!-- Document body -->
-    <path d="M0,24 C0,10.745 10.745,0 24,0 L196,0 L280,84 L280,378 C280,391.255 269.255,402 256,402 L24,402 C10.745,402 0,391.255 0,378 Z" fill="#ffffff"/>
-    
-    <!-- Document fold with shadow -->
-    <path d="M196,0 L196,60 C196,73.255 206.745,84 220,84 L280,84 Z" fill="#e8e8e8"/>
-    
-    <!-- Fold crease line -->
-    <path d="M196,0 L196,84" stroke="#d4d4d4" stroke-width="1.5" fill="none"/>
-    
-    <!-- Text lines with varying widths for realism -->
-    <rect x="36" y="120" width="208" height="12" rx="6" fill="#166534" opacity="0.9"/>
-    <rect x="36" y="148" width="180" height="10" rx="5" fill="#166534" opacity="0.7"/>
-    <rect x="36" y="170" width="220" height="10" rx="5" fill="#166534" opacity="0.7"/>
-    <rect x="36" y="192" width="160" height="10" rx="5" fill="#166534" opacity="0.7"/>
-    
-    <!-- Decorative elements -->
-    <rect x="36" y="228" width="208" height="12" rx="6" fill="#166534" opacity="0.9"/>
-    <rect x="36" y="256" width="190" height="10" rx="5" fill="#166534" opacity="0.7"/>
-    <rect x="36" y="278" width="215" height="10" rx="5" fill="#166534" opacity="0.7"/>
-    
-    <!-- Bottom section with accent -->
-    <rect x="36" y="314" width="120" height="10" rx="5" fill="#166534" opacity="0.7"/>
-    <rect x="36" y="336" width="180" height="10" rx="5" fill="#166534" opacity="0.7"/>
+  <!-- Vivid-green brand tile -->
+  <rect width="512" height="512" fill="#16a34a"/>
+  <!-- Ink frame (neobrutalist border) -->
+  <rect x="12" y="12" width="488" height="488" fill="none" stroke="#1c1915" stroke-width="26"/>
+  <!-- Paper document glyph (same mark as the header logo) -->
+  <g transform="translate(77 92) scale(14.3)">
+    <path d="M5.5 2h7l5 5v14h-12z" fill="#fdfaf3"/>
+    <path d="M12.5 2v5h5z" fill="#e6ddc9"/>
+    <rect x="7.8" y="10.2" width="7.4" height="1.6" rx="0.3" fill="#1c1915" opacity="0.85"/>
+    <rect x="7.8" y="13" width="5.4" height="1.6" rx="0.3" fill="#1c1915" opacity="0.55"/>
+    <rect x="7.8" y="15.8" width="6.4" height="1.6" rx="0.3" fill="#1c1915" opacity="0.85"/>
   </g>
-  
-  <!-- Small accent icon in corner -->
-  <g transform="translate(370, 370)">
-    <circle cx="40" cy="40" r="38" fill="#ffffff" opacity="0.95"/>
-    <path d="M28,32 L40,20 L52,32 M40,20 L40,52" stroke="#166534" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-  </g>
-  
-  <!-- Top-left accent dots -->
-  <circle cx="48" cy="48" r="8" fill="#ffffff" opacity="0.3"/>
-  <circle cx="48" cy="72" r="5" fill="#ffffff" opacity="0.2"/>
-  <circle cx="72" cy="48" r="5" fill="#ffffff" opacity="0.2"/>
 </svg>

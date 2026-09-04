@@ -15,38 +15,35 @@ export function ToolCard({ tool, index = 0 }: ToolCardProps) {
   return (
     <Link
       href={`/tools/${tool.slug}`}
-      className="group relative flex flex-col p-4 rounded-xl bg-bg-surface border border-border-base hover:border-border-accent card-interactive overflow-hidden"
+      className="card card-interactive group flex flex-col p-4"
       style={{ animationDelay: `${index * 30}ms` }}
     >
-      {/* Top-edge accent glow on hover */}
-      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-      <div className="flex items-start gap-3.5 mb-3">
+      <div className="flex items-start gap-3">
         {/* Icon */}
-        <div className="w-14 h-14 rounded-xl flex items-center justify-center bg-bg-elevated border border-border-base group-hover:border-border-accent group-hover:bg-accent-subtle transition-all duration-200 shrink-0">
-          <ToolIcon name={tool.slug} size={30} className="text-text-secondary group-hover:text-accent transition-colors" />
-        </div>
+        <span className="w-10 h-10 flex items-center justify-center bg-bg-surface border-2 border-border-strong shrink-0 group-hover:border-accent transition-colors">
+          <ToolIcon name={tool.slug} size={20} className="text-text-secondary group-hover:text-accent transition-colors" />
+        </span>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-[15px] font-bold text-text-primary truncate group-hover:text-accent transition-colors">
+          <div className="flex items-center gap-2 mb-0.5">
+            <h3 className="text-[13px] font-bold text-text-primary truncate">
               {tool.name}
             </h3>
             {tierLabel && (
-              <span className={`tier-badge ${tool.tier === 2 ? "tier-badge-2" : "tier-badge-3"}`}>
+              <span className={`tier-badge shrink-0 ${tool.tier === 2 ? "tier-badge-2" : "tier-badge-3"}`}>
                 {tierLabel}
               </span>
             )}
           </div>
-          <p className="text-[13px] text-text-secondary leading-relaxed line-clamp-2">
+          <p className="text-[12px] text-text-secondary leading-relaxed line-clamp-2">
             {tool.description}
           </p>
         </div>
       </div>
 
       {/* Footer hint */}
-      <div className="mt-auto pt-2 flex items-center justify-between">
-        <span className="text-[10px] text-text-tertiary uppercase tracking-wider font-medium">
+      <div className="mt-3 pt-2.5 flex items-center justify-between border-t-2 border-border-base">
+        <span className="text-[10px] text-text-tertiary uppercase tracking-wider font-bold">
           {tool.subCategory}
         </span>
         <svg
@@ -55,10 +52,9 @@ export function ToolCard({ tool, index = 0 }: ToolCardProps) {
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="text-text-tertiary group-hover:text-accent opacity-0 group-hover:opacity-100 transition-all duration-200 -translate-x-1 group-hover:translate-x-0"
+          strokeWidth="2.5"
+          strokeLinecap="square"
+          className="text-accent opacity-0 group-hover:opacity-100 transition-opacity duration-150"
         >
           <line x1="5" y1="12" x2="19" y2="12" />
           <polyline points="12 5 19 12 12 19" />

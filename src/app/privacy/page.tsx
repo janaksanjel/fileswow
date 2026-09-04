@@ -15,8 +15,7 @@ export default function PrivacyPage() {
     "@context": "https://schema.org",
     "@type": "WebPage",
     name: "Privacy Policy — FilesWow.com",
-    description:
-      "Privacy policy for FilesWow.com. All file processing happens client-side.",
+    description: "Privacy policy for FilesWow.com. All file processing happens client-side.",
     url: "https://fileswow.com/privacy",
     dateModified: "2025-01-01",
   };
@@ -37,7 +36,10 @@ export default function PrivacyPage() {
           <span className="text-text-secondary">Privacy Policy</span>
         </nav>
 
-        <h1 className="heading-xl text-text-primary mb-6">Privacy Policy</h1>
+        <div className="flex items-start gap-4 mb-6">
+          <span className="hidden sm:flex w-4 self-stretch bg-accent border-2 border-border-strong shadow-[3px_3px_0_var(--shadow-color)] shrink-0" aria-hidden="true" />
+          <h1 className="heading-xl text-text-primary">Privacy Policy</h1>
+        </div>
 
         <div className="space-y-6 body-md text-text-secondary leading-relaxed">
           <p>
@@ -47,9 +49,11 @@ export default function PrivacyPage() {
           <h2 className="heading-md text-text-primary pt-4">Overview</h2>
           <p>
             FilesWow.com is built with privacy as its foundation. Our tools
-            process all files directly in your web browser — <strong className="text-text-primary">your files never
-            leave your device</strong>. We have designed the service to collect
-            as little data as possible.
+            process all files directly in your web browser —{" "}
+            <strong className="text-text-primary">
+              your files never leave your device
+            </strong>
+            . We have designed the service to collect as little data as possible.
           </p>
 
           <h2 className="heading-md text-text-primary pt-4">
@@ -58,8 +62,8 @@ export default function PrivacyPage() {
           <p>
             All file operations (merging, splitting, converting, compressing,
             editing, etc.) are performed entirely within your browser using
-            client-side JavaScript and WebAssembly. Files are not uploaded to
-            our servers at any point during processing.
+            client-side JavaScript and WebAssembly. Files are not uploaded to our
+            servers at any point during processing.
           </p>
 
           <h2 className="heading-md text-text-primary pt-4">
@@ -77,9 +81,8 @@ export default function PrivacyPage() {
             </li>
             <li>
               <strong className="text-text-primary">Local storage only</strong>{" "}
-              — Settings like theme preference and recently used tools are
-              stored in your browser&apos;s localStorage, which never leaves
-              your device.
+              — Settings like theme preference are stored in your browser&apos;s
+              localStorage, which never leaves your device.
             </li>
           </ul>
 
@@ -92,9 +95,7 @@ export default function PrivacyPage() {
             collect data about your browsing behavior.
           </p>
 
-          <h2 className="heading-md text-text-title pt-4">
-            Cookies
-          </h2>
+          <h2 className="heading-md text-text-primary pt-4">Cookies</h2>
           <p>
             FilesWow.com does not use cookies. All preferences are stored
             locally in your browser using localStorage.
@@ -114,7 +115,7 @@ export default function PrivacyPage() {
             at{" "}
             <a
               href="mailto:privacy@fileswow.com"
-              className="text-accent hover:text-accent-light transition-colors"
+              className="font-bold text-text-primary underline decoration-accent decoration-[3px] underline-offset-2 hover:bg-accent-subtle transition-colors"
             >
               privacy@fileswow.com
             </a>
