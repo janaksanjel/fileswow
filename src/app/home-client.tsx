@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ToolCard } from "@/components/tool-card";
 import { searchTools, getCategoryColor } from "@/lib/search";
 import { ToolIcon } from "@/components/icon";
-import { SUB_CATEGORY_LABELS, type ToolDef, type SubCategory } from "@/lib/catalog";
+import { SUB_CATEGORY_LABELS, TEXT_SUB_CATEGORIES, type ToolDef, type SubCategory } from "@/lib/catalog";
 
 interface HomeClientProps {
   pdfTools: ToolDef[];
@@ -18,15 +18,17 @@ interface HomeClientProps {
 const PDF_SECTIONS: SubCategory[] = ["organize", "convert", "edit", "security", "sign", "form", "image", "info", "utility", "batch"];
 const WORD_SECTIONS: SubCategory[] = ["organize", "convert", "edit", "security", "sign", "image", "info", "utility"];
 const IMAGE_SECTIONS: SubCategory[] = ["convert", "crop", "rotate", "filters", "adjust", "effects", "annotate", "info", "utility"];
+const TEXT_SECTIONS: SubCategory[] = TEXT_SUB_CATEGORIES;
 
 const CATEGORY_TABS = [
   { key: "pdf", label: "PDF" },
   { key: "word", label: "Word" },
   { key: "image", label: "Image" },
+  { key: "text", label: "Text" },
 ] as const;
 
 export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTools }: HomeClientProps) {
-  const [activeTab, setActiveTab] = useState<"pdf" | "word" | "image">("pdf");
+  const [activeTab, setActiveTab] = useState<"pdf" | "word" | "image" | "text">("pdf");
   const [heroQuery, setHeroQuery] = useState("");
   const [heroResults, setHeroResults] = useState<Array<{ tool: ToolDef; score: number }>>([]);
   const [heroSelectedIdx, setHeroSelectedIdx] = useState(0);
@@ -46,9 +48,9 @@ export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTo
     return () => clearTimeout(timer);
   }, [heroQuery]);
 
-  const tools = activeTab === "pdf" ? pdfTools : activeTab === "word" ? wordTools : imageTools;
-  const sections = activeTab === "pdf" ? PDF_SECTIONS : activeTab === "word" ? WORD_SECTIONS : IMAGE_SECTIONS;
-  const toolCount = activeTab === "pdf" ? pdfTools.length : activeTab === "word" ? wordTools.length : imageTools.length;
+  const tools = activeTab === "pdf" ? pdfTools : activeTab === "word" ? wordTools : activeTab === "image" ? imageTools : textTools;
+  const sections = activeTab === "pdf" ? PDF_SECTIONS : activeTab === "word" ? WORD_SECTIONS : activeTab === "image" ? IMAGE_SECTIONS : TEXT_SECTIONS;
+  const toolCount = activeTab === "pdf" ? pdfTools.length : activeTab === "word" ? wordTools.length : activeTab === "image" ? imageTools.length : textTools.length;
 
   return (
     <div>
@@ -158,13 +160,13 @@ export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTo
 
           {/* Tool count */}
           <p className="mt-4 text-xs font-semibold text-text-tertiary">
-            {toolCount} tools · free forever · no account needed
+            {toolCount} {toolCount === 1 ? "tool" : "tools"} · free forever · no account needed
           </p>
         </div>
       </section>
 
-      {/* Text tools */}
-      {textTools.length > 0 && (
+      {/* Text tools — hidden while the Text tab is active, since those tools are shown in the main grid below */}
+      {textTools.length > 0 && activeTab !== "text" && (
         <section className="max-w-6xl mx-auto px-4 sm:px-6 mb-12">
           <SectionLabel label="Text Tools" count={textTools.length} />
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
