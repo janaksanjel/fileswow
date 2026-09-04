@@ -90,7 +90,7 @@ for (let y = radius; y < h - radius; y++) {
 
           {!result && (
             <button onClick={process} disabled={processing} className="btn-primary w-full py-3">
-              {processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin-slow" />Processing...</span> : "Apply Adjustment"}
+              {processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />Processing...</span> : "Apply Adjustment"}
             </button>
           )}
         </div>

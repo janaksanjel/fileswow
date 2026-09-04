@@ -3233,6 +3233,14 @@ const textTools: ToolDef[] = [
 
 export const ALL_TOOLS: ToolDef[] = [...pdfTools, ...wordTools, ...imageTools, ...textTools, ...crossTools];
 
+export const CATEGORY_COUNTS: Record<ToolCategory, number> = {
+  pdf: pdfTools.length,
+  word: wordTools.length,
+  image: imageTools.length,
+  text: textTools.length,
+  cross: crossTools.length,
+};
+
 export const PDF_TOOLS = pdfTools;
 export const WORD_TOOLS = wordTools;
 export const IMAGE_TOOLS = imageTools;

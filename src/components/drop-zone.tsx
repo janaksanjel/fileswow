@@ -93,17 +93,15 @@ export function DropZone({
       tabIndex={0}
       aria-label={label}
       className={`
-        relative flex flex-col items-center justify-center gap-3
-        px-6 py-10 sm:py-14
-        bg-bg-surface
-        border-2 border-dashed border-border-strong cursor-pointer
-        transition-shadow duration-150
-        shadow-[4px_4px_0_var(--shadow-color)]
-        hover:shadow-[5px_5px_0_var(--shadow-color)]
+        group relative flex flex-col items-center justify-center gap-4
+        px-6 py-12 sm:py-16
+        rounded-2xl bg-bg-surface
+        border border-dashed cursor-pointer
+        transition-all duration-200
         ${
           isDragging
-            ? "dropzone-active border-2 border-solid"
-            : ""
+            ? "dropzone-active border-solid"
+            : "border-border-strong hover:border-accent/60 hover:bg-accent/[0.02]"
         }
       `}
     >
@@ -118,21 +116,18 @@ export function DropZone({
         tabIndex={-1}
       />
 
-      {/* Corner ticks for the “drop here” target */}
-      <span aria-hidden="true" className="absolute top-2 left-2 w-3 h-3 border-t-2 border-l-2 border-accent" />
-      <span aria-hidden="true" className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-accent" />
-      <span aria-hidden="true" className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-accent" />
-      <span aria-hidden="true" className="absolute bottom-2 right-2 w-3 h-3 border-b-2 border-r-2 border-accent" />
-
+      {/* Upload icon */}
       <span
         className={`
-          w-11 h-11 flex items-center justify-center border-2 transition-colors duration-150
-          ${isDragging
-            ? "bg-accent border-border-strong text-text-on-accent"
-            : "bg-bg-elevated border-border-strong text-text-primary"}
+          w-14 h-14 rounded-2xl flex items-center justify-center transition-colors duration-200
+          ${
+            isDragging
+              ? "bg-accent text-text-on-accent shadow-md"
+              : "bg-accent-subtle text-accent group-hover:scale-105 transition-transform"
+          }
         `}
       >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
           <polyline points="17 8 12 3 7 8" />
           <line x1="12" y1="3" x2="12" y2="15" />
@@ -140,14 +135,16 @@ export function DropZone({
       </span>
 
       <div className="text-center">
-        <p className="text-[14px] font-bold text-text-primary mb-0.5">
-          {isDragging ? "Drop to start!" : label}
+        <p className="text-[15px] font-semibold text-text-primary mb-1">
+          {isDragging ? "Drop it — you're all set!" : label}
         </p>
-        <p className="text-[12px] text-text-tertiary">
+        <p className="text-[12.5px] text-text-tertiary">
           {description || (
             <>
               <span className="hidden sm:inline">Drag &amp; drop or </span>
-              <span className="text-text-primary font-extrabold uppercase text-[11px] tracking-wide underline decoration-accent decoration-[3px] underline-offset-4">browse</span>
+              <span className="text-accent font-semibold underline decoration-accent/40 decoration-2 underline-offset-4 hover:decoration-accent transition-colors">
+                browse
+              </span>
               <span className="hidden sm:inline"> from your computer</span>
             </>
           )}
@@ -155,7 +152,7 @@ export function DropZone({
       </div>
 
       {acceptLabel && (
-        <p className="text-[10px] font-bold text-text-tertiary px-2 py-0.5 bg-bg-elevated border-2 border-border-strong uppercase tracking-wider">
+        <p className="text-[10px] font-bold text-text-tertiary px-2.5 py-1 bg-bg-elevated rounded-full uppercase tracking-wider">
           {acceptLabel}
           {multiple ? " · MULTIPLE" : ""}
         </p>

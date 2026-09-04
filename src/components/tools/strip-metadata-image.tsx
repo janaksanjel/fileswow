@@ -40,7 +40,7 @@ export default function strip_metadata_image_Tool({ onProcessing, onError }: Too
           </div>
           <p className="text-xs text-text-tertiary">Re-encoding the image removes all EXIF data including GPS coordinates, camera info, and timestamps.</p>
           {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10"><p className="text-sm text-success mb-1">✓ Metadata stripped!</p><DownloadButton blob={result} filename={"clean-" + file.name} /></div>}
-          {!result && <button onClick={process} disabled={processing} className="btn-primary w-full py-3">{processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin-slow" />Processing...</span> : "Strip Metadata"}</button>}
+          {!result && <button onClick={process} disabled={processing} className="btn-primary w-full py-3">{processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />Processing...</span> : "Strip Metadata"}</button>}
         </div>
       )}
     </div>

@@ -105,7 +105,7 @@ export default function AddPageNumbersPdfTool({ onProcessing, onError }: ToolUIP
             <button onClick={handleAddNumbers} disabled={processing} className="btn-primary w-full py-3">
               {processing ? (
                 <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin-slow" />
+                  <span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />
                   Processing...
                 </span>
               ) : "Add Page Numbers"}

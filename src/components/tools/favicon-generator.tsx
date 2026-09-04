@@ -41,7 +41,7 @@ export default function favicon_generator_Tool({ onProcessing, onError }: ToolUI
           </div>
           <p className="text-xs text-text-tertiary">Generates 16×16, 32×32, and 48×48 pixel favicons</p>
           {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10"><p className="text-sm text-success mb-1">✓ Favicon generated!</p><DownloadButton blob={result} filename="favicon.png" /></div>}
-          {!result && <button onClick={process} disabled={processing} className="btn-primary w-full py-3">{processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin-slow" />Generating...</span> : "Generate Favicons"}</button>}
+          {!result && <button onClick={process} disabled={processing} className="btn-primary w-full py-3">{processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />Generating...</span> : "Generate Favicons"}</button>}
         </div>
       )}
     </div>

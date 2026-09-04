@@ -73,7 +73,7 @@ export default function smart_crop_Tool({ onProcessing, onError }: ToolUIProps) 
           )}
           {!result && (
             <button onClick={process} disabled={processing} className="btn-primary w-full py-3">
-              {processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin-slow" />Cropping...</span> : "Smart Crop"}
+              {processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />Cropping...</span> : "Smart Crop"}
             </button>
           )}
         </div>

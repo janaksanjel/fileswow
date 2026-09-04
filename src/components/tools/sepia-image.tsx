@@ -74,7 +74,7 @@ for (let i = 0; i < d.length; i += 4) {
 
           {!result && (
             <button onClick={process} disabled={processing} className="btn-primary w-full py-3">
-              {processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin-slow" />Processing...</span> : "Apply Effect"}
+              {processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />Processing...</span> : "Apply Effect"}
             </button>
           )}
         </div>

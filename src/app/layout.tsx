@@ -23,8 +23,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 5,
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#10140f" },
-    { media: "(prefers-color-scheme: light)", color: "#f4efe6" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b0f15" },
+    { media: "(prefers-color-scheme: light)", color: "#f5f7fa" },
   ],
 };
 
@@ -208,6 +208,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
       </head>
       <body className="min-h-screen bg-bg-base text-text-primary antialiased">
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:rounded-lg focus:bg-bg-surface focus:text-text-primary focus:ring-2 focus:ring-accent"
+        >
+          Skip to content
+        </a>
         <ThemeProvider>
           <Header />
           <main className="min-h-[calc(100vh-3rem)]" id="main-content">{children}</main>

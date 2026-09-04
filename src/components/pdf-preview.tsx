@@ -144,26 +144,28 @@ export function PdfPreview({ file, className = "", onPagesLoaded }: PdfPreviewPr
   }
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative rounded-xl overflow-hidden ring-1 ring-border-base bg-bg-elevated ${className}`}>
       {/* Toolbar */}
-      <div className="flex items-center justify-between px-3 py-2 bg-bg-elevated border-2 border-border-strong border-b-0">
+      <div className="flex items-center justify-between px-3 py-2 bg-bg-elevated border-b border-border-base">
         <div className="flex items-center gap-2">
           <button
             onClick={() => scrollToPage(Math.max(1, currentPage - 1))}
             disabled={currentPage <= 1}
-            className="w-7 h-7 rounded flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-bg-hover disabled:opacity-30 transition-colors"
+            className="w-7 h-7 rounded-md flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-bg-surface disabled:opacity-30 transition-colors"
+            aria-label="Previous page"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6" />
             </svg>
           </button>
-          <span className="text-xs text-text-secondary font-mono min-w-[60px] text-center">
+          <span className="text-xs text-text-secondary font-mono min-w-[60px] text-center tabular-nums">
             {currentPage} / {totalPages}
           </span>
           <button
             onClick={() => scrollToPage(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage >= totalPages}
-            className="w-7 h-7 rounded flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-bg-hover disabled:opacity-30 transition-colors"
+            className="w-7 h-7 rounded-md flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-bg-surface disabled:opacity-30 transition-colors"
+            aria-label="Next page"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="9 18 15 12 9 6" />
@@ -174,16 +176,18 @@ export function PdfPreview({ file, className = "", onPagesLoaded }: PdfPreviewPr
         <div className="flex items-center gap-1">
           <button
             onClick={() => setScale((s) => Math.max(0.5, s - 0.2))}
-            className="w-7 h-7 rounded flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors text-xs font-bold"
+            className="w-7 h-7 rounded-md flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-bg-surface transition-colors text-xs font-bold"
+            aria-label="Zoom out"
           >
             −
           </button>
-          <span className="text-[10px] text-text-tertiary font-mono min-w-[40px] text-center">
+          <span className="text-[10px] text-text-tertiary font-mono min-w-[40px] text-center tabular-nums">
             {Math.round(scale * 100)}%
           </span>
           <button
             onClick={() => setScale((s) => Math.min(3, s + 0.2))}
-            className="w-7 h-7 rounded flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-bg-hover transition-colors text-xs font-bold"
+            className="w-7 h-7 rounded-md flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-bg-surface transition-colors text-xs font-bold"
+            aria-label="Zoom in"
           >
             +
           </button>
@@ -193,7 +197,7 @@ export function PdfPreview({ file, className = "", onPagesLoaded }: PdfPreviewPr
       {/* Pages container */}
       <div
         ref={containerRef}
-        className="max-h-[500px] overflow-y-auto border-2 border-t-0 border-border-strong bg-bg-elevated"
+        className="max-h-[500px] overflow-y-auto bg-bg-elevated"
       >
         <div className="flex flex-col items-center gap-3 py-4">
           {pages.map((pageNum) => (
@@ -210,7 +214,7 @@ export function PdfPreview({ file, className = "", onPagesLoaded }: PdfPreviewPr
                 isActive={Math.abs(pageNum - currentPage) <= 1}
               />
               {/* Page number label */}
-              <div className="absolute bottom-1 left-1/2 -translate-x-1/2 px-1.5 py-0.5 bg-bg-surface border-2 border-border-strong text-[9px] font-extrabold text-text-tertiary font-mono">
+              <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 px-1.5 py-px bg-bg-surface/95 rounded text-[9px] font-bold text-text-tertiary font-mono shadow-sm border border-border-base">
                 {pageNum}
               </div>
             </div>

@@ -75,7 +75,7 @@ export default function change_bg_color_Tool({ onProcessing, onError }: ToolUIPr
           )}
           {!result && (
             <button onClick={process} disabled={processing} className="btn-primary w-full py-3">
-              {processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin-slow" />Processing...</span> : "Change Background Color"}
+              {processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />Processing...</span> : "Change Background Color"}
             </button>
           )}
         </div>

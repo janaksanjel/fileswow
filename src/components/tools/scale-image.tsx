@@ -100,7 +100,7 @@ export default function scale_image_Tool({ onProcessing, onError }: ToolUIProps)
 
           {!result && (
             <button onClick={handleResize} disabled={processing || !width || !height} className="btn-primary w-full py-3">
-              {processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin-slow" />Resizing...</span> : "Resize Image"}
+              {processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />Resizing...</span> : "Resize Image"}
             </button>
           )}
         </div>

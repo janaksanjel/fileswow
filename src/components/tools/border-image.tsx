@@ -49,7 +49,7 @@ export default function border_image_Tool({ onProcessing, onError }: ToolUIProps
               <input type="color" value={borderColor} onChange={(e) => setBorderColor(e.target.value)} className="w-full h-8 rounded cursor-pointer" /></div>
           </div>
           {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10"><p className="text-sm text-success mb-1">✓ Border added!</p><DownloadButton blob={result} filename={"bordered-" + file.name} /></div>}
-          {!result && <button onClick={process} disabled={processing} className="btn-primary w-full py-3">{processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin-slow" />Processing...</span> : "Add Border"}</button>}
+          {!result && <button onClick={process} disabled={processing} className="btn-primary w-full py-3">{processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />Processing...</span> : "Add Border"}</button>}
         </div>
       )}
     </div>

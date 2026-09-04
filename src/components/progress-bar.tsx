@@ -55,22 +55,22 @@ export function ProgressBar({ active, label = "Processing..." }: ProgressBarProp
   if (!visible) return null;
 
   return (
-    <div className={`mb-4 transition-opacity duration-200 ${fading ? "opacity-0" : "opacity-100"}`}>
-      <div className="bg-bg-surface border-2 border-border-strong shadow-[3px_3px_0_var(--shadow-color)]">
-        <div className="flex items-center justify-between px-3 py-2 border-b-2 border-border-base">
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-2 w-2">
+    <div className={`mb-5 transition-opacity duration-200 ${fading ? "opacity-0" : "opacity-100"}`}>
+      <div className="bg-bg-surface border border-border-base rounded-xl px-4 py-3 shadow-sm">
+        <div className="flex items-center justify-between gap-4 mb-2.5">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="relative flex h-2 w-2 shrink-0">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-50" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
             </span>
-            <span className="text-[12px] font-bold text-text-secondary">{label}</span>
+            <span className="text-[12.5px] font-semibold text-text-secondary truncate">{label}</span>
           </div>
-          <span className="text-[11px] font-mono font-bold text-accent tabular-nums">{percent}%</span>
+          <span className="text-[11.5px] font-mono font-bold text-accent tabular-nums shrink-0">{percent}%</span>
         </div>
 
-        <div className="h-2 bg-bg-elevated">
+        <div className="h-1.5 rounded-full bg-bg-elevated overflow-hidden">
           <div
-            className="h-full bg-accent transition-all duration-100 ease-out"
+            className="h-full rounded-full bg-gradient-to-r from-accent to-accent-light transition-all duration-100 ease-out"
             style={{ width: `${percent}%` }}
           />
         </div>

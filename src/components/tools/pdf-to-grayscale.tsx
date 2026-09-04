@@ -78,7 +78,7 @@ export default function PdfToGrayscaleTool({ onProcessing, onError }: ToolUIProp
             <button onClick={handleConvert} disabled={processing} className="btn-primary w-full py-3">
               {processing ? (
                 <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin-slow" />
+                  <span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />
                   Converting...
                 </span>
               ) : "Convert to Grayscale"}

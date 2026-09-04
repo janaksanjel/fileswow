@@ -46,7 +46,7 @@ export default function WordFontCheckerTool({ onProcessing, onError }: ToolUIPro
             <div className="flex-1"><p className="text-sm text-text-primary truncate">{file.name}</p></div>
             <button onClick={() => { setFile(null); setFonts([]); }} className="text-xs text-text-tertiary hover:text-danger">Remove</button>
           </div>
-          {processing && <div className="flex items-center justify-center py-8"><span className="w-6 h-6 border-2 border-accent-start/30 border-t-accent-start rounded-full animate-spin-slow" /></div>}
+          {processing && <div className="flex items-center justify-center py-8"><span className="w-6 h-6 border border-accent-start/30 border-t-accent-start rounded-full animate-spin-slow" /></div>}
           {fonts.length > 0 && (
             <div className="rounded-xl border border-border-base overflow-hidden">
               <table className="w-full text-sm">

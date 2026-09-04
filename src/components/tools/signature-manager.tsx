@@ -56,7 +56,7 @@ export default function SignatureManagerTool({ onProcessing, onError }: ToolUIPr
     <div className="space-y-6">
       <div>
         <label className="block text-sm text-text-secondary mb-2">Draw your signature</label>
-        <canvas ref={canvasRef} width={500} height={150} onMouseDown={startDraw} onMouseMove={draw} onMouseUp={endDraw} onMouseLeave={endDraw} className="w-full rounded-lg bg-white border-2 border-dashed border-border-base cursor-crosshair" style={{ touchAction: "none" }} />
+        <canvas ref={canvasRef} width={500} height={150} onMouseDown={startDraw} onMouseMove={draw} onMouseUp={endDraw} onMouseLeave={endDraw} className="w-full rounded-lg bg-white border border-dashed border-border-base cursor-crosshair" style={{ touchAction: "none" }} />
         <div className="flex gap-2 mt-2">
           <button onClick={clearCanvas} className="px-3 py-1.5 rounded text-xs text-text-secondary bg-bg-elevated border border-border-base hover:text-text-primary">Clear</button>
         </div>

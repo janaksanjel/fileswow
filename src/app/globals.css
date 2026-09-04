@@ -1,84 +1,103 @@
 @import "tailwindcss";
 
 /* ════════════════════════════════════════════════════════════════
-   FilesWow — Neobrutalism Minimalism
-   Warm paper + ink (light) / deep pine + chalk (dark), 2px borders,
-   hard offset shadows, one vivid green accent. Corners are
-   sharp (radius only survives on true circles, e.g. status dots &
-   spinners). Dark mode inverts the slabs: cream borders + cream
-   offset shadows on a near-black pine base.
+   FilesWow — Crisp Modern Utility
+   Neutral cool canvas + white surfaces + hairline borders + soft
+   layered shadows. One refined green accent. All corners are
+   gently rounded; everything keeps 1px borders. Dark mode is a
+   cool graphite re-skin of the same system.
+
+   The old neo-brutalist layer (2px borders, hard offset shadows,
+   sharp corners) is deliberately neutralized: two-sided `border-2`
+   utilities are re-cast as 1px hairlines, arbitrary hard shadows
+   are replaced with soft elevation, and radii are back on.
    ════════════════════════════════════════════════════════════════ */
 
 /* ─── Light theme (default) ─────────────────────────────────── */
 :root {
-  --bg-base: #f4efe6;      /* warm paper */
-  --bg-surface: #fdfaf3;   /* cards / raised */
-  --bg-elevated: #e9e2d3;  /* chips, wells */
-  --bg-hover: #efe8d8;
+  --bg-base: #f5f7fa;          /* cool neutral canvas */
+  --bg-surface: #ffffff;       /* cards / raised */
+  --bg-elevated: #eef1f6;      /* wells, subtle fills */
+  --bg-hover: #f3f6fa;
   --bg-input: #ffffff;
 
-  --accent: #16a34a;       /* vivid green — brand */
-  --accent-light: #22c55e;
-  --accent-subtle: rgba(22, 163, 74, 0.12);
+  --accent: #16a34a;           /* FilesWow green — brand */
+  --accent-hover: #15803d;
+  --accent-light: #4ade80;
+  --accent-subtle: rgba(22, 163, 74, 0.09);
   --accent-override: #15803d;
-  --accent-blue: #2f5597;  /* IMAGE chips + info/diff accents (blue) */
+  --accent-blue: #2563eb;      /* IMAGE category accent */
 
-  /* Legacy gradient tokens — tools still reference these.
-     Neobrutalism is flat, so both ends point at the brand green. */
+  /* Legacy gradient tokens — tools still reference these. */
   --accent-start: #16a34a;
-  --accent-end: #14532d;
+  --accent-end: #15803d;
 
-  --text-primary: #1c1915;
-  --text-secondary: #5b554a;
-  --text-tertiary: #94897a;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-tertiary: #94a3b8;
   --text-on-accent: #ffffff;
 
-  --success: #0e7a46;
-  --danger: #cf2b2b;
+  --success: #128a55;
+  --danger: #d92d20;
   --warning: #b45309;
 
-  --border: #1c1915;
-  --border-strong: #1c1915;
+  --border: #e6eaf0;           /* hairline */
+  --border-strong: #d0d7e1;    /* visible hairline */
   --border-accent: #16a34a;
-  --border-danger: #cf2b2b;
+  --border-danger: #d92d20;
 
-  --shadow-color: #1c1915;
+  /* Elevation used for surfaces & drop-downs */
+  --elevation-sm: 0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.04);
+  --elevation-md: 0 1px 2px rgba(16, 24, 40, 0.05), 0 6px 16px -4px rgba(16, 24, 40, 0.09);
+  --elevation-lg: 0 2px 4px rgba(16, 24, 40, 0.04), 0 16px 32px -8px rgba(16, 24, 40, 0.14);
+  --elevation-xl: 0 4px 8px rgba(16, 24, 40, 0.04), 0 24px 48px -12px rgba(16, 24, 40, 0.18);
+
+  /* Where arbitrary/legacy hard shadows were used, fall back to this */
+  --shadow-color: transparent;
+  --shadow-soft: var(--elevation-md);
 
   color-scheme: light;
 }
 
 /* ─── Dark theme ─────────────────────────────────────────────── */
 [data-theme="dark"] {
-  --bg-base: #10140f;      /* deep pine, not pure black */
-  --bg-surface: #171d16;
-  --bg-elevated: #1f281e;
-  --bg-hover: #263023;
-  --bg-input: #141a13;
+  --bg-base: #0b0f15;
+  --bg-surface: #12171f;
+  --bg-elevated: #1b232e;
+  --bg-hover: #212a37;
+  --bg-input: #0f141b;
 
-  --accent: #22c55e;       /* bright spring green — readable on pine */
-  --accent-light: #4ade80;
-  --accent-subtle: rgba(34, 197, 94, 0.16);
-  --accent-override: #86efac;
-  --accent-blue: #a3c2f0;  /* IMAGE chips + info/diff accents (blue) */
+  --accent: #3fb950;
+  --accent-hover: #4cc76a;
+  --accent-light: #56d364;
+  --accent-subtle: rgba(63, 185, 80, 0.15);
+  --accent-override: #56d364;
+  --accent-blue: #7ea6f7;
 
   --accent-start: #16a34a;
-  --accent-end: #4ade80;
+  --accent-end: #3fb950;
 
-  --text-primary: #f2ecdf;
-  --text-secondary: #c2bba9;
-  --text-tertiary: #94897c;
-  --text-on-accent: #0c120d;
+  --text-primary: #e6edf3;
+  --text-secondary: #a6b3c0;
+  --text-tertiary: #74818f;
+  --text-on-accent: #05210d;
 
-  --success: #34c77b;
-  --danger: #ff5964;
-  --warning: #ffb02e;
+  --success: #3fb950;
+  --danger: #f0524d;
+  --warning: #e3a94a;
 
-  --border: rgba(242, 234, 218, 0.55);  /* softer, quieter hairlines */
-  --border-strong: #efe6d4;              /* chalk cream — key geometry */
-  --border-accent: #22c55e;
-  --border-danger: #ff5964;
+  --border: #212a35;           /* quiet hairline */
+  --border-strong: #313d4d;
+  --border-accent: #3fb950;
+  --border-danger: #f0524d;
 
-  --shadow-color: #efe6d4;  /* cream slab = offset shadows stay visible */
+  --elevation-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --elevation-md: 0 2px 6px rgba(0, 0, 0, 0.45), 0 8px 20px -6px rgba(0, 0, 0, 0.55);
+  --elevation-lg: 0 4px 10px rgba(0, 0, 0, 0.5), 0 20px 44px -12px rgba(0, 0, 0, 0.7);
+  --elevation-xl: 0 8px 16px rgba(0, 0, 0, 0.55), 0 32px 64px -16px rgba(0, 0, 0, 0.8);
+
+  --shadow-color: transparent;
+  --shadow-soft: var(--elevation-md);
 
   color-scheme: dark;
 }
@@ -91,6 +110,7 @@
   --color-bg-hover: var(--bg-hover);
   --color-bg-input: var(--bg-input);
   --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
   --color-accent-light: var(--accent-light);
   --color-accent-subtle: var(--accent-subtle);
   --color-accent-override: var(--accent-override);
@@ -111,23 +131,28 @@
   --color-shadow-color: var(--shadow-color);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Radius scale — crisp, slightly generous */
+  --radius-xs: 0.25rem;
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.625rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.25rem;
+  --radius-4xl: 1.5rem;
 }
 
-/* ─── Reset & Base ───────────────────────────────────────────── */
-* {
-  border-color: var(--border);
-  border-radius: 0;
-}
-
+/* ─── Base ───────────────────────────────────────────────────── */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+  border-color: var(--border);
 }
 
-/* True circles keep their roundness */
-.rounded-full {
-  border-radius: 9999px;
+html {
+  scroll-behavior: smooth;
 }
 
 body {
@@ -136,29 +161,41 @@ body {
   font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
 }
 
-/* Selected orange chips in tools pair `bg-accent-start` with
-   `text-white` (legacy). Orange wants dark text — fix that combo. */
+/* Keep the legacy "white text on accent-start" combo legible */
 .bg-accent-start.text-white,
 .bg-accent-start .text-white {
   color: var(--text-on-accent);
 }
 
 /* ─── Scrollbar ──────────────────────────────────────────────── */
-::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--text-tertiary); border: 2px solid var(--bg-base); }
-::-webkit-scrollbar-thumb:hover { background: var(--text-secondary); }
-* { scrollbar-width: thin; scrollbar-color: var(--text-tertiary) transparent; }
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--text-tertiary) 45%, transparent);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--text-tertiary) 70%, transparent);
+  background-clip: padding-box;
+  border: 3px solid transparent;
+}
+* { scrollbar-width: thin; scrollbar-color: color-mix(in srgb, var(--text-tertiary) 50%, transparent) transparent; }
 
 /* ─── Focus ──────────────────────────────────────────────────── */
 *:focus-visible {
-  outline: 3px solid var(--accent);
+  outline: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
   outline-offset: 2px;
+  border-radius: var(--radius-sm);
 }
 
-/* Text fields keep a quiet, neutral focus — no color shift */
+/* Text fields keep a quiet focus ring of their own */
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
@@ -167,8 +204,8 @@ select:focus-visible {
 
 /* ─── Selection ──────────────────────────────────────────────── */
 ::selection {
-  background: var(--accent);
-  color: var(--text-on-accent);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  color: var(--text-primary);
 }
 
 /* ─── Reduced Motion ─────────────────────────────────────────── */
@@ -183,43 +220,63 @@ select:focus-visible {
 
 /* ─── Typography ─────────────────────────────────────────────── */
 .heading-xl {
-  font-size: clamp(2rem, 4.5vw, 3.25rem);
-  font-weight: 900;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
-  text-transform: none;
+  font-size: clamp(2rem, 5vw, 3.25rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.08;
 }
 
 .heading-lg {
-  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-size: clamp(1.375rem, 2.5vw, 1.875rem);
   font-weight: 800;
   letter-spacing: -0.02em;
-  line-height: 1.2;
+  line-height: 1.18;
 }
 
 .heading-md {
   font-size: clamp(1rem, 1.5vw, 1.125rem);
   font-weight: 700;
   letter-spacing: -0.01em;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
-.body-lg { font-size: 1rem; line-height: 1.6; }
-.body-md { font-size: 0.875rem; line-height: 1.55; }
-.body-sm { font-size: 0.8125rem; line-height: 1.5; }
+.body-lg { font-size: 1rem; line-height: 1.7; }
+.body-md { font-size: 0.875rem; line-height: 1.6; }
+.body-sm { font-size: 0.8125rem; line-height: 1.55; }
 .caption  { font-size: 0.6875rem; line-height: 1.5; letter-spacing: 0.02em; }
 
-/* ─── Legacy soft shadows → hard offset shadows ─────────────── */
-.shadow-sm  { box-shadow: 2px 2px 0 0 var(--shadow-color); }
-.shadow     { box-shadow: 3px 3px 0 0 var(--shadow-color); }
-.shadow-md  { box-shadow: 4px 4px 0 0 var(--shadow-color); }
-.shadow-lg  { box-shadow: 5px 5px 0 0 var(--shadow-color); }
-.shadow-xl  { box-shadow: 8px 8px 0 0 var(--shadow-color); }
-.shadow-2xl { box-shadow: 10px 10px 0 0 var(--shadow-color); }
+/* Elevation helpers — re-cast the old hard-offset `.shadow-*`
+   utilities into a soft, modern stack (light + dark aware). */
+.shadow-sm  { box-shadow: var(--elevation-sm); }
+.shadow     { box-shadow: var(--elevation-sm); }
+.shadow-md  { box-shadow: var(--elevation-md); }
+.shadow-lg  { box-shadow: var(--elevation-md); }
+.shadow-xl  { box-shadow: var(--elevation-lg); }
+.shadow-2xl { box-shadow: var(--elevation-xl); }
+
+/* Any leftover arbitrary hard shadows (shadow-[…_0_var(--shadow-color)])
+   are replaced with the theme elevation. */
+[class*="shadow-["] {
+  box-shadow: var(--shadow-soft);
+}
+
+/* ─── Hairline migration ───────────────────────────────────────
+   The old system drew everything with 2px borders. Re-cast those
+   as 1px hairlines so white surfaces read crisp and light. */
+[class*="border-2"]  { border-width: 1px; }
+[class*="border-t-2"] { border-top-width: 1px; }
+[class*="border-b-2"] { border-bottom-width: 1px; }
+[class*="border-l-2"] { border-left-width: 1px; }
+[class*="border-r-2"] { border-right-width: 1px; }
+
+/* Keep circular spinners round & legible */
+[class*="animate-spin"] {
+  border-radius: 9999px;
+}
 
 /* ─── Animations ─────────────────────────────────────────────── */
 @keyframes fade-in-up {
-  0% { opacity: 0; transform: translateY(6px); }
+  0% { opacity: 0; transform: translateY(8px); }
   100% { opacity: 1; transform: translateY(0); }
 }
 
@@ -233,17 +290,22 @@ select:focus-visible {
 }
 
 @keyframes dropzone-pulse {
-  0%, 100% { border-color: var(--accent); }
-  50% { border-color: var(--danger); }
+  0%, 100% { border-color: color-mix(in srgb, var(--accent) 55%, var(--border-strong)); box-shadow: 0 0 0 0 var(--accent-subtle); }
+  50% { border-color: var(--accent); box-shadow: 0 0 0 6px var(--accent-subtle); }
 }
 
 .animate-fade-in-up { animation: fade-in-up 0.25s ease both; }
 .animate-fade-in { animation: fade-in 0.2s ease both; }
-.animate-spin-slow { animation: spin 1.5s linear infinite; }
+.animate-spin-slow { animation: spin 1.2s linear infinite; }
 .dropzone-active {
-  animation: dropzone-pulse 1s ease-in-out infinite;
-  background: var(--accent-subtle) !important;
+  animation: dropzone-pulse 0.9s ease-in-out infinite;
+  background: color-mix(in srgb, var(--accent) 4%, var(--bg-surface)) !important;
 }
+
+/* ─── Component primitives ─────────────────────────────────────
+   Live in the components cascade layer so responsive/utility
+   classes (e.g. `lg:hidden`, `py-3`) can still override them. */
+@layer components {
 
 /* ─── Buttons ────────────────────────────────────────────────── */
 .btn-primary {
@@ -251,35 +313,37 @@ select:focus-visible {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
-  font-size: 0.8125rem;
-  font-weight: 700;
+  padding: 0.625rem 1.125rem;
+  font-size: 0.875rem;
+  font-weight: 600;
   line-height: 1.25rem;
   color: var(--text-on-accent);
   background: var(--accent);
-  border: 2px solid var(--border);
+  border: 1px solid color-mix(in srgb, var(--accent) 70%, #000);
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
   white-space: nowrap;
   text-decoration: none;
-  box-shadow: 4px 4px 0 var(--shadow-color);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), var(--elevation-sm);
+  transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .btn-primary:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 var(--shadow-color);
+  background: var(--accent-hover);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), var(--elevation-md);
 }
 
 .btn-primary:active {
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0 var(--shadow-color);
+  transform: translateY(1px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), var(--elevation-sm);
 }
 
 .btn-primary:disabled {
-  opacity: 0.45;
+  opacity: 0.5;
   cursor: not-allowed;
+  box-shadow: none;
   transform: none;
-  box-shadow: 4px 4px 0 var(--shadow-color);
 }
 
 .btn-secondary {
@@ -287,33 +351,37 @@ select:focus-visible {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.625rem 1.25rem;
-  font-size: 0.8125rem;
-  font-weight: 700;
+  padding: 0.625rem 1.125rem;
+  font-size: 0.875rem;
+  font-weight: 600;
   line-height: 1.25rem;
   color: var(--text-primary);
   background: var(--bg-surface);
-  border: 2px solid var(--border);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
   white-space: nowrap;
   text-decoration: none;
-  box-shadow: 4px 4px 0 var(--shadow-color);
+  box-shadow: var(--elevation-sm);
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .btn-secondary:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 var(--shadow-color);
+  background: var(--bg-hover);
+  border-color: color-mix(in srgb, var(--border-strong) 70%, var(--text-tertiary));
+  box-shadow: var(--elevation-md);
 }
 
 .btn-secondary:active {
-  transform: translate(2px, 2px);
-  box-shadow: 2px 2px 0 var(--shadow-color);
+  transform: translateY(1px);
+  box-shadow: var(--elevation-sm);
 }
 
 .btn-secondary:disabled {
-  opacity: 0.45;
+  opacity: 0.5;
   cursor: not-allowed;
+  box-shadow: none;
   transform: none;
 }
 
@@ -327,28 +395,52 @@ select:focus-visible {
   font-weight: 600;
   color: var(--text-secondary);
   background: transparent;
-  border: 2px solid transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .btn-ghost:hover {
   color: var(--text-primary);
-  border-color: var(--border);
+  background: var(--bg-hover);
+}
+
+/* ─── Icon-button surfaces (tool chrome) ─────────────────────── */
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  color: var(--text-secondary);
   background: var(--bg-surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.icon-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+  border-color: color-mix(in srgb, var(--border-strong) 70%, var(--text-tertiary));
 }
 
 /* ─── Cards ──────────────────────────────────────────────────── */
 .card {
   background: var(--bg-surface);
-  border: 2px solid var(--border);
-  box-shadow: 4px 4px 0 var(--shadow-color);
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--elevation-sm);
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
 .card:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 var(--shadow-color);
+  transform: translateY(-2px);
+  box-shadow: var(--elevation-md);
+  border-color: var(--border-strong);
 }
 
 .card-interactive {
@@ -356,43 +448,75 @@ select:focus-visible {
 }
 
 .card-interactive:hover {
-  border-color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--border-strong));
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 12px 24px -8px color-mix(in srgb, var(--accent) 18%, rgba(16, 24, 40, 0.14));
 }
 
-/* ─── Input ──────────────────────────────────────────────────── */
+/* ─── Panel (shared tool/workbench container) ────────────────── */
+.panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--elevation-sm);
+}
+
+/* ─── Inputs ─────────────────────────────────────────────────── */
 .input {
   width: 100%;
-  padding: 0.5625rem 0.75rem;
-  font-size: 0.8125rem;
+  padding: 0.5625rem 0.8125rem;
+  font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-primary);
   background: var(--bg-input);
-  border: 2px solid var(--border);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-lg);
   outline: none;
-  box-shadow: 3px 3px 0 var(--shadow-color);
-  transition: box-shadow 0.1s ease, border-color 0.1s ease;
+  box-shadow: inset 0 1px 2px rgba(16, 24, 40, 0.04);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .input:focus {
-  box-shadow: 4px 4px 0 var(--shadow-color);
-  border-color: var(--border-strong);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border-strong));
+  box-shadow: 0 0 0 3px var(--accent-subtle);
 }
 
 .input::placeholder {
   color: var(--text-tertiary);
 }
 
-/* Native form controls get the flat treatment */
+/* Native form controls */
 input[type="range"] { accent-color: var(--accent); }
 input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); }
 input[type="color"] { accent-color: var(--accent); }
+select {
+  background-color: var(--bg-input);
+}
+
+/* ─── Kbd ────────────────────────────────────────────────────── */
+kbd,
+.kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.125rem 0.375rem;
+  font-size: 0.625rem;
+  font-weight: 700;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  line-height: 1.4;
+  color: var(--text-tertiary);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-bottom-width: 2px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
 
 /* ─── Floating Action Button ─────────────────────────────────── */
 .fab {
   position: fixed;
   bottom: 1.5rem;
   right: 1.5rem;
-  z-index: 50;
+  z-index: 40;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -404,73 +528,82 @@ input[type="color"] { accent-color: var(--accent); }
   pointer-events: auto;
 }
 
-@media (min-width: 640px) {
-  .fab {
-    bottom: 1.5rem;
-    right: 1.5rem;
-  }
-}
-
-/* ─── Tool badge ─────────────────────────────────────────────── */
+/* ─── Tool tier badge ────────────────────────────────────────── */
 .tier-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.0625rem 0.375rem;
+  padding: 0.125rem 0.5rem;
   font-size: 0.5625rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
+  font-weight: 700;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   line-height: 1.4;
-  border: 2px solid var(--border);
-  box-shadow: 2px 2px 0 var(--shadow-color);
+  border-radius: 999px;
 }
 
 .tier-badge-1 {
   color: var(--text-secondary);
-  background: var(--bg-surface);
+  background: var(--bg-elevated);
 }
 
 .tier-badge-2 {
   color: var(--warning);
-  background: var(--bg-surface);
-  border-color: var(--warning);
-  box-shadow: 2px 2px 0 var(--border);
+  background: color-mix(in srgb, var(--warning) 12%, transparent);
 }
 
 .tier-badge-3 {
   color: var(--danger);
-  background: var(--bg-surface);
-  border-color: var(--danger);
-  box-shadow: 2px 2px 0 var(--border);
+  background: color-mix(in srgb, var(--danger) 10%, transparent);
 }
+
+} /* end @layer components */
 
 /* ─── Legacy translucent semantic panels ───────────────────────
    Tool screens still use bg-success/[0.04] & border-success/10
    style utilities. Lift the tint + line so those boxes read
-   clearly against the paper background without editing every tool.
-   (Only classes containing the slash are matched, so plain
+   clearly against the neutral background without editing every
+   tool. (Only classes containing the slash are matched, so plain
    bg-success / border-success usages are untouched.)          */
 [class*="bg-success/"] {
-  background: color-mix(in srgb, var(--success) 9%, transparent);
+  background: color-mix(in srgb, var(--success) 7%, var(--bg-surface));
 }
 
 [class*="bg-warning/"] {
-  background: color-mix(in srgb, var(--warning) 10%, transparent);
+  background: color-mix(in srgb, var(--warning) 9%, var(--bg-surface));
 }
 
 [class*="bg-danger/"] {
-  background: color-mix(in srgb, var(--danger) 8%, transparent);
+  background: color-mix(in srgb, var(--danger) 7%, var(--bg-surface));
 }
 
 [class*="border-success/"] {
-  border-color: color-mix(in srgb, var(--success) 60%, var(--border));
+  border-color: color-mix(in srgb, var(--success) 35%, var(--border-strong));
 }
 
 [class*="border-warning/"] {
-  border-color: color-mix(in srgb, var(--warning) 60%, var(--border));
+  border-color: color-mix(in srgb, var(--warning) 40%, var(--border-strong));
 }
 
 [class*="border-danger/"] {
-  border-color: color-mix(in srgb, var(--danger) 60%, var(--border));
+  border-color: color-mix(in srgb, var(--danger) 35%, var(--border-strong));
+}
+
+/* ─── Ambient background glow for marketing hero sections ────── */
+.hero-glow {
+  position: relative;
+  overflow: clip;
+}
+
+.hero-glow::before {
+  content: "";
+  position: absolute;
+  inset: -20% -30% auto;
+  height: 90%;
+  pointer-events: none;
+  z-index: -1;
+  background:
+    radial-gradient(42% 52% at 22% 20%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%),
+    radial-gradient(38% 46% at 82% 26%, color-mix(in srgb, var(--accent-blue) 7%, transparent), transparent 72%),
+    radial-gradient(60% 60% at 50% 0%, color-mix(in srgb, var(--accent) 5%, transparent), transparent 75%);
 }

@@ -65,7 +65,7 @@ export default function background_remove_image_Tool({ onProcessing, onError }: 
           )}
           {!result && (
             <button onClick={process} disabled={processing} className="btn-primary w-full py-3">
-              {processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin-slow" />Removing background (this may take a moment)...</span> : "Remove Background"}
+              {processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />Removing background (this may take a moment)...</span> : "Remove Background"}
             </button>
           )}
         </div>

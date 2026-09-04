@@ -48,17 +48,17 @@ export function ToolClient({ tool, relatedTools }: ToolClientProps) {
 
       {/* Error display */}
       {error && (
-        <div className="mb-4 p-3 bg-bg-surface border-2 border-danger shadow-[3px_3px_0_var(--shadow-color)] flex items-start gap-2.5">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-danger mt-0.5 shrink-0">
+        <div className="mb-5 px-4 py-3 rounded-xl bg-danger/[0.05] border border-danger/25 flex items-start gap-3">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-danger mt-0.5 shrink-0" aria-hidden="true">
             <circle cx="12" cy="12" r="10" />
             <line x1="15" y1="9" x2="9" y2="15" />
             <line x1="9" y1="9" x2="15" y2="15" />
           </svg>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-extrabold uppercase tracking-wide text-danger">Something went wrong</p>
+            <p className="text-[13px] font-semibold text-danger">Something went wrong</p>
             <p className="text-xs text-text-secondary mt-0.5 break-words">{error}</p>
           </div>
-          <button onClick={() => setError(null)} className="text-text-tertiary hover:text-danger transition-colors shrink-0" aria-label="Dismiss">
+          <button onClick={() => setError(null)} className="text-text-tertiary hover:text-danger transition-colors shrink-0 rounded-md p-1" aria-label="Dismiss">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
@@ -80,13 +80,13 @@ export function ToolClient({ tool, relatedTools }: ToolClientProps) {
 function FallbackToolUI({ tool }: { tool: ToolDef }) {
   return (
     <div className="text-center py-12 sm:py-16">
-      <div className="w-14 h-14 bg-bg-elevated border-2 border-border-strong flex items-center justify-center text-2xl mx-auto mb-4">
+      <div className="w-14 h-14 rounded-2xl bg-bg-elevated border border-border-strong flex items-center justify-center text-2xl mx-auto mb-4">
         {tool.icon}
       </div>
       <h3 className="heading-md text-text-primary mb-2">Coming Soon</h3>
       <p className="body-sm text-text-secondary max-w-sm mx-auto mb-4">
         The <strong>{tool.name}</strong> tool is being built. It uses{" "}
-        <code className="px-1.5 py-0.5 bg-bg-elevated border-2 border-border-strong text-accent text-[11px] font-mono">
+        <code className="px-2 py-0.5 rounded-md bg-bg-elevated border border-border-strong text-accent text-[11px] font-mono">
           {tool.engine}
         </code>.
       </p>

@@ -161,7 +161,7 @@ export default function PdfDigitalStampTool({ onProcessing, onError }: ToolUIPro
           {/* Preview */}
           <div className="p-3 rounded-lg bg-bg-elevated border border-border-base text-center">
             <p className="text-xs text-text-tertiary mb-1">Preview</p>
-            <span className="inline-block px-4 py-2 border-2 border-current rounded font-bold text-lg" style={{ color: STAMP_PRESETS[stampType].color }}>
+            <span className="inline-block px-4 py-2 border border-current rounded font-bold text-lg" style={{ color: STAMP_PRESETS[stampType].color }}>
               {stampType === "custom" ? (customText || "YOUR TEXT") : STAMP_PRESETS[stampType].text}
               {includeDate && ` — ${new Date().toLocaleDateString()}`}
             </span>

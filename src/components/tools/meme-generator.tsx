@@ -59,7 +59,7 @@ export default function meme_generator_Tool({ onProcessing, onError }: ToolUIPro
           <div><label className="block text-sm text-text-secondary mb-1">Bottom Text</label>
             <input value={bottomText} onChange={(e) => setBottomText(e.target.value)} placeholder="BOTTOM TEXT" className="w-full px-3 py-2 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm" /></div>
           {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10"><p className="text-sm text-success mb-1">✓ Meme created!</p><DownloadButton blob={result} filename={"meme-" + file.name} /></div>}
-          {!result && <button onClick={process} disabled={processing} className="btn-primary w-full py-3">{processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin-slow" />Processing...</span> : "Generate Meme"}</button>}
+          {!result && <button onClick={process} disabled={processing} className="btn-primary w-full py-3">{processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />Processing...</span> : "Generate Meme"}</button>}
         </div>
       )}
     </div>

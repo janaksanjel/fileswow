@@ -496,7 +496,7 @@ export default function P2PTextTool() {
 
   // ─── UI ─────────────────────────────────────────────────────────────
   const stepBadge = (n: number) => (
-    <span className="flex items-center justify-center w-6 h-6 bg-accent border-2 border-border-strong text-text-on-accent text-[11px] font-extrabold shrink-0 shadow-[2px_2px_0_var(--shadow-color)]">
+    <span className="flex items-center justify-center w-6 h-6 bg-accent border border-border-strong text-text-on-accent text-[11px] font-extrabold shrink-0 shadow-[2px_2px_0_var(--shadow-color)]">
       {n}
     </span>
   );
@@ -569,11 +569,11 @@ export default function P2PTextTool() {
             </div>
           </div>
 
-          <div className="bg-bg-elevated border-2 border-border-strong p-4 flex items-center justify-center gap-3">
+          <div className="bg-bg-elevated border border-border-strong p-4 flex items-center justify-center gap-3">
             {roomCode.split("").map((ch, i) => (
               <span
                 key={i}
-                className="flex items-center justify-center w-12 h-14 sm:w-14 sm:h-16 bg-bg-surface border-2 border-border-strong shadow-[3px_3px_0_var(--shadow-color)] text-3xl font-extrabold font-mono text-text-primary"
+                className="flex items-center justify-center w-12 h-14 sm:w-14 sm:h-16 bg-bg-surface border border-border-strong shadow-[3px_3px_0_var(--shadow-color)] text-3xl font-extrabold font-mono text-text-primary"
               >
                 {ch}
               </span>
@@ -593,8 +593,8 @@ export default function P2PTextTool() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 px-3 py-2.5 bg-bg-elevated border-2 border-border-strong rounded-lg">
-          <span className="w-2.5 h-2.5 rounded-full bg-warning border-2 border-border-strong animate-pulse shrink-0" />
+        <div className="flex items-center gap-2.5 px-3 py-2.5 bg-bg-elevated border border-border-strong rounded-lg">
+          <span className="w-2.5 h-2.5 rounded-full bg-warning border border-border-strong animate-pulse shrink-0" />
           <p className="text-xs font-semibold text-text-secondary">
             Waiting for someone to join… keep this page open.
           </p>
@@ -634,7 +634,7 @@ export default function P2PTextTool() {
               autoComplete="off"
               spellCheck={false}
               maxLength={CODE_LENGTH}
-              className="w-full text-center text-3xl font-extrabold font-mono tracking-[0.4em] px-3 py-4 rounded-lg bg-bg-input border-2 border-border-strong text-text-primary placeholder:text-text-tertiary/60 placeholder:tracking-normal focus:border-accent focus:outline-none"
+              className="w-full text-center text-3xl font-extrabold font-mono tracking-[0.4em] px-3 py-4 rounded-lg bg-bg-input border border-border-strong text-text-primary placeholder:text-text-tertiary/60 placeholder:tracking-normal focus:border-accent focus:outline-none"
             />
             <div className="flex flex-wrap items-center gap-2">
               <button
@@ -682,12 +682,12 @@ export default function P2PTextTool() {
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b-2 border-border-base">
         <div className="flex items-center gap-2">
-          <span className={`w-2.5 h-2.5 rounded-full border-2 border-border-strong ${linkState === "connected" ? "bg-success" : "bg-warning"}`} />
+          <span className={`w-2.5 h-2.5 rounded-full border border-border-strong ${linkState === "connected" ? "bg-success" : "bg-warning"}`} />
           <p className="text-xs font-bold text-text-primary">
             {linkState === "connected" ? "Connected" : linkState === "closed" ? "Disconnected" : "Connecting…"}
           </p>
           {roomCode && (
-            <span className="px-1.5 py-0.5 bg-bg-elevated border-2 border-border-strong text-[10px] font-extrabold font-mono text-text-secondary">
+            <span className="px-1.5 py-0.5 bg-bg-elevated border border-border-strong text-[10px] font-extrabold font-mono text-text-secondary">
               ROOM {roomCode}
             </span>
           )}
@@ -706,7 +706,7 @@ export default function P2PTextTool() {
       )}
 
       {/* Messages */}
-      <div className="h-72 sm:h-80 overflow-y-auto space-y-3 px-3 py-3 bg-bg-elevated border-2 border-border-strong">
+      <div className="h-72 sm:h-80 overflow-y-auto space-y-3 px-3 py-3 bg-bg-elevated border border-border-strong">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center px-6">
             <p className="text-base font-bold text-text-secondary mb-1">Link is live 🎉</p>
@@ -716,7 +716,7 @@ export default function P2PTextTool() {
           messages.map((msg) => (
             <div key={msg.id} className={`flex flex-col ${msg.from === "self" ? "items-end" : "items-start"}`}>
               <div
-                className={`max-w-[85%] px-3 py-2 border-2 border-border-strong text-[13px] leading-relaxed whitespace-pre-wrap break-words shadow-[2px_2px_0_var(--shadow-color)] ${
+                className={`max-w-[85%] px-3 py-2 border border-border-strong text-[13px] leading-relaxed whitespace-pre-wrap break-words shadow-[2px_2px_0_var(--shadow-color)] ${
                   msg.from === "self" ? "bg-accent text-text-on-accent" : "bg-bg-surface text-text-primary"
                 }`}
               >
@@ -736,7 +736,7 @@ export default function P2PTextTool() {
         {emojiOpen && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setEmojiOpen(false)} aria-hidden="true" />
-            <div className="absolute bottom-full left-0 mb-2 z-50 w-80 max-w-[90vw] bg-bg-surface border-2 border-border-strong shadow-[4px_4px_0_var(--shadow-color)] p-2">
+            <div className="absolute bottom-full left-0 mb-2 z-50 w-80 max-w-[90vw] bg-bg-surface border border-border-strong shadow-[4px_4px_0_var(--shadow-color)] p-2">
               <p className="px-1 pb-1 text-[10px] font-extrabold uppercase tracking-wider text-text-tertiary">Emoji</p>
               <div className="max-h-56 overflow-y-auto grid grid-cols-8 gap-0.5">
                 {EMOJIS.map((e) => (
@@ -774,7 +774,7 @@ export default function P2PTextTool() {
             disabled={linkState !== "connected"}
             placeholder={linkState === "connected" ? "Type a message… (Enter to send)" : "Waiting for the link…"}
             rows={2}
-            className="flex-1 px-3 py-2.5 rounded-lg bg-bg-input border-2 border-border-strong text-text-primary text-sm resize-none placeholder:text-text-tertiary focus:border-accent focus:outline-none disabled:opacity-50"
+            className="flex-1 px-3 py-2.5 rounded-lg bg-bg-input border border-border-strong text-text-primary text-sm resize-none placeholder:text-text-tertiary focus:border-accent focus:outline-none disabled:opacity-50"
           />
           <button
             onClick={sendDraft}
@@ -796,7 +796,7 @@ export default function P2PTextTool() {
 
 function ErrorNote({ message, onDismiss }: { message: string; onDismiss: () => void }) {
   return (
-    <div className="p-3 bg-bg-surface border-2 border-danger shadow-[3px_3px_0_var(--shadow-color)] flex items-start gap-2.5">
+    <div className="p-3 bg-bg-surface border border-danger shadow-[3px_3px_0_var(--shadow-color)] flex items-start gap-2.5">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-danger mt-0.5 shrink-0">
         <circle cx="12" cy="12" r="10" />
         <line x1="15" y1="9" x2="9" y2="15" />
@@ -826,13 +826,13 @@ function NoteNote({ message }: { message: string }) {
 
 function StatusRow({ status, text }: { status: "waiting" | "connected"; text: string }) {
   return (
-    <div className="flex items-center gap-2.5 px-3 py-2.5 bg-bg-elevated border-2 border-border-strong rounded-lg">
-      <span className={`w-2.5 h-2.5 rounded-full border-2 border-border-strong shrink-0 ${status === "connected" ? "bg-success" : "bg-warning animate-pulse"}`} />
+    <div className="flex items-center gap-2.5 px-3 py-2.5 bg-bg-elevated border border-border-strong rounded-lg">
+      <span className={`w-2.5 h-2.5 rounded-full border border-border-strong shrink-0 ${status === "connected" ? "bg-success" : "bg-warning animate-pulse"}`} />
       <p className="text-xs font-semibold text-text-secondary">{text}</p>
     </div>
   );
 }
 
 function Spinner() {
-  return <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin-slow shrink-0" aria-hidden="true" />;
+  return <span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow shrink-0" aria-hidden="true" />;
 }

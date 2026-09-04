@@ -37,7 +37,7 @@ export default function PrivacyPage() {
         </nav>
 
         <div className="flex items-start gap-4 mb-6">
-          <span className="hidden sm:flex w-4 self-stretch bg-accent border-2 border-border-strong shadow-[3px_3px_0_var(--shadow-color)] shrink-0" aria-hidden="true" />
+          <span className="hidden sm:block w-1.5 self-stretch rounded-full bg-gradient-to-b from-accent-light to-accent shrink-0" aria-hidden="true" />
           <h1 className="heading-xl text-text-primary">Privacy Policy</h1>
         </div>
 

@@ -60,7 +60,7 @@ export default function image_collage_Tool({ onProcessing, onError }: ToolUIProp
           </div>
           <div className="flex flex-wrap gap-2">{files.map((f, i) => <div key={i} className="text-xs text-text-tertiary bg-bg-elevated px-2 py-1 rounded">{f.name} <button onClick={() => setFiles(prev => prev.filter((_, j) => j !== i))} className="ml-1 hover:text-danger">✕</button></div>)}</div>
           {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10"><p className="text-sm text-success mb-1">✓ Collage created!</p><DownloadButton blob={result} filename="collage.png" /></div>}
-          {!result && <button onClick={process} disabled={processing || files.length < 2} className="btn-primary w-full py-3">{processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin-slow" />Creating...</span> : "Create Collage"}</button>}
+          {!result && <button onClick={process} disabled={processing || files.length < 2} className="btn-primary w-full py-3">{processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />Creating...</span> : "Create Collage"}</button>}
         </div>
       )}
     </div>

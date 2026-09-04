@@ -40,7 +40,7 @@ export default function WordToTextTool({ onProcessing, onError }: ToolUIProps) {
             <span className="text-sm text-text-primary truncate flex-1">{file.name}</span>
             <button onClick={() => { setFile(null); setText(""); }} className="text-xs text-text-tertiary hover:text-danger">Remove</button>
           </div>
-          {processing && <div className="flex items-center justify-center py-8"><span className="w-6 h-6 border-2 border-accent-start/30 border-t-accent-start rounded-full animate-spin-slow" /></div>}
+          {processing && <div className="flex items-center justify-center py-8"><span className="w-6 h-6 border border-accent-start/30 border-t-accent-start rounded-full animate-spin-slow" /></div>}
           {text && (
             <div className="space-y-3">
               <textarea value={text} readOnly rows={16} className="w-full px-4 py-3 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm font-mono resize-y" />

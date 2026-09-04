@@ -46,7 +46,7 @@ export default function PdfInfoViewerTool({ onError }: ToolUIProps) {
 
       {loading && (
         <div className="flex items-center justify-center py-8">
-          <span className="w-6 h-6 border-2 border-accent-start/30 border-t-accent-start rounded-full animate-spin-slow" />
+          <span className="w-6 h-6 border border-accent-start/30 border-t-accent-start rounded-full animate-spin-slow" />
         </div>
       )}
 

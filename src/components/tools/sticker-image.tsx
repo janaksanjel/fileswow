@@ -57,7 +57,7 @@ export default function sticker_image_Tool({ onProcessing, onError }: ToolUIProp
               <input type="range" min={0} max={100} value={yPos} onChange={(e) => setYPos(parseInt(e.target.value))} className="w-full accent-accent" /></div>
           </div>
           {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10"><p className="text-sm text-success mb-1">✓ Sticker added!</p><DownloadButton blob={result} filename={"sticker-" + file.name} /></div>}
-          {!result && <button onClick={process} disabled={processing} className="btn-primary w-full py-3">{processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin-slow" />Processing...</span> : "Add Sticker"}</button>}
+          {!result && <button onClick={process} disabled={processing} className="btn-primary w-full py-3">{processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />Processing...</span> : "Add Sticker"}</button>}
         </div>
       )}
     </div>
