@@ -609,7 +609,7 @@ export default function P2PTextTool() {
   if (phase === "join") {
     return (
       <div className="space-y-6">
-        <StatusRow status={linkState === "connecting" ? "waiting" : "waiting"} text={busy ? "Connecting…" : "Enter the 4-character code from the other device."} />
+        <StatusRow status="waiting" text={busy ? "Connecting…" : "Enter the 4-character code from the other device."} />
         {error && <ErrorNote message={error} onDismiss={() => setError(null)} />}
         {note && <NoteNote message={note} />}
 
