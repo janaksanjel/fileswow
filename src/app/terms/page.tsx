@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — FilesWow.com",
+  title: "Terms of Service",
   description:
     "Terms of service for FilesWow.com. Learn about the usage terms for our free online document tools.",
   alternates: {

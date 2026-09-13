@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "About FilesWow.com — Free Private Document Tools",
+  title: "About — Free Private Document Tools",
   description:
     "Learn about FilesWow.com — 100+ free PDF, Word, and image tools that run entirely in your browser. Your files never leave your device.",
   alternates: {

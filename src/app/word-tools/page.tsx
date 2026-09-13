@@ -3,7 +3,7 @@ import { WORD_TOOLS, SUB_CATEGORY_LABELS, WORD_SUB_CATEGORIES } from "@/lib/cata
 import { CategoryHubClient } from "../pdf-tools/category-hub-client";
 
 export const metadata: Metadata = {
-  title: "Word/DOCX Tools — Merge, Split, Convert & Edit | FilesWow.com",
+  title: "Word/DOCX Tools — Convert, Merge & Edit",
   description:
     "30+ free Word/DOCX tools. Merge, split, convert, edit, and protect Word documents — all in your browser. No upload required. 100% private.",
   keywords: [

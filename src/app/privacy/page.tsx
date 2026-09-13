@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — FilesWow.com",
+  title: "Privacy Policy",
   description:
     "Privacy policy for FilesWow.com. Learn how we protect your data — all processing happens in your browser, files never leave your device.",
   alternates: {

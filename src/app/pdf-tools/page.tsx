@@ -3,7 +3,7 @@ import { PDF_TOOLS, SUB_CATEGORY_LABELS, PDF_SUB_CATEGORIES } from "@/lib/catalo
 import { CategoryHubClient } from "./category-hub-client";
 
 export const metadata: Metadata = {
-  title: "PDF Tools — Merge, Split, Convert, Edit & More | FilesWow.com",
+  title: "PDF Tools — Merge, Split, Convert & Edit",
   description:
     "60+ free PDF tools. Merge, split, compress, convert, rotate, watermark, protect, and edit PDFs — all in your browser. No upload required. 100% private.",
   keywords: [

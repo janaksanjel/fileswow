@@ -3,7 +3,7 @@ import { IMAGE_TOOLS, SUB_CATEGORY_LABELS, IMAGE_SUB_CATEGORIES } from "@/lib/ca
 import { CategoryHubClient } from "../pdf-tools/category-hub-client";
 
 export const metadata: Metadata = {
-  title: "Image Tools — Convert, Resize, Crop, Filter & Edit | FilesWow.com",
+  title: "Image Tools — Convert, Resize, Crop & Edit",
   description:
     "60+ free image tools. Convert, resize, crop, filter, compress, watermark, and edit images — all in your browser. No upload required. 100% private.",
   keywords: [

@@ -3,7 +3,7 @@ import { TEXT_TOOLS, SUB_CATEGORY_LABELS, TEXT_SUB_CATEGORIES } from "@/lib/cata
 import { CategoryHubClient } from "../pdf-tools/category-hub-client";
 
 export const metadata: Metadata = {
-  title: "Text Tools — P2P Text Transfer & More | FilesWow.com",
+  title: "Text Tools — P2P Transfer & More",
   description:
     "Free text tools. Send text between two devices instantly with P2P Text Transfer — direct browser-to-browser over WebRTC. No server, no uploads, 100% private.",
   keywords: [

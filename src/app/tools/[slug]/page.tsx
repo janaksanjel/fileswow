@@ -18,8 +18,19 @@ export async function generateMetadata({ params }: ToolPageProps): Promise<Metad
 
   const categoryLabel = tool.category === "pdf" ? "PDF" : tool.category === "word" ? "Word" : tool.category === "image" ? "Image" : tool.category === "text" ? "Text" : "Cross-format";
 
+  // SEO: keep titles ≤ 60 chars. Add the brand suffix only when it fits.
+  const BASE_SUFFIX = " — Free Online Tool";
+  const BRAND_SUFFIX = " | FilesWow.com";
+  const base = `${tool.name}${BASE_SUFFIX}`;
+  const title =
+    base.length + BRAND_SUFFIX.length <= 60
+      ? base + BRAND_SUFFIX
+      : base.length <= 60
+        ? base
+        : `${tool.name} | FilesWow.com`;
+
   return {
-    title: `${tool.name} — Free Online ${categoryLabel} Tool`,
+    title,
     description: `${tool.description} Processed entirely in your browser. No upload required. 100% private and free.`,
     keywords: [
       tool.name,
