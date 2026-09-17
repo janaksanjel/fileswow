@@ -108,7 +108,7 @@ export function Header() {
 
               {/* Theme toggle */}
               <button
-                onClick={toggle}
+                onClick={(e) => toggle({ x: e.clientX, y: e.clientY })}
                 className="hidden md:flex icon-btn"
                 aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
                 title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
@@ -178,7 +178,9 @@ export function Header() {
                   Search Tools
                 </button>
                 <button
-                  onClick={toggle}
+                  onClick={(e) =>
+                    toggle({ x: e.clientX || window.innerWidth - 24, y: e.clientY || window.innerHeight - 60 })
+                  }
                   className="flex-1 flex items-center justify-center gap-2 h-10 rounded-lg text-sm font-semibold text-text-secondary bg-bg-input border border-border-strong"
                 >
                   {theme === "dark" ? (

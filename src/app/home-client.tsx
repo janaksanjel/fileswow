@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { ToolCard } from "@/components/tool-card";
 import { searchTools, getCategoryColor } from "@/lib/search";
+import { categoryTile } from "@/lib/category-style";
 import { ToolIcon } from "@/components/icon";
 import { SUB_CATEGORY_LABELS, TEXT_SUB_CATEGORIES, type ToolDef, type SubCategory } from "@/lib/catalog";
 import {
@@ -29,15 +30,7 @@ const WORD_SECTIONS: SubCategory[] = ["organize", "convert", "edit", "security",
 const IMAGE_SECTIONS: SubCategory[] = ["convert", "crop", "rotate", "filters", "adjust", "effects", "annotate", "info", "utility"];
 const TEXT_SECTIONS: SubCategory[] = TEXT_SUB_CATEGORIES;
 
-const CATEGORY_TABS = [
-  { key: "pdf", label: "PDF" },
-  { key: "word", label: "Word" },
-  { key: "image", label: "Image" },
-  { key: "text", label: "Text" },
-] as const;
-
 export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTools }: HomeClientProps) {
-  const [activeTab, setActiveTab] = useState<"pdf" | "word" | "image" | "text">("pdf");
   const [heroQuery, setHeroQuery] = useState("");
   const [heroResults, setHeroResults] = useState<Array<{ tool: ToolDef; score: number }>>([]);
   const [heroSelectedIdx, setHeroSelectedIdx] = useState(0);
@@ -81,17 +74,13 @@ export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTo
     return () => clearTimeout(timer);
   }, [heroQuery]);
 
-  const tools = activeTab === "pdf" ? pdfTools : activeTab === "word" ? wordTools : activeTab === "image" ? imageTools : textTools;
-  const sections = activeTab === "pdf" ? PDF_SECTIONS : activeTab === "word" ? WORD_SECTIONS : activeTab === "image" ? IMAGE_SECTIONS : TEXT_SECTIONS;
-  const toolCount = activeTab === "pdf" ? pdfTools.length : activeTab === "word" ? wordTools.length : activeTab === "image" ? imageTools.length : textTools.length;
-
   return (
     <div>
       {/* Hero */}
-      <section className="hero-glow pt-16 sm:pt-24 pb-14 sm:pb-20">
+      <section className="hero-glow hero-grid pt-16 sm:pt-24 pb-14 sm:pb-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center relative">
           {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-bg-surface border border-border-base shadow-sm text-[12px] font-semibold text-text-secondary mb-7">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-bg-surface/70 backdrop-blur border border-border-base shadow-sm text-[12px] font-semibold text-text-secondary mb-7">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full rounded-full bg-accent opacity-50 animate-ping" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
@@ -100,19 +89,18 @@ export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTo
           </div>
 
           {/* Headline */}
-          <h1 className="heading-xl text-text-primary mb-5">
-            Free <span className="text-accent">PDF &amp; Word</span> tools
-            <br className="hidden sm:block" /> that respect your privacy
+          <h1 className="heading-xl text-text-primary mb-5 [text-wrap:balance]">
+            Free <span className="text-gradient">PDF, Word &amp; Image</span> tools online
           </h1>
 
           {/* Subtitle */}
           <p className="body-lg text-text-secondary max-w-xl mx-auto mb-10">
-            Merge, split, compress, convert, and edit documents.
-            Free forever. No upload. No account.
+            Merge, split, compress and convert files directly in your browser —
+            no uploads, no sign-up, no watermarks.
           </p>
 
           {/* Search Bar */}
-          <div className="relative max-w-xl mx-auto mb-8">
+          <div className="relative max-w-xl mx-auto mb-9">
             <div className="flex items-center gap-3 px-4 sm:px-5 bg-bg-surface border border-border-strong rounded-2xl shadow-md transition-all duration-200 focus-within:border-accent/60 focus-within:ring-4 focus-within:ring-accent/10">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-tertiary shrink-0" aria-hidden="true">
                 <circle cx="11" cy="11" r="8" />
@@ -135,7 +123,7 @@ export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTo
                     setHeroSelectedIdx((prev) => Math.max(prev - 1, 0));
                   }
                 }}
-                placeholder="Search all tools…"
+                placeholder="Search 100+ tools — try “merge pdf”…"
                 className="flex-1 bg-transparent h-13 py-3.5 text-text-primary text-[15px] font-medium placeholder:text-text-tertiary outline-none min-w-0"
                 aria-label="Search tools"
               />
@@ -155,7 +143,7 @@ export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTo
                         i === heroSelectedIdx ? "bg-accent-subtle" : "hover:bg-bg-hover"
                       }`}
                     >
-                      <div className="w-9 h-9 rounded-lg bg-bg-elevated flex items-center justify-center shrink-0 ring-1 ring-inset ring-border-strong">
+                      <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ring-1 ring-inset ${categoryTile(result.tool.category)}`}>
                         <ToolIcon name={result.tool.slug} size={17} className="text-text-secondary" />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -174,27 +162,13 @@ export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTo
             )}
           </div>
 
-          {/* Tab Switcher */}
-          <div className="inline-flex items-center rounded-2xl bg-bg-elevated border border-border-base p-1 gap-1 shadow-sm">
-            {CATEGORY_TABS.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`px-5 sm:px-6 h-10 rounded-xl text-sm font-semibold transition-all duration-150 ${
-                  activeTab === tab.key
-                    ? "text-text-primary bg-bg-surface shadow-sm ring-1 ring-border-base"
-                    : "text-text-secondary hover:text-text-primary"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Tool count */}
-          <p className="mt-4 text-xs font-semibold text-text-tertiary">
-            {toolCount} {toolCount === 1 ? "tool" : "tools"} · free forever · no account needed
-          </p>
+          {/* Quick links to the category groups below */}
+          <nav aria-label="Tool categories" className="flex flex-wrap items-center justify-center gap-2">
+            <CategoryPill href="#pdf" label="PDF Tools" />
+            <CategoryPill href="#word" label="Word Tools" />
+            <CategoryPill href="#image" label="Image Tools" />
+            <CategoryPill href="#text" label="Text Tools" />
+          </nav>
         </div>
       </section>
 
@@ -247,63 +221,27 @@ export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTo
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {recentTools.map((tool, i) => (
               <ToolCard key={tool.slug} tool={tool} index={i} />
-            ))
-            }
+            ))}
           </div>
         </section>
       )}
 
-      {/* Ad — between the discovery sections and the category grids */}
+      {/* Ad — between the discovery sections and the category groups */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 mb-12">
         <AdPlaceholder label="leaderboard (home)" className="mb-0" />
         <AdUnit slot="home" className="mb-0" />
       </div>
 
-      {/* Text tools — hidden while the Text tab is active, since those tools are shown in the main grid below */}
-      {textTools.length > 0 && activeTab !== "text" && (
-        <section className="max-w-6xl mx-auto px-4 sm:px-6 mb-12">
-          <SectionLabel label="Text Tools" count={textTools.length} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {textTools.map((tool, i) => (
-              <ToolCard key={tool.slug} tool={tool} index={i} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Cross-format tools */}
-      {crossTools.length > 0 && (
-        <section className="max-w-6xl mx-auto px-4 sm:px-6 mb-12">
-          <SectionLabel label="Cross-Format" count={crossTools.length} />
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {crossTools.map((tool, i) => (
-              <ToolCard key={tool.slug} tool={tool} index={i} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Tool Sections */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-20 sm:pb-28">
-        {sections.map((subCat) => {
-          const sectionTools = tools.filter((t) => t.subCategory === subCat);
-          if (sectionTools.length === 0) return null;
-          return (
-            <div key={subCat} className="mb-12 sm:mb-14">
-              <SectionLabel label={SUB_CATEGORY_LABELS[subCat]} count={sectionTools.length} />
-              <div className={`grid gap-4 ${
-                activeTab === "pdf"
-                  ? "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
-                  : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-              }`}>
-                {sectionTools.map((tool, i) => (
-                  <ToolCard key={tool.slug} tool={tool} index={i} />
-                ))}
-              </div>
-            </div>
-          );
-        })}
-      </section>
+      {/* Category groups — every category on one page, anchor-linked from the hero */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-4">
+        <CategoryGroup id="pdf" title="PDF Tools" tools={pdfTools} sections={PDF_SECTIONS} />
+        <CategoryGroup id="word" title="Word Tools" tools={wordTools} sections={WORD_SECTIONS} />
+        <CategoryGroup id="image" title="Image Tools" tools={imageTools} sections={IMAGE_SECTIONS} />
+        <CategoryGroup id="text" title="Text Tools" tools={textTools} sections={TEXT_SECTIONS} />
+        {crossTools.length > 0 && (
+          <CategoryGroup id="cross" title="Cross-Format Tools" tools={crossTools} sections={[]} />
+        )}
+      </div>
 
       {/* Bottom trust strip */}
       <section className="border-t border-border-base bg-bg-surface">
@@ -353,24 +291,141 @@ export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTo
               caption="No hidden premium tiers"
             />
           </div>
+          {/* Social-proof strip */}
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[12px] font-medium text-text-tertiary">
+            <span className="inline-flex items-center gap-1.5">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" className="text-warning" aria-hidden="true">
+                <path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.2-6.3-4.5-6.3 4.5L8 14l-6-4.6h7.6z" />
+              </svg>
+              100+ free tools
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-success" aria-hidden="true">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+              Works offline after first visit
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent-blue" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              No sign-up, no watermarks
+            </span>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ — accordion with FAQPage schema (server-rendered in page.tsx) */}
+      <section id="faq" aria-labelledby="faq-heading" className="border-t border-border-base bg-bg-base">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
+          <div className="text-center mb-10">
+            <h2 id="faq-heading" className="heading-lg text-text-primary mb-3">
+              Frequently asked questions
+            </h2>
+            <p className="body-md text-text-secondary max-w-md mx-auto">
+              Everything you need to know about using FilesWow.
+            </p>
+          </div>
+          <FaqAccordion items={FAQ_ITEMS} />
         </div>
       </section>
     </div>
   );
 }
 
+/* ─── Shared section bits ─────────────────────────────────── */
+
 function SectionLabel({ label, count, icon }: { label: string; count: number; icon?: React.ReactNode }) {
   return (
     <div className="flex items-center gap-3 mb-5">
-      <h2 className="text-[13px] font-bold uppercase tracking-widest text-text-secondary whitespace-nowrap flex items-center gap-1.5">
+      <h3 className="text-[12.5px] font-bold uppercase tracking-widest text-text-secondary whitespace-nowrap flex items-center gap-1.5">
         {icon}
         {label}
-      </h2>
+      </h3>
       <div className="flex-1 h-px bg-border-base" />
-      <span className="text-[11px] font-bold text-text-tertiary bg-bg-elevated px-2 py-0.5 rounded-full whitespace-nowrap">
+      <span className="text-[10.5px] font-bold text-text-tertiary bg-bg-elevated ring-1 ring-inset ring-border-base px-2 py-0.5 rounded-full whitespace-nowrap">
         {count}
       </span>
     </div>
+  );
+}
+
+/* Anchor chip in the hero linking to a category group */
+function CategoryPill({ href, label }: { href: string; label: string }) {
+  return (
+    <a href={href} className="hero-chip">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <polyline points="9 18 15 12 9 6" />
+      </svg>
+      {label}
+    </a>
+  );
+}
+
+/* One full category: heading row, then tools grouped by sub-category */
+function CategoryGroup({
+  id,
+  title,
+  tools,
+  sections,
+}: {
+  id: string;
+  title: string;
+  tools: ToolDef[];
+  sections: SubCategory[];
+}) {
+  if (tools.length === 0) return null;
+  return (
+    <section id={id} className="scroll-mt-24 mb-14">
+      <div className="flex items-center gap-3 mb-6">
+        <h2 className="heading-md text-text-primary whitespace-nowrap">{title}</h2>
+        <div className="flex-1 h-px bg-border-base" />
+        <span className="text-[11px] font-bold text-text-tertiary bg-bg-elevated ring-1 ring-inset ring-border-base px-2 py-0.5 rounded-full whitespace-nowrap">
+          {tools.length}
+        </span>
+      </div>
+      <div className="space-y-10">
+        {sections.map((subCat) => {
+          const sectionTools = tools.filter((t) => t.subCategory === subCat);
+          if (sectionTools.length === 0) return null;
+          return (
+            <div key={subCat}>
+              <SectionLabel label={SUB_CATEGORY_LABELS[subCat]} count={sectionTools.length} />
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {sectionTools.map((tool, i) => (
+                  <ToolCard key={tool.slug} tool={tool} index={i} />
+                ))}
+              </div>
+            </div>
+          );
+        })}
+        {/* Fallback for tools whose subCategory isn't in the sections list */}
+        {sections.length > 0 && (() => {
+          const others = tools.filter((t) => !sections.includes(t.subCategory));
+          if (others.length === 0) return null;
+          return (
+            <div>
+              <SectionLabel label="More Tools" count={others.length} />
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                {others.map((tool, i) => (
+                  <ToolCard key={tool.slug} tool={tool} index={i} />
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+        {/* Category with no sub-sections (e.g. Cross-Format) */}
+        {sections.length === 0 && (
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {tools.map((tool, i) => (
+              <ToolCard key={tool.slug} tool={tool} index={i} />
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -392,6 +447,85 @@ function TrustItem({
       </span>
       <p className="text-[13.5px] font-semibold text-text-primary mb-0.5">{title}</p>
       <p className="text-[11.5px] text-text-tertiary leading-relaxed">{caption}</p>
+    </div>
+  );
+}
+
+/* ─── FAQ data — copy mirrors the FAQPage JSON-LD in page.tsx ── */
+const FAQ_ITEMS: Array<{ q: string; a: string }> = [
+  {
+    q: "Are these tools really free?",
+    a: "Yes. Every tool on FilesWow is completely free with no usage limits, no watermarks, and no hidden premium tiers.",
+  },
+  {
+    q: "Are my files uploaded to a server?",
+    a: "No. All processing happens locally in your browser using JavaScript and WebAssembly. Your files never leave your device.",
+  },
+  {
+    q: "Do I need to create an account?",
+    a: "No account or email is required. Open a tool, add your file, and get the result — that's it.",
+  },
+  {
+    q: "What file types are supported?",
+    a: "FilesWow covers PDF, Word (DOCX), images (JPG, PNG, WebP, SVG), and plain text formats — over 100 tools across these categories.",
+  },
+  {
+    q: "Is it safe to use with confidential documents?",
+    a: "Yes. Because files are processed on your own device and never uploaded, confidential documents stay private — nothing is stored or logged anywhere.",
+  },
+  {
+    q: "Does it work on mobile?",
+    a: "Yes. The site works in any modern mobile or desktop browser. Files are processed on your device, so very large files may take longer on older phones.",
+  },
+];
+
+function FaqAccordion({ items }: { items: Array<{ q: string; a: string }> }) {
+  const [open, setOpen] = useState<number | null>(0);
+
+  return (
+    <div className="space-y-3">
+      {items.map((item, i) => {
+        const isOpen = open === i;
+        return (
+          <div key={item.q} className="card overflow-hidden">
+            <h3>
+              <button
+                onClick={() => setOpen(isOpen ? null : i)}
+                aria-expanded={isOpen}
+                aria-controls={`faq-panel-${i}`}
+                id={`faq-button-${i}`}
+                className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left cursor-pointer"
+              >
+                <span className="text-[14.5px] font-semibold text-text-primary">{item.q}</span>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                  className={`shrink-0 text-text-tertiary transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+                >
+                  <polyline points="6 9 12 15 18 9" />
+                </svg>
+              </button>
+            </h3>
+            <div
+              id={`faq-panel-${i}`}
+              role="region"
+              aria-labelledby={`faq-button-${i}`}
+              hidden={!isOpen}
+            >
+              <p className="px-5 pb-4 text-[13.5px] leading-relaxed text-text-secondary">
+                {item.a}
+              </p>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

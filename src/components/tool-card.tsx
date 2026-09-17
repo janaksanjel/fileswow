@@ -3,7 +3,7 @@
 import Link from "next/link";
 import type { ToolDef } from "@/lib/catalog";
 import { ToolIcon } from "./icon";
-import { categoryText } from "@/lib/category-style";
+import { categoryText, categoryTile } from "@/lib/category-style";
 
 interface ToolCardProps {
   tool: ToolDef;
@@ -21,8 +21,8 @@ export function ToolCard({ tool, index = 0 }: ToolCardProps) {
       style={{ animationDelay: `${index * 25}ms` }}
     >
       <div className="flex items-start gap-3">
-        {/* Icon tile */}
-        <span className="w-11 h-11 rounded-xl bg-bg-elevated ring-1 ring-inset ring-border-base flex items-center justify-center shrink-0 transition-all duration-200 group-hover:ring-accent/40 group-hover:shadow-sm">
+        {/* Icon tile — tinted per category */}
+        <span className={`w-11 h-11 rounded-xl ring-1 ring-inset flex items-center justify-center shrink-0 transition-all duration-200 group-hover:shadow-sm ${categoryTile(tool.category)}`}>
           <ToolIcon name={tool.slug} size={21} />
         </span>
 

@@ -8,7 +8,7 @@ export function FloatingActionButton() {
   return (
     <div className="fab">
       <button
-        onClick={toggle}
+        onClick={(e) => toggle({ x: e.clientX, y: e.clientY })}
         className="w-11 h-11 flex items-center justify-center rounded-full bg-bg-surface text-text-secondary border border-border-base shadow-lg backdrop-blur-md hover:text-text-on-accent hover:bg-accent hover:border-accent hover:shadow-xl transition-all duration-200"
         aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
         title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
