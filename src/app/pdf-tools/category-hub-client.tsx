@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ToolCard } from "@/components/tool-card";
 import { categoryTile } from "@/lib/category-style";
 import { CATEGORY_COUNTS, type ToolDef, type ToolCategory, type SubCategory } from "@/lib/catalog";
-import { AdUnit, AdPlaceholder } from "@/components/ad-unit";
+import { AdSlot } from "@/components/ad-unit";
 
 const CATEGORY_LINKS: Array<{ key: ToolCategory; label: string; href: string }> = [
   { key: "pdf", label: "PDF", href: "/pdf-tools" },
@@ -103,11 +103,8 @@ export function CategoryHubClient({
           </p>
         </div>
 
-        {/* Ad — top of the tool listing */}
-        <div className="mb-12 sm:mb-14">
-          <AdPlaceholder label="billboard (category top)" />
-          <AdUnit slot="category" />
-        </div>
+        {/* Ad — top of the tool listing. Renders nothing when not configured. */}
+        <AdSlot slot="category" label="billboard (category top)" className="mb-12 sm:mb-14" />
 
         {/* Tool sections — ad inserted after every 2nd section */}
         {categories.map((subCat, catIdx) => {
@@ -132,10 +129,7 @@ export function CategoryHubClient({
                 </div>
               </div>
               {catIdx > 0 && (catIdx + 1) % 2 === 0 && (
-                <div className="-mt-4 mb-12 sm:mb-14">
-                  <AdPlaceholder label="in-feed (category)" />
-                  <AdUnit slot="category" />
-                </div>
+                <AdSlot slot="category" label="in-feed (category)" className="-mt-4 mb-12 sm:mb-14" />
               )}
             </div>
           );

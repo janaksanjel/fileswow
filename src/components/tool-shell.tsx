@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { ToolDef } from "@/lib/catalog";
 import { ToolCard } from "./tool-card";
 import { ToolIcon } from "./icon";
-import { AdUnit, AdPlaceholder } from "./ad-unit";
+import { AdSlot } from "./ad-unit";
 
 interface ToolShellProps {
   tool: ToolDef;
@@ -151,11 +151,9 @@ export function ToolShell({ tool, relatedTools = [], children }: ToolShellProps)
         </section>
       )}
 
-      {/* Ad — between tool content and related tools */}
-      <div className="mb-10">
-        <AdPlaceholder label="in-article (tool)" />
-        <AdUnit slot="tool" />
-      </div>
+      {/* Ad — between tool content and related tools.
+          Renders nothing (no gap) when no ad slot is configured. */}
+      <AdSlot slot="tool" label="in-article (tool)" className="mb-10" />
 
       {/* Related Tools */}
       {tool.relatedSlugs.length > 0 && relatedTools.length > 0 && (

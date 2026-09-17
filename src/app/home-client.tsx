@@ -15,7 +15,7 @@ import {
   clearUsageHistory,
   hasPersonalHistorySnapshot,
 } from "@/lib/usage";
-import { AdUnit, AdPlaceholder } from "@/components/ad-unit";
+import { AdSlot } from "@/components/ad-unit";
 
 interface HomeClientProps {
   pdfTools: ToolDef[];
@@ -226,11 +226,9 @@ export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTo
         </section>
       )}
 
-      {/* Ad — between the discovery sections and the category groups */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 mb-12">
-        <AdPlaceholder label="leaderboard (home)" className="mb-0" />
-        <AdUnit slot="home" className="mb-0" />
-      </div>
+      {/* Ad — between the discovery sections and the category groups.
+          Renders nothing (no gap) when no ad slot is configured. */}
+      <AdSlot slot="home" label="leaderboard (home)" className="max-w-6xl mx-auto px-4 sm:px-6 mb-12" />
 
       {/* Category groups — every category on one page, anchor-linked from the hero */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-4">

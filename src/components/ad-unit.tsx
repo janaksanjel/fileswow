@@ -81,3 +81,23 @@ export function AdPlaceholder({ label, className = "" }: { label: string; classN
     </div>
   );
 }
+
+/**
+ * Complete ad placement: dev placeholder + AdSense unit + the spacing
+ * wrapper, all in one. Renders NOTHING when no ad slot env var is set
+ * (production) — so pages have no empty gap where an ad would be.
+ * In dev, the placeholder still shows so placements stay visible.
+ */
+export function AdSlot({ slot, label, className = "" }: { slot: keyof typeof SLOTS; label: string; className?: string }) {
+  const configured = Boolean(SLOTS[slot]);
+
+  // Production (or any env) with no slot env var → no markup at all.
+  if (!configured && process.env.NODE_ENV !== "development") return null;
+
+  return (
+    <div className={className}>
+      <AdPlaceholder label={label} />
+      <AdUnit slot={slot} />
+    </div>
+  );
+}
