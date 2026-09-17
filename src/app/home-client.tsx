@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useSyncExternalStore } from "react";
+import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { ToolCard } from "@/components/tool-card";
 import { searchTools, getCategoryColor } from "@/lib/search";
@@ -9,8 +9,10 @@ import { SUB_CATEGORY_LABELS, TEXT_SUB_CATEGORIES, type ToolDef, type SubCategor
 import {
   subscribeUsage,
   getRecentToolsSnapshot,
-  getPopularToolsSnapshot,
+  getTopToolsSnapshot,
   getEmptyToolsSnapshot,
+  clearUsageHistory,
+  hasPersonalHistorySnapshot,
 } from "@/lib/usage";
 import { AdUnit, AdPlaceholder } from "@/components/ad-unit";
 
@@ -51,9 +53,19 @@ export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTo
   );
   const popularTools = useSyncExternalStore(
     subscribeUsage,
-    getPopularToolsSnapshot,
+    getTopToolsSnapshot,
     getEmptyToolsSnapshot
   );
+  // True once the visitor has used at least one tool — flips "Popular Tools" to "Top Tools For You"
+  const hasPersonalHistory = useSyncExternalStore(
+    subscribeUsage,
+    hasPersonalHistorySnapshot,
+    () => false
+  );
+
+  const handleClearHistory = useCallback(() => {
+    clearUsageHistory();
+  }, []);
 
   // Hero search
   useEffect(() => {
@@ -186,10 +198,11 @@ export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTo
         </div>
       </section>
 
-      {/* Popular tools */}
+      {/* Top tools — personalized: blends the user's own usage (frequency × recency decay)
+          with the curated site-wide popularity order. */}
       {popularTools.length > 0 && (
         <section className="max-w-6xl mx-auto px-4 sm:px-6 mb-12">
-          <SectionLabel label="Popular Tools" count={popularTools.length} icon={
+          <SectionLabel label={hasPersonalHistory ? "Top Tools For You" : "Popular Tools"} count={popularTools.length} icon={
             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" className="text-warning" aria-hidden="true">
               <path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.2-6.3-4.5-6.3 4.5L8 14l-6-4.6h7.6z" />
             </svg>
@@ -205,12 +218,32 @@ export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTo
       {/* Recently used — appears once the user has actually used a tool */}
       {recentTools.length > 0 && (
         <section className="max-w-6xl mx-auto px-4 sm:px-6 mb-12">
-          <SectionLabel label="Recently Used" count={recentTools.length} icon={
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent" aria-hidden="true">
-              <circle cx="12" cy="12" r="10" />
-              <polyline points="12 6 12 12 16 14" />
-            </svg>
-          } />
+          <div className="flex items-center gap-3 mb-5">
+            <h2 className="text-[13px] font-bold uppercase tracking-widest text-text-secondary whitespace-nowrap flex items-center gap-1.5">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <polyline points="12 6 12 12 16 14" />
+              </svg>
+              Recently Used
+            </h2>
+            <div className="flex-1 h-px bg-border-base" />
+            <span className="text-[11px] font-bold text-text-tertiary bg-bg-elevated px-2 py-0.5 rounded-full whitespace-nowrap">
+              {recentTools.length}
+            </span>
+            <button
+              onClick={handleClearHistory}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold text-text-tertiary hover:text-danger bg-bg-elevated hover:bg-danger/10 ring-1 ring-border-base hover:ring-danger/30 transition-colors whitespace-nowrap"
+              aria-label="Clear recently used tools history"
+              title="Clear history"
+            >
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M3 6h18" />
+                <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+              </svg>
+              Clear
+            </button>
+          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {recentTools.map((tool, i) => (
               <ToolCard key={tool.slug} tool={tool} index={i} />

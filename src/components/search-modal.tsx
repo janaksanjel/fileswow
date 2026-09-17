@@ -9,6 +9,7 @@ import {
   getRecentToolsSnapshot,
   getPopularToolsSnapshot,
   getEmptyToolsSnapshot,
+  clearUsageHistory,
 } from "@/lib/usage";
 
 interface SearchModalProps {
@@ -63,6 +64,10 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
     },
     [onClose, router]
   );
+
+  const handleClearHistory = useCallback(() => {
+    clearUsageHistory();
+  }, []);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -218,9 +223,18 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
             <div className="py-2">
               {recentTools.length > 0 && (
                 <>
-                  <p className="px-4 pt-2 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-text-tertiary">
-                    Recently used
-                  </p>
+                  <div className="px-4 pt-2 pb-1.5 flex items-center justify-between">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-text-tertiary">
+                      Recently used
+                    </p>
+                    <button
+                      onClick={handleClearHistory}
+                      className="text-[10px] font-bold uppercase tracking-widest text-text-tertiary hover:text-danger transition-colors"
+                      aria-label="Clear recently used tools history"
+                    >
+                      Clear
+                    </button>
+                  </div>
                   {recentTools.map((tool) => (
                     <button
                       key={tool.slug}

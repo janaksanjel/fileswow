@@ -31,11 +31,13 @@ const EMPTY_ENTRIES: RecentToolEntry[] = [];
 let recentToolsCache: ToolDef[] | null = null;
 let popularToolsCache: ToolDef[] | null = null;
 let recentEntriesCache: RecentToolEntry[] | null = null;
+let personalHistoryFlagCache: boolean | null = null;
 
 function invalidateCaches(): void {
   recentToolsCache = null;
   popularToolsCache = null;
   recentEntriesCache = null;
+  personalHistoryFlagCache = null;
 }
 
 function notifyListeners(): void {
@@ -96,6 +98,18 @@ export function recordToolVisit(slug: string): void {
   writeUsage(map);
 }
 
+/** Erase all usage history from this browser (used by the "Clear" button). */
+export function clearUsageHistory(): void {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // localStorage unavailable — nothing to clear
+  }
+  invalidateCaches();
+  notifyListeners();
+}
+
 // ─── Query helpers (uncached, for one-off reads) ────────────────────
 
 /** Most recently used tools (newest first). */
@@ -122,6 +136,70 @@ export function getPopularTools(count: number): ToolDef[] {
   return [...used, ...defaults].slice(0, count);
 }
 
+// ─── Personalized "Top Tools" ranking ──────────────────────────────
+
+// Half-life of a visit's value: after 3 days a visit is worth half as much.
+const RECENCY_HALF_LIFE_MS = 3 * 24 * 60 * 60 * 1000;
+// How strongly personal usage (vs the curated defaults) influences the ranking.
+const PERSONAL_WEIGHT = 2.5;
+
+/**
+ * Score a usage entry by frequency with exponential recency decay:
+ *   score = visits × 2^(−age / halfLife)
+ * A tool used 5 times this week outranks one used 10 times two months ago.
+ */
+function personalizedScore(entry: UsageEntry, now: number): number {
+  const age = Math.max(0, now - entry.lastUsed);
+  const recency = Math.pow(2, -age / RECENCY_HALF_LIFE_MS);
+  return (entry.count || 1) * recency;
+}
+
+/**
+ * Personalized "Top Tools": blends the user's own usage score with the
+ * site-wide curated popularity order. Early on (little history) it looks like
+ * the curated list; the more the user works, the more it reflects their habits.
+ */
+export function getTopTools(count: number): ToolDef[] {
+  const map = readUsage();
+  const now = Date.now();
+
+  const scored = Object.values(map)
+    .map((entry) => ({ entry, score: personalizedScore(entry, now) }))
+    .filter((s) => s.score > 0.01)
+    .sort((a, b) => b.score - a.score);
+
+  // Normalize personal scores to [0, 1]
+  const maxScore = scored[0]?.score ?? 0;
+  const personalRank = new Map<string, number>();
+  scored.forEach((s, i) => {
+    // Rank position (0-based), lightly smoothed by score so near-ties keep their order
+    personalRank.set(s.entry.slug, i);
+  });
+
+  // Build candidate list: personal picks first (weighted), then curated defaults
+  const candidates: Array<{ slug: string; weight: number }> = [];
+  scored.forEach((s) => {
+    const normalized = maxScore > 0 ? s.score / maxScore : 0;
+    candidates.push({ slug: s.entry.slug, weight: PERSONAL_WEIGHT + normalized });
+  });
+  POPULAR_DEFAULT_SLUGS.forEach((slug, i) => {
+    candidates.push({ slug, weight: 1 - i / (POPULAR_DEFAULT_SLUGS.length * 2) });
+  });
+
+  // Stable sort by weight, keep best `count`, dedupe
+  candidates.sort((a, b) => b.weight - a.weight);
+  const seen = new Set<string>();
+  const result: ToolDef[] = [];
+  for (const c of candidates) {
+    if (seen.has(c.slug)) continue;
+    seen.add(c.slug);
+    const tool = getToolBySlug(c.slug);
+    if (tool) result.push(tool);
+    if (result.length >= count) break;
+  }
+  return result;
+}
+
 function getRecentEntries(): RecentToolEntry[] {
   const map = readUsage();
   return Object.values(map)
@@ -143,6 +221,20 @@ export function getRecentToolsSnapshot(): ToolDef[] {
 export function getPopularToolsSnapshot(): ToolDef[] {
   if (popularToolsCache === null) popularToolsCache = getPopularTools(POPULAR_SNAPSHOT_COUNT);
   return popularToolsCache;
+}
+
+/** Personalized top tools (frequency × recency, blended with curated defaults). */
+export function getTopToolsSnapshot(): ToolDef[] {
+  if (popularToolsCache === null) popularToolsCache = getTopTools(POPULAR_SNAPSHOT_COUNT);
+  return popularToolsCache;
+}
+
+/** Whether this visitor has any recorded tool usage (drives the "For You" label). */
+export function hasPersonalHistorySnapshot(): boolean {
+  if (personalHistoryFlagCache === null) {
+    personalHistoryFlagCache = Object.keys(readUsage()).length > 0;
+  }
+  return personalHistoryFlagCache;
 }
 
 export function getRecentEntriesSnapshot(): RecentToolEntry[] {
