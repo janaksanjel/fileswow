@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useEffect } from "react";
 import { ToolShell } from "@/components/tool-shell";
+import { recordToolVisit } from "@/lib/usage";
 import { ProgressBar } from "@/components/progress-bar";
 import { getToolComponent } from "@/components/tool-registry";
 import type { ToolDef } from "@/lib/catalog";
@@ -40,6 +41,11 @@ export function ToolClient({ tool, relatedTools }: ToolClientProps) {
   }, []);
 
   const ToolComponent = getToolComponent(tool.slug);
+
+  // Track usage for "Recently Used" and "Popular" sections
+  useEffect(() => {
+    recordToolVisit(tool.slug);
+  }, [tool.slug]);
 
   return (
     <ToolShell tool={tool} relatedTools={relatedTools}>

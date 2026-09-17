@@ -1,9 +1,15 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { searchTools, getCategoryColor, type SearchResult } from "@/lib/search";
 import { ToolIcon } from "./icon";
+import {
+  subscribeUsage,
+  getRecentToolsSnapshot,
+  getPopularToolsSnapshot,
+  getEmptyToolsSnapshot,
+} from "@/lib/usage";
 
 interface SearchModalProps {
   open: boolean;
@@ -19,14 +25,18 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
   const listRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  useEffect(() => {
-    if (open) {
-      setQuery("");
-      setResults([]);
-      setSelectedIndex(0);
-      setTimeout(() => inputRef.current?.focus(), 50);
-    }
-  }, [open]);
+  // Recent + popular for the empty state — store-backed so they stay fresh
+  const recentTools = useSyncExternalStore(
+    subscribeUsage,
+    getRecentToolsSnapshot,
+    getEmptyToolsSnapshot
+  );
+  const popularTools = useSyncExternalStore(
+    subscribeUsage,
+    getPopularToolsSnapshot,
+    getEmptyToolsSnapshot
+  );
+  const popularQuick = popularTools.slice(0, 6);
 
   useEffect(() => {
     if (!query.trim()) {
@@ -204,7 +214,49 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
             </div>
           )}
 
-          {!query.trim() && (
+          {!query.trim() && (recentTools.length > 0 || popularQuick.length > 0) && (
+            <div className="py-2">
+              {recentTools.length > 0 && (
+                <>
+                  <p className="px-4 pt-2 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-text-tertiary">
+                    Recently used
+                  </p>
+                  {recentTools.map((tool) => (
+                    <button
+                      key={tool.slug}
+                      onClick={() => navigateTo(tool.slug)}
+                      className="w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-bg-hover transition-colors"
+                    >
+                      <div className="w-7 h-7 rounded-md bg-bg-surface ring-1 ring-inset ring-border-strong flex items-center justify-center shrink-0">
+                        <ToolIcon name={tool.slug} size={14} className="text-text-secondary" />
+                      </div>
+                      <span className="text-[13px] font-medium text-text-primary truncate">{tool.name}</span>
+                    </button>
+                  ))}
+                </>
+              )}
+              {popularQuick.length > 0 && (
+                <>
+                  <p className="px-4 pt-3 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-text-tertiary">
+                    Popular
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 px-4 pb-2">
+                    {popularQuick.map((tool) => (
+                      <button
+                        key={tool.slug}
+                        onClick={() => navigateTo(tool.slug)}
+                        className="px-2.5 py-1 rounded-full bg-bg-elevated ring-1 ring-border-base text-[12px] font-medium text-text-secondary hover:text-accent hover:ring-accent/40 transition-colors"
+                      >
+                        {tool.name}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {!query.trim() && recentTools.length === 0 && popularQuick.length === 0 && (
             <div className="px-4 py-10 text-center">
               <p className="text-sm font-medium text-text-primary mb-1">Type to search</p>
               <p className="text-xs text-text-tertiary">
