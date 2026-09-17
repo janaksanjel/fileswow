@@ -206,6 +206,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             __html: `window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-RGZ4FLC926');`,
           }}
         />
+        {/* Google AdSense — site ownership verification + ad serving (required in <head> on every page) */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5534909600353741"
+          crossOrigin="anonymous"
+        />
       </head>
       <body className="min-h-screen bg-bg-base text-text-primary antialiased">
         <a
