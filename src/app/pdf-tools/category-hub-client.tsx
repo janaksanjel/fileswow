@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ToolCard } from "@/components/tool-card";
 import { categoryTile } from "@/lib/category-style";
 import { CATEGORY_COUNTS, type ToolDef, type ToolCategory, type SubCategory } from "@/lib/catalog";
+import { AdUnit, AdPlaceholder } from "@/components/ad-unit";
 
 const CATEGORY_LINKS: Array<{ key: ToolCategory; label: string; href: string }> = [
   { key: "pdf", label: "PDF", href: "/pdf-tools" },
@@ -102,26 +103,40 @@ export function CategoryHubClient({
           </p>
         </div>
 
-        {/* Tool sections */}
-        {categories.map((subCat) => {
+        {/* Ad — top of the tool listing */}
+        <div className="mb-12 sm:mb-14">
+          <AdPlaceholder label="billboard (category top)" />
+          <AdUnit slot="category" />
+        </div>
+
+        {/* Tool sections — ad inserted after every 2nd section */}
+        {categories.map((subCat, catIdx) => {
           const sectionTools = tools.filter((t) => t.subCategory === subCat);
           if (sectionTools.length === 0) return null;
           return (
-            <div key={subCat} className="mb-12 sm:mb-14">
-              <div className="flex items-center gap-3 mb-5">
-                <h2 className="text-[13px] font-bold uppercase tracking-widest text-text-secondary whitespace-nowrap">
-                  {categoryLabels[subCat]}
-                </h2>
-                <div className="flex-1 h-px bg-border-base" />
-                <span className="text-[11px] font-bold text-text-tertiary bg-bg-elevated px-2 py-0.5 rounded-full whitespace-nowrap">
-                  {sectionTools.length}
-                </span>
+            <div key={subCat}>
+              <div className="mb-12 sm:mb-14">
+                <div className="flex items-center gap-3 mb-5">
+                  <h2 className="text-[13px] font-bold uppercase tracking-widest text-text-secondary whitespace-nowrap">
+                    {categoryLabels[subCat]}
+                  </h2>
+                  <div className="flex-1 h-px bg-border-base" />
+                  <span className="text-[11px] font-bold text-text-tertiary bg-bg-elevated px-2 py-0.5 rounded-full whitespace-nowrap">
+                    {sectionTools.length}
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {sectionTools.map((tool, i) => (
+                    <ToolCard key={tool.slug} tool={tool} index={i} />
+                  ))}
+                </div>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {sectionTools.map((tool, i) => (
-                  <ToolCard key={tool.slug} tool={tool} index={i} />
-                ))}
-              </div>
+              {catIdx > 0 && (catIdx + 1) % 2 === 0 && (
+                <div className="-mt-4 mb-12 sm:mb-14">
+                  <AdPlaceholder label="in-feed (category)" />
+                  <AdUnit slot="category" />
+                </div>
+              )}
             </div>
           );
         })}

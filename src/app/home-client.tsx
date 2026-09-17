@@ -12,6 +12,7 @@ import {
   getPopularToolsSnapshot,
   getEmptyToolsSnapshot,
 } from "@/lib/usage";
+import { AdUnit, AdPlaceholder } from "@/components/ad-unit";
 
 interface HomeClientProps {
   pdfTools: ToolDef[];
@@ -218,6 +219,12 @@ export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTo
           </div>
         </section>
       )}
+
+      {/* Ad — between the discovery sections and the category grids */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 mb-12">
+        <AdPlaceholder label="leaderboard (home)" className="mb-0" />
+        <AdUnit slot="home" className="mb-0" />
+      </div>
 
       {/* Text tools — hidden while the Text tab is active, since those tools are shown in the main grid below */}
       {textTools.length > 0 && activeTab !== "text" && (
