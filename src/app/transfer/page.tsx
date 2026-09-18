@@ -3,41 +3,84 @@ import { TransferClient } from "./transfer-client";
 
 const SITE_URL = "https://fileswow.com";
 const PAGE_URL = `${SITE_URL}/transfer`;
-const TITLE = "P2P File Transfer — Send Files Up to 50 GB Free";
+const OG_IMAGE = `${SITE_URL}/og-image.png`;
+const SITE_NAME = "FilesWow.com";
+
+// Primary keyword cluster: "send files online / file transfer" head terms,
+// plus long-tails for "without app", "large files", "phone to PC" intent.
+const TITLE = "Send Files Online Free — P2P File Transfer Up to 50 GB, No Upload";
 const DESCRIPTION =
-  "Send files directly between devices with a 6-digit code or QR. Peer-to-peer, end-to-end encrypted, up to 50 GB. No uploads, no accounts — files never touch a server.";
+  "Free file transfer up to 50 GB. Send files directly between devices with a 6-digit code or QR — peer-to-peer, end-to-end encrypted, no upload, no sign-up, no app. Works on phone, tablet & PC.";
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   keywords: [
+    // Head terms
     "file transfer",
     "send files online",
-    "p2p file transfer",
+    "send files free",
+    "share files online",
+    // High-intent / feature long-tails
     "send large files free",
-    "transfer files 50GB",
-    "send files with code",
+    "transfer files up to 50gb",
+    "send files without uploading",
+    "send files without app",
+    "p2p file transfer",
     "webrtc file sharing",
-    "send files qr code",
-    "no upload file transfer",
+    "direct file transfer device to device",
+    // Use-case long-tails
+    "transfer files from phone to pc",
+    "send files from android to iphone",
+    "send photos from phone to computer",
+    "transfer videos without losing quality",
+    // Trust / comparison modifiers
     "encrypted file transfer",
-    "alternative to send anywhere",
+    "secure file sharing free",
+    "no sign up file transfer",
+    "send files with code",
+    "send files qr code",
+    "send anywhere alternative",
+    "wetransfer alternative free",
     "fileswow transfer",
   ],
   alternates: {
     canonical: PAGE_URL,
   },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
+  category: "technology",
   openGraph: {
-    title: `${TITLE} | FilesWow.com`,
+    title: `${TITLE} | ${SITE_NAME}`,
     description: DESCRIPTION,
     url: PAGE_URL,
     type: "website",
-    siteName: "FilesWow.com",
+    siteName: SITE_NAME,
+    locale: "en_US",
+    images: [
+      {
+        url: OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: "FilesWow File Transfer — send files up to 50 GB directly between devices",
+        type: "image/png",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: TITLE,
     description: DESCRIPTION,
+    images: [OG_IMAGE],
   },
 };
 
@@ -61,33 +104,57 @@ const webAppJsonLd = {
     "QR code and shareable invite link",
     "End-to-end encrypted (DTLS) — files never touch a server",
     "Streaming to disk for files larger than RAM",
+    "Works across Android, iPhone, Windows, Mac and Linux",
+  ],
+};
+
+const breadcrumbJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: SITE_URL,
+    },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: "File Transfer",
+      item: PAGE_URL,
+    },
   ],
 };
 
 const howToJsonLd = {
   "@context": "https://schema.org",
   "@type": "HowTo",
-  name: "How to send files with a 6-digit code",
+  name: "How to send files online without uploading them",
   description: DESCRIPTION,
   totalTime: "PT2M",
+  tool: [{ "@type": "HowToTool", name: "A web browser on each device" }],
   step: [
     {
       "@type": "HowToStep",
       position: 1,
       name: "Add files",
       text: "Click the upload area (or drag & drop) and pick the files you want to send — up to 50 GB total.",
+      url: `${PAGE_URL}#send`,
     },
     {
       "@type": "HowToStep",
       position: 2,
       name: "Share the 6-digit code",
       text: "A 6-digit code, QR code, and invite link appear. Share them with the receiving device by any channel.",
+      url: `${PAGE_URL}#send`,
     },
     {
       "@type": "HowToStep",
       position: 3,
       name: "Receive on the other device",
-      text: "On the receiving device, open this page, enter the 6-digit code below, choose where to save, and the files transfer directly — device to device.",
+      text: "On the receiving device, open this page, enter the 6-digit code, choose where to save, and the files transfer directly — device to device.",
+      url: `${PAGE_URL}#receive`,
     },
   ],
 };
@@ -136,6 +203,14 @@ const faqJsonLd = {
         text: "Yes. This is a direct device-to-device transfer, not a cloud upload. Both devices must keep the page open until the transfer finishes; closing the page ends the transfer.",
       },
     },
+    {
+      "@type": "Question",
+      name: "Can I transfer files from my phone to my PC?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Yes — that's one of the most common uses. Open fileswow.com/transfer in a browser on both devices, add files on the phone, and enter the 6-digit code on the PC. No cables, no apps, and no accounts are needed.",
+      },
+    },
   ],
 };
 
@@ -143,6 +218,7 @@ export default function TransferPage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppJsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(howToJsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
       <TransferClient />

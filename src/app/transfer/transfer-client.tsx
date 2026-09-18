@@ -1119,7 +1119,7 @@ export function TransferClient() {
         )}
 
         {/* ① Upload zone */}
-        <section aria-labelledby="send-heading" className="mb-10">
+        <section id="send" aria-labelledby="send-heading" className="mb-10 scroll-mt-20">
           <div className="flex items-center gap-2.5 mb-3">
             <span className="flex items-center justify-center w-6 h-6 rounded-full bg-accent text-text-on-accent text-[11px] font-extrabold">1</span>
             <h2 id="send-heading" className="heading-md text-text-primary">Send files</h2>
@@ -1218,7 +1218,7 @@ export function TransferClient() {
         </div>
 
         {/* ② Receive with code */}
-        <section aria-labelledby="receive-heading" className="mb-10">
+        <section id="receive" aria-labelledby="receive-heading" className="mb-10 scroll-mt-20">
           <div className="flex items-center gap-2.5 mb-3">
             <span className="flex items-center justify-center w-6 h-6 rounded-full bg-accent text-text-on-accent text-[11px] font-extrabold">2</span>
             <h2 id="receive-heading" className="heading-md text-text-primary">Receive files</h2>
@@ -1297,6 +1297,44 @@ export function TransferClient() {
           </div>
         </section>
 
+        {/* How it works — mirrors the HowTo structured data */}
+        <section aria-labelledby="how-heading" className="mt-12">
+          <h2 id="how-heading" className="heading-md text-text-primary mb-4">How to send files online — 3 steps</h2>
+          <ol className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { t: "Add your files", d: "Click or drag & drop up to 50 GB. Files stay on your device — nothing uploads." },
+              { t: "Share the code", d: "A 6-digit code, QR code and link appear. Send them to the other device however you like." },
+              { t: "Receive anywhere", d: "Enter the code on the other device and files stream directly to it — phone, tablet or PC." },
+            ].map((step, i) => (
+              <li key={i} className="p-4 bg-bg-surface border border-border-base rounded-xl">
+                <span className="flex items-center justify-center w-7 h-7 rounded-full bg-accent-subtle text-accent text-[12px] font-extrabold mb-2.5">{i + 1}</span>
+                <p className="text-[13px] font-bold text-text-primary">{step.t}</p>
+                <p className="text-[12px] text-text-secondary leading-snug mt-1">{step.d}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        {/* SEO content — keyword-rich prose for organic discovery */}
+        <section aria-labelledby="about-heading" className="mt-10">
+          <h2 id="about-heading" className="heading-md text-text-primary mb-4">Free file transfer without upload, apps or sign-up</h2>
+          <div className="space-y-3 body-md text-text-secondary leading-relaxed">
+            <p>
+              FilesWow Transfer is a free online file transfer tool that sends files directly from one device to another. Unlike
+              cloud services, your files are <strong className="text-text-primary">never uploaded</strong> — they travel over a
+              direct peer-to-peer connection, end-to-end encrypted, so even we can&apos;t see them. That makes it a fast, private
+              way to send large files up to 50 GB without an account, without installing an app, and without waiting for an
+              upload to finish.
+            </p>
+            <p>
+              It works across platforms: transfer files from <strong className="text-text-primary">Android to iPhone</strong>,
+              from <strong className="text-text-primary">phone to PC</strong>, or between any two devices with a modern browser.
+              Photos and videos arrive in original quality — no compression, no size-based fees, no expiry links. Pair the
+              devices with a 6-digit code or QR, keep both tabs open, and the transfer completes in minutes.
+            </p>
+          </div>
+        </section>
+
         {/* FAQ */}
         <section className="mt-12">
           <h2 className="heading-md text-text-primary mb-4">FAQ</h2>
@@ -1306,6 +1344,7 @@ export function TransferClient() {
               { q: "How large can the files be?", a: "Up to 50 GB per transfer in browsers that support streaming to disk (Chrome, Edge, Opera). Firefox and Safari buffer in memory, which limits practical size to available RAM." },
               { q: "How long is the code valid?", a: "10 minutes, or until the transfer completes — whichever comes first. You can generate a fresh code in one click." },
               { q: "Do both devices need to be online?", a: "Yes. This is a direct device-to-device transfer, not a cloud upload. Both tabs must stay open until the transfer finishes." },
+              { q: "Can I transfer files from my phone to my PC?", a: "Yes — that's one of the most common uses. Open this page in a browser on both devices, add files on the phone, and enter the 6-digit code on the PC. No cables, no apps, no accounts." },
             ].map((item, i) => (
               <details
                 key={i}
