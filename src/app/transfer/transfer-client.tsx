@@ -9,8 +9,12 @@
 // files, nothing is stored anywhere, and closing the page destroys the room.
 //
 // Sender: picks files → gets a 6-digit code + QR + invite link. When the
-// receiver pairs, the sender streams the files in 256 KB chunks with
-// backpressure, and announces each file with a small JSON control message.
+// receiver pairs, the sender negotiates "turbo mode": the receiver opens 3
+// extra parallel data channels to the same peer, and chunks are striped
+// across all 4 (offset-tagged so they can be reassembled in order). If the
+// handshake fails the sender falls back to a single channel — both sides
+// accept either frame format, so mixed old/new versions still interoperate.
+// Each file is announced with a small JSON control message.
 //
 // Receiver: enters the code (or scans the QR / opens the link), picks a save
 // location once (File System Access API) and files stream straight to disk.
@@ -27,9 +31,9 @@ const CODE_TTL_MS = 10 * 60 * 1000; // pairing code expires after 10 minutes
 // Chunk sizing — WebRTC data channels REJECT messages larger than the
 // negotiated SCTP maxMessageSize (256 KB Chrome↔Chrome, 64 KB cross-browser),
 // and an oversized send kills the whole channel. So chunks are sized per
-// connection: min(maxMessageSize − 4 KB, 64 KB), floored at 16 KB.
+// connection: min(maxMessageSize − 4 KB, 256 KB), floored at 16 KB.
 const MIN_CHUNK = 16 * 1024;
-const MAX_CHUNK = 64 * 1024;
+const MAX_CHUNK = 256 * 1024;
 const CHUNK_SAFETY_MARGIN = 4 * 1024;
 const DEFAULT_CHUNK = 60 * 1024;
 
@@ -44,8 +48,138 @@ function bestChunkSize(conn: DataConnection): number {
   }
   return DEFAULT_CHUNK; // conservative cross-browser fallback
 }
-const BUFFER_HIGH_WATER = 4 * 1024 * 1024; // backpressure ceiling (4 MB)
-const BUFFER_POLL_MS = 8; // buffer drain poll interval
+
+// ─── Turbo mode: parallel data channels ──────────────────────────────────
+// One SCTP association can carry many independent data channels, each with
+// its own send buffer. Striping chunks across several channels keeps the
+// pipe full on high-latency / high-bandwidth paths where a single channel's
+// buffer ceiling would otherwise stall the sender — typically 1.5–3× faster.
+const TURBO_FLAG = 0x80000000; // high bit of the frame's fileId field
+const FRAME_HDR = 12; // [u32 fileId|flag][f64 offset] — turbo frames only
+const TURBO_CHANNELS = 4;
+// 60 KB stays below the cross-browser 64 KB SCTP maxMessageSize even with the
+// 12-byte turbo header — an oversized frame kills the whole channel.
+const TURBO_CHUNK = 60 * 1024;
+const TURBO_HIGH_WATER = 6 * 1024 * 1024; // per-channel in-flight ceiling
+const TURBO_OPEN_TIMEOUT_MS = 5_000;
+const TURBO_ACK_TIMEOUT_MS = 2_500; // legacy peer → fall back quickly
+
+/** Turbo frame: [u32 fileId|TURBO_FLAG][f64 offset][payload] — the flag bit makes every frame self-describing. */
+function buildTurboFrame(fileId: number, offset: number, chunk: ArrayBuffer): ArrayBuffer {
+  const frame = new ArrayBuffer(FRAME_HDR + chunk.byteLength);
+  const dv = new DataView(frame);
+  dv.setUint32(0, TURBO_FLAG | fileId);
+  dv.setFloat64(4, offset);
+  new Uint8Array(frame, FRAME_HDR).set(new Uint8Array(chunk));
+  return frame;
+}
+
+/** Resolves when the channel drains below the high-water mark (event-driven, with a poll safety net). */
+function drainChannel(dc: RTCDataChannel, highWater: number): Promise<void> {
+  return new Promise((resolve) => {
+    if (dc.readyState !== "open" || dc.bufferedAmount <= highWater) {
+      resolve();
+      return;
+    }
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      dc.removeEventListener("bufferedamountlow", finish);
+      resolve();
+    };
+    dc.addEventListener("bufferedamountlow", finish);
+    window.setTimeout(finish, 250); // safety net for browsers without the event
+  });
+}
+
+/**
+ * Load-balanced multi-channel sender. JSON control messages and binary turbo
+ * frames go down whichever channel currently has the fewest buffered bytes;
+ * backpressure waits until any channel drains below its ceiling.
+ */
+class TurboTransport {
+  private readonly channels: DataConnection[];
+  private readonly highWater: number;
+
+  constructor(channels: DataConnection[], highWater: number) {
+    this.channels = channels;
+    this.highWater = highWater;
+    // Fire bufferedamountlow at half-full so drain waits resolve promptly
+    // (the default threshold is 0 = fully drained, which adds latency).
+    for (const c of channels) {
+      if (c.dataChannel) {
+        try {
+          c.dataChannel.bufferedAmountLowThreshold = Math.floor(highWater / 2);
+        } catch {
+          /* noop */
+        }
+      }
+    }
+  }
+
+  get ready(): boolean {
+    return this.channels.some((c) => c.open);
+  }
+
+  /** True once every open channel is backed up to its ceiling. */
+  get saturated(): boolean {
+    for (const c of this.channels) {
+      if (c.open && (!c.dataChannel || c.dataChannel.bufferedAmount < this.highWater)) return false;
+    }
+    return this.ready;
+  }
+
+  /** The open channel with the fewest bytes still in flight. */
+  private pick(): DataConnection {
+    let best: DataConnection | null = null;
+    let bestAmount = Number.POSITIVE_INFINITY;
+    for (const c of this.channels) {
+      if (!c.open) continue;
+      const amount = c.dataChannel ? c.dataChannel.bufferedAmount : 0;
+      if (amount < bestAmount) {
+        bestAmount = amount;
+        best = c;
+      }
+    }
+    if (!best) throw new Error("Connection lost");
+    return best;
+  }
+
+  sendJSON(json: string): void {
+    this.pick().send(json);
+  }
+
+  /** Turbo frame: [u32 fileId|TURBO_FLAG][f64 offset][payload]. */
+  sendFrame(fileId: number, offset: number, chunk: ArrayBuffer): void {
+    this.pick().send(buildTurboFrame(fileId, offset, chunk));
+  }
+
+  /** Legacy frame: [u32 fileId][payload] — used in single-channel mode. */
+  sendLegacyFrame(fileId: number, chunk: ArrayBuffer): void {
+    const frame = new ArrayBuffer(4 + chunk.byteLength);
+    new DataView(frame).setUint32(0, fileId);
+    new Uint8Array(frame, 4).set(new Uint8Array(chunk));
+    this.pick().send(frame);
+  }
+
+  /** Resolves once at least one channel has room below its ceiling. */
+  async waitForDrain(isCancelled: () => boolean): Promise<void> {
+    for (;;) {
+      if (isCancelled()) throw new Error("cancelled");
+      if (!this.ready) throw new Error("Connection lost");
+      const open = this.channels.filter((c) => c.open);
+      const roomy = open.some((c) => !c.dataChannel || c.dataChannel.bufferedAmount < this.highWater);
+      if (roomy) return;
+      await Promise.race([
+        ...open.map((c) => (c.dataChannel ? drainChannel(c.dataChannel, this.highWater) : Promise.resolve())),
+        sleep(250), // safety net: re-evaluate even if drain events are missed
+      ]);
+    }
+  }
+}
+
+const BUFFER_HIGH_WATER = 8 * 1024 * 1024; // backpressure ceiling (8 MB)
 const MAX_TOTAL_BYTES = 50 * 1024 * 1024 * 1024; // 50 GB
 const JOIN_TIMEOUT_MS = 30_000;
 const ICE_SERVERS: RTCIceServer[] = [
@@ -60,8 +194,10 @@ const ICE_SERVERS: RTCIceServer[] = [
 
 // ─── Wire protocol ───────────────────────────────────────────────────────
 // Control messages are JSON strings; file bytes are raw ArrayBuffer frames
-// (serialization "raw" = untouched passthrough). A binary frame's first 4
-// bytes are the big-endian file id, the rest is the chunk payload.
+// (serialization "raw" = untouched passthrough). Legacy frames: [u32 file id]
+// [payload], strictly sequential. Turbo frames: [u32 file id | 0x80000000]
+// [f64 offset][payload] — striped across parallel data channels and
+// reassembled in order on the receiving side.
 
 interface HelloMsg {
   t: "hello";
@@ -97,6 +233,14 @@ interface CancelMsg {
   t: "cancel";
   reason: string;
 }
+interface TurboHelloMsg {
+  t: "turbo-hello";
+  channels: number;
+}
+interface TurboReadyMsg {
+  t: "turbo-ready";
+  channels: number;
+}
 
 type ControlMsg =
   | HelloMsg
@@ -105,7 +249,9 @@ type ControlMsg =
   | FileStartMsg
   | FileDoneMsg
   | AllDoneMsg
-  | CancelMsg;
+  | CancelMsg
+  | TurboHelloMsg
+  | TurboReadyMsg;
 
 interface FileMeta {
   id: number;
@@ -195,8 +341,8 @@ function guessDevice(): string {
 interface SaveTarget {
   streaming: boolean;
   dir?: FileSystemDirectoryHandle;
-  /** Fallback map: fileId → chunks (flushed to disk for streaming mode). */
-  memory: Map<number, BlobPart[]>;
+  /** Fallback map: fileId → offset-tagged chunks (memory receive mode). */
+  memory: Map<number, { offset: number; chunk: ArrayBuffer }[]>;
 }
 
 interface ReceivedFile {
@@ -206,7 +352,11 @@ interface ReceivedFile {
   size: number;
   mime: string;
   received: number;
+  /** Bytes contiguous-from-zero written (disk) or held in order (memory). */
+  ingested: number;
   done: boolean;
+  /** Sender announced completion — finalization may still be pending bytes. */
+  doneSignaled?: boolean;
   url?: string;
   savedToDisk?: boolean;
   failed?: boolean;
@@ -425,7 +575,7 @@ export function TransferClient() {
 
   // ─── Sender: send a whole queue of files ───────────────────────────────
   const sendAllFiles = useCallback(
-    async (conn: DataConnection) => {
+    async (conn: DataConnection, transport: TurboTransport | null = null) => {
       const queue = filesRef.current;
       const total = queue.reduce((s, f) => s + f.size, 0);
       sentBytesRef.current = 0;
@@ -441,9 +591,9 @@ export function TransferClient() {
           files: queue.map((f, i) => ({ id: i, name: f.name, size: f.size, mime: f.type || "application/octet-stream" })),
           totalSize: total,
         };
-        conn.send(JSON.stringify(manifest));
+        (transport ?? new TurboTransport([conn], BUFFER_HIGH_WATER)).sendJSON(JSON.stringify(manifest));
 
-        const chunkSize = bestChunkSize(conn);
+        const chunkSize = transport ? Math.min(TURBO_CHUNK, MAX_CHUNK) : bestChunkSize(conn);
         for (let i = 0; i < queue.length; i++) {
           if (cancelRef.current) throw new Error("cancelled");
           const file = queue[i];
@@ -453,21 +603,37 @@ export function TransferClient() {
           setActiveProgress(0);
           activeProgressRef.current = 0;
 
-          conn.send(
+          const wire = transport ?? new TurboTransport([conn], BUFFER_HIGH_WATER);
+          wire.sendJSON(
             JSON.stringify({ t: "file-start", id: wireId, name: file.name, size: file.size, mime, idx: i, count: queue.length } satisfies FileStartMsg)
           );
 
+          // Read-ahead pipeline: the next chunk is read from disk while the
+          // current one is on the wire, so slow disk I/O never stalls between
+          // sends. (For very small files the first read is the pipeline.)
+          let pending: Promise<ArrayBuffer | null> = file.size > 0 ? file.slice(0, chunkSize).arrayBuffer() : Promise.resolve(null);
           let offset = 0;
           while (offset < file.size) {
             if (cancelRef.current) throw new Error("cancelled");
-            if (!conn.open) throw new Error("Connection lost");
-            const end = Math.min(offset + chunkSize, file.size);
-            const buf = await file.slice(offset, end).arrayBuffer();
-            const frame = new ArrayBuffer(4 + buf.byteLength);
-            new DataView(frame).setUint32(0, wireId);
-            new Uint8Array(frame, 4).set(new Uint8Array(buf));
-            conn.send(frame);
-            offset = end;
+            const buf = await pending;
+            if (buf === null || buf.byteLength === 0) break; // null | zero-byte slice guard
+            const nextOffset = offset + buf.byteLength;
+            pending =
+              nextOffset < file.size
+                ? file.slice(nextOffset, nextOffset + chunkSize).arrayBuffer()
+                : Promise.resolve(null);
+
+            if (!wire.ready) throw new Error("Connection lost");
+            if (transport) {
+              // Turbo: striped across parallel channels with load balancing.
+              await wire.waitForDrain(() => cancelRef.current);
+              wire.sendFrame(wireId, offset, buf);
+            } else {
+              // Single channel: legacy frame + event-driven backpressure.
+              wire.sendLegacyFrame(wireId, buf);
+              await wire.waitForDrain(() => cancelRef.current);
+            }
+            offset = nextOffset;
             sentBytesRef.current += buf.byteLength;
             activeProgressRef.current = file.size > 0 ? offset / file.size : 1;
             // Throttled UI sync (~5×/s) — no setState per chunk.
@@ -477,16 +643,12 @@ export function TransferClient() {
               setSentBytes(sentBytesRef.current);
               setActiveProgress(activeProgressRef.current);
             }
-            // Backpressure: wait while the channel's send buffer is full.
-            while (conn.open && conn.dataChannel && conn.dataChannel.bufferedAmount > BUFFER_HIGH_WATER) {
-              await sleep(BUFFER_POLL_MS);
-              if (!conn.open) throw new Error("Connection lost");
-            }
           }
-          conn.send(JSON.stringify({ t: "file-done", id: wireId } satisfies FileDoneMsg));
+          void pending; // tail read may still be in flight — harmless to drop
+          wire.sendJSON(JSON.stringify({ t: "file-done", id: wireId } satisfies FileDoneMsg));
         }
 
-        conn.send(JSON.stringify({ t: "all-done" } satisfies AllDoneMsg));
+        (transport ?? new TurboTransport([conn], BUFFER_HIGH_WATER)).sendJSON(JSON.stringify({ t: "all-done" } satisfies AllDoneMsg));
         setActiveName(null);
         setActiveProgress(1);
         setSentBytes(sentBytesRef.current);
@@ -530,8 +692,48 @@ export function TransferClient() {
       // write() issued while a previous one is still in flight, so every write
       // is chained onto the previous operation's promise.
       const writeChains = new Map<number, Promise<void>>();
-      // Chunks that arrived before the writable finished opening.
-      const pendingBeforeWritable = new Map<number, ArrayBuffer[]>();
+      // Offset-tagged chunks that arrived before the writable finished opening.
+      const pendingBeforeWritable = new Map<number, { offset: number; chunk: ArrayBuffer }[]>();
+      // Out-of-order chunks (turbo mode stripes across parallel channels).
+      const reorder = new Map<number, Map<number, ArrayBuffer>>();
+      // Parallel channels opened on the sender's turbo-hello offer.
+      const turboConns: DataConnection[] = [];
+
+      /** Contiguous-prefix bookkeeping: returns true if this offset was the next expected byte. */
+      const nextOffset = (rf: ReceivedFile) => rf.ingested;
+
+      /** Flush every buffered chunk that is now contiguous, in order. */
+      const flushReorder = (rf: ReceivedFile, ingest: (id: number, chunk: ArrayBuffer, offset: number) => void) => {
+        const buf = reorder.get(rf.id);
+        if (!buf) return;
+        for (;;) {
+          const chunk = buf.get(nextOffset(rf));
+          if (!chunk) break;
+          buf.delete(nextOffset(rf));
+          ingest(rf.id, chunk, nextOffset(rf));
+        }
+        if (buf.size === 0) reorder.delete(rf.id);
+      };
+
+      /**
+        * Ordered ingestion gate. Turbo frames can arrive out of order (parallel
+        * channels), and even in legacy mode writes are serialized. Chunks are
+        * buffered by offset and written to disk/memory strictly in file order.
+        * Set below — finalization may run from either the ingest path or the
+        * file-done handler depending on which finishes last.
+        */
+      let finalizeIfComplete: (rf: ReceivedFile) => void = () => {};
+      const makeIngester = (writeChunk: (id: number, chunk: ArrayBuffer, onFail?: () => void) => void) => {
+        const ingest = (id: number, chunk: ArrayBuffer, offset: number) => {
+          const rf = incomingById.get(id);
+          if (!rf || offset !== nextOffset(rf)) return; // stale/duplicate — ignore
+          rf.ingested = offset + chunk.byteLength;
+          writeChunk(id, chunk);
+          flushReorder(rf, ingest);
+          if (rf.doneSignaled && rf.ingested >= rf.size) finalizeIfComplete(rf);
+        };
+        return ingest;
+      };
 
       const enqueueWrite = (id: number, chunk: ArrayBuffer, onFail?: () => void) => {
         const prev = writeChains.get(id) ?? Promise.resolve();
@@ -548,7 +750,7 @@ export function TransferClient() {
             const rf = incomingById.get(id);
             if (rf) rf.savedToDisk = false;
             const parts = memoryParts.get(id) ?? [];
-            parts.push(chunk);
+            parts.push({ offset: -1, chunk }); // position already tracked by rf.ingested
             memoryParts.set(id, parts);
             onFail?.();
           });
@@ -573,40 +775,106 @@ export function TransferClient() {
       const finalizeMemoryFile = (rf: ReceivedFile) => {
         try {
           const parts = memoryParts.get(rf.id) ?? [];
-          const blob = new Blob(parts, { type: rf.mime });
+          const blob = new Blob(parts.map(p => p.chunk), { type: rf.mime });
           memoryParts.delete(rf.id);
           const url = URL.createObjectURL(blob);
           setIncoming(prev => prev.map(f => (f.id === rf.id ? { ...f, done: true, url } : f)));
           addLog(`"${rf.name}" ready to save (${formatBytes(rf.size)}).`, "success");
+          maybeAllComplete();
         } catch {
           setIncoming(prev => prev.map(f => (f.id === rf.id ? { ...f, failed: true } : f)));
           addLog(`Couldn't assemble "${rf.name}" — out of memory. Use Chrome/Edge for very large files.`, "error");
         }
       };
 
-      conn.on("data", (raw: unknown) => {
-        // Binary frame: [4-byte file id][payload]
+      /** Disk-stream or memory-assemble a fully received file. */
+      const finalizeFile = (rf: ReceivedFile) => {
+        if (dir && saveTarget.streaming) {
+          void (async () => {
+            try {
+              // Wait for an in-flight writable open, then drain queued writes.
+              for (let i = 0; i < 250 && writables.has(rf.id) && pendingBeforeWritable.has(rf.id); i++) await sleep(20);
+              if (!writables.has(rf.id) && pendingBeforeWritable.has(rf.id)) {
+                // Writable never opened (disk failure) — memory assembly instead.
+                finalizeMemoryFile(rf);
+                return;
+              }
+              await closeWritable(rf.id, true);
+              const partHandle = await dir.getFileHandle(String(rf.id) + ".part");
+              const finalHandle = await dir.getFileHandle(rf.name, { create: true });
+              const writable = await finalHandle.createWritable();
+              await writable.write(await partHandle.getFile());
+              await writable.close();
+              await dir.removeEntry(String(rf.id) + ".part");
+              memoryParts.delete(rf.id);
+              setIncoming(prev => prev.map(f => (f.id === rf.id ? { ...f, done: true, savedToDisk: true } : f)));
+              setReceivedBytes(receivedBytesRef.current);
+              addLog(`Saved "${rf.name}" (${formatBytes(rf.size)}).`, "success");
+              maybeAllComplete();
+            } catch {
+              finalizeMemoryFile(rf);
+            }
+          })();
+        } else {
+          finalizeMemoryFile(rf);
+        }
+      };
+
+      /** Finalize only when the sender signaled done AND every byte ingested. */
+      finalizeIfComplete = (rf: ReceivedFile) => {
+        if (!rf.doneSignaled || rf.done || rf.failed || rf.ingested < rf.size) return;
+        finalizeFile(rf);
+      };
+
+      /** Flip the session to "done" once every file has been finalized. */
+      const maybeAllComplete = () => {
+        const all = Array.from(incomingById.values());
+        if (all.length === 0 || !all.every(f => f.done)) return;
+        setJoinPhase("done");
+        setReceivedBytes(receivedBytesRef.current);
+        addLog("All files received — transfer complete. ✅", "success");
+      };
+
+      // Where ordered bytes go: disk stream, or offset-tagged memory buffer.
+      const ingestToStorage = (id: number, chunk: ArrayBuffer) => {
+        if (dir && saveTarget.streaming) {
+          if (writables.has(id)) {
+            enqueueWrite(id, chunk);
+          } else {
+            // Writable still opening — hold the chunk until it's ready.
+            const queued = pendingBeforeWritable.get(id) ?? [];
+            queued.push({ offset: -1, chunk });
+            pendingBeforeWritable.set(id, queued);
+          }
+        } else {
+          const parts = memoryParts.get(id) ?? [];
+          parts.push({ offset: -1, chunk }); // order preserved by the ingestion gate
+          memoryParts.set(id, parts);
+        }
+      };
+      const ingestOrdered = makeIngester(ingestToStorage);
+
+      const handleData = (raw: unknown) => {
+        // Binary frame — legacy [u32 fileId][payload] or turbo [u32 fileId|flag][f64 offset][payload].
         if (raw instanceof ArrayBuffer) {
           if (raw.byteLength <= 4) return;
-          const wireId = new DataView(raw).getUint32(0);
+          const dv = new DataView(raw);
+          const rawId = dv.getUint32(0);
+          const isTurbo = (rawId & TURBO_FLAG) !== 0;
+          const wireId = rawId & ~TURBO_FLAG;
           const rf = incomingById.get(wireId);
           if (!rf) return;
-          const chunk = raw.slice(4);
+          const chunk = isTurbo ? raw.slice(FRAME_HDR) : raw.slice(4);
+          const offset = isTurbo ? dv.getFloat64(4) : rf.ingested;
           rf.received += chunk.byteLength;
           receivedBytesRef.current += chunk.byteLength;
-          if (dir && saveTarget.streaming) {
-            if (writables.has(rf.id)) {
-              enqueueWrite(rf.id, chunk);
-            } else {
-              // Writable still opening — hold the chunk until it's ready.
-              const queued = pendingBeforeWritable.get(rf.id) ?? [];
-              queued.push(chunk);
-              pendingBeforeWritable.set(rf.id, queued);
-            }
+          if (isTurbo && offset !== rf.ingested) {
+            // Out-of-order (parallel channels) — buffer for the reorderer.
+            const buf = reorder.get(wireId) ?? new Map<number, ArrayBuffer>();
+            buf.set(offset, chunk);
+            reorder.set(wireId, buf);
           } else {
-            const parts = memoryParts.get(rf.id) ?? [];
-            parts.push(chunk);
-            memoryParts.set(rf.id, parts);
+            ingestOrdered(wireId, chunk, offset);
           }
           // Throttled UI sync (~5×/s) — no setState per chunk.
           const now = Date.now();
@@ -636,6 +904,10 @@ export function TransferClient() {
               /* noop */
             }
             break;
+          case "turbo-hello":
+            // Sender announced parallel channels — open the matching set.
+            openTurboChannels(msg.channels);
+            break;
           case "manifest":
             setManifestCount(msg.files.length);
             setManifestSize(msg.totalSize);
@@ -650,6 +922,7 @@ export function TransferClient() {
               size: msg.size,
               mime: msg.mime,
               received: 0,
+              ingested: 0,
               done: false,
               savedToDisk: saveTarget.streaming,
             };
@@ -675,11 +948,11 @@ export function TransferClient() {
                 if (queued) {
                   pendingBeforeWritable.delete(rf.id);
                   if (writables.has(rf.id)) {
-                    for (const c of queued) enqueueWrite(rf.id, c);
+                    for (const { chunk } of queued) enqueueWrite(rf.id, chunk);
                   } else {
                     // Disk open failed — keep everything in memory.
                     const parts = memoryParts.get(rf.id) ?? [];
-                    parts.push(...queued);
+                    for (const { chunk } of queued) parts.push({ offset: -1, chunk });
                     memoryParts.set(rf.id, parts);
                   }
                 }
@@ -689,43 +962,26 @@ export function TransferClient() {
           }
           case "file-done": {
             const rf = incomingById.get(msg.id);
-            if (!rf) break;
-            if (dir && saveTarget.streaming) {
-              void (async () => {
-                try {
-                  // Wait for an in-flight writable open, then drain queued writes.
-                  for (let i = 0; i < 250 && writables.has(msg.id) && pendingBeforeWritable.has(msg.id); i++) await sleep(20);
-                  if (!writables.has(msg.id) && pendingBeforeWritable.has(msg.id)) {
-                    // Writable never opened (disk failure) — memory assembly instead.
-                    finalizeMemoryFile(rf);
-                    return;
-                  }
-                  await closeWritable(msg.id, true);
-                  const partHandle = await dir.getFileHandle(String(msg.id) + ".part");
-                  const finalHandle = await dir.getFileHandle(rf.name, { create: true });
-                  const writable = await finalHandle.createWritable();
-                  await writable.write(await partHandle.getFile());
-                  await writable.close();
-                  await dir.removeEntry(String(msg.id) + ".part");
-                  memoryParts.delete(msg.id);
-                  setIncoming(prev => prev.map(f => (f.id === msg.id ? { ...f, done: true, savedToDisk: true } : f)));
-                  setReceivedBytes(receivedBytesRef.current);
-                  addLog(`Saved "${rf.name}" (${formatBytes(rf.size)}).`, "success");
-                } catch {
-                  finalizeMemoryFile(rf);
-                }
-              })();
-            } else {
-              finalizeMemoryFile(rf);
+            if (!rf || rf.doneSignaled) break; // dedupe (control + binary can race across channels)
+            // Drain the reorder buffer first, then defer finalization if tail
+            // chunks are still in flight on a parallel channel.
+            flushReorder(rf, ingestOrdered);
+            rf.doneSignaled = true;
+            finalizeIfComplete(rf);
+            break;
+          }
+          case "all-done": {
+            // UI completion is driven by maybeAllComplete() when every file
+            // has actually been written — never before. Fallback: if every
+            // file ended done OR failed (e.g. out-of-memory), unblock the UI.
+            const all = Array.from(incomingById.values());
+            if (all.length > 0 && all.every(f => f.done || f.failed)) {
+              setJoinPhase("done");
+              setReceivedBytes(receivedBytesRef.current);
+              addLog("Transfer ended — all files processed.", all.every(f => f.done) ? "success" : "error");
             }
             break;
           }
-          case "all-done":
-            setJoinPhase("done");
-            setReceivedBytes(receivedBytesRef.current);
-            setIncoming(prev => prev.map(f => ({ ...f, received: f.size })));
-            addLog("All files received — transfer complete. ✅", "success");
-            break;
           case "cancel":
             for (const id of Array.from(writables.keys())) void closeWritable(id, false);
             receiveActiveRef.current = false;
@@ -739,7 +995,9 @@ export function TransferClient() {
             setJoinPhase("failed");
             break;
         }
-      });
+      };
+
+      conn.on("data", handleData);
 
       conn.on("close", () => {
         if (intentionallyClosedRef.current) return;
@@ -756,6 +1014,48 @@ export function TransferClient() {
       conn.on("error", () => {
         /* final state reported by `close` */
       });
+
+      /**
+        * Turbo: answer the sender's offer by opening parallel data channels to
+        * the same peer id and confirming with turbo-ready. Data only starts
+        * flowing after this, so late registration is safe.
+        */
+      const openTurboChannels = (count: number) => {
+        if (count <= 1) {
+          try { conn.send(JSON.stringify({ t: "turbo-ready", channels: 1 } satisfies TurboReadyMsg)); } catch { /* noop */ }
+          return;
+        }
+        const connAny = conn as unknown as { peer: string; provider: Peer };
+        const want = count - 1;
+        let opened = 0;
+        let readySent = false;
+        const maybeReady = () => {
+          if (readySent) return;
+          readySent = true;
+          if (opened > 0) addLog(`Turbo mode — opening ${opened + 1} parallel channels for the transfer.`);
+          try { conn.send(JSON.stringify({ t: "turbo-ready", channels: opened + 1 } satisfies TurboReadyMsg)); } catch { /* noop */ }
+        };
+        for (let c = 0; c < want; c++) {
+          try {
+            const extra = connAny.provider.connect(connAny.peer, {
+              reliable: true,
+              serialization: "raw",
+              metadata: { turbo: true },
+            });
+            turboConns.push(extra);
+            extra.on("data", handleData);
+            extra.on("open", () => {
+              opened++;
+              if (opened >= want) maybeReady(); // ack only when the full set is live
+            });
+          } catch {
+            /* fall through to the timeout ack with fewer channels */
+          }
+        }
+        // If channels are slow or fail, ack with whatever is open — the sender
+        // falls back to single-channel after its own timeout regardless.
+        window.setTimeout(maybeReady, TURBO_OPEN_TIMEOUT_MS);
+      };
     },
     [addLog, deviceName]
   );
@@ -786,6 +1086,10 @@ export function TransferClient() {
         return;
       }
       peerRef.current = peer;
+      // Live channel list for turbo mode: the main connection plus every extra
+      // parallel channel the receiver opens. Passed BY REFERENCE to the
+      // transport, so channels that finish opening after the ack join in.
+      const liveConns: DataConnection[] = [];
 
       const outcome = await new Promise<"open" | "taken" | "fatal">((resolve) => {
         let settled = false;
@@ -796,6 +1100,12 @@ export function TransferClient() {
         };
         peer.on("open", () => settle("open"));
         peer.on("connection", (conn) => {
+          const meta = conn.metadata as { turbo?: boolean } | null | undefined;
+          if (meta?.turbo && connRef.current) {
+            // Receiver's extra turbo channel — register, don't treat as busy.
+            conn.on("open", () => liveConns.push(conn));
+            return;
+          }
           if (connRef.current) {
             // Already paired with a device — tell the newcomer why, then drop it.
             conn.on("open", () => {
@@ -812,6 +1122,7 @@ export function TransferClient() {
           }
           connRef.current = conn;
           conn.on("open", () => {
+            liveConns.push(conn);
             setPhase("connected");
             setCodeExpiry(null);
             if (expiryTimerRef.current !== null) window.clearTimeout(expiryTimerRef.current);
@@ -820,7 +1131,37 @@ export function TransferClient() {
             } catch {
               /* noop */
             }
-            void sendAllFiles(conn);
+            // Turbo negotiation: ask the receiver to open parallel channels,
+            // start transferring on its ack — fall back to single channel.
+            let started = false;
+            const start = (turbo: boolean) => {
+              if (started) return;
+              started = true;
+              const transport = turbo ? new TurboTransport(liveConns, TURBO_HIGH_WATER) : null;
+              if (turbo) addLog(`Turbo mode — ${liveConns.length} parallel channels engaged.`);
+              void sendAllFiles(conn, transport);
+            };
+            const ackTimer = window.setTimeout(() => start(false), TURBO_ACK_TIMEOUT_MS);
+            conn.on("data", (raw: unknown) => {
+              if (typeof raw !== "string") return;
+              try {
+                const msg = JSON.parse(raw) as ControlMsg;
+                if (msg.t === "turbo-ready") {
+                  window.clearTimeout(ackTimer);
+                  start(true);
+                } else if (msg.t === "accept") {
+                  setPeerDevice(msg.device ?? "Other device");
+                }
+              } catch {
+                /* noop */
+              }
+            });
+            try {
+              conn.send(JSON.stringify({ t: "turbo-hello", channels: TURBO_CHANNELS } satisfies TurboHelloMsg));
+            } catch {
+              window.clearTimeout(ackTimer);
+              start(false);
+            }
           });
         });
         peer.on("error", (err) => {
