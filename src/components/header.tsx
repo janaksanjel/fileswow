@@ -13,6 +13,9 @@ const NAV_ITEMS = [
   { href: "/text-tools", label: "Text Tools" },
 ];
 
+const TRANSFER_HREF = "/transfer";
+const TRANSFER_LABEL = "Transfer Files";
+
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -75,6 +78,21 @@ export function Header() {
                   {item.label}
                 </Link>
               ))}
+              <Link
+                href={TRANSFER_HREF}
+                className={`ml-1 flex items-center gap-1.5 px-3.5 py-1.5 text-[13px] font-semibold rounded-full transition-colors ${
+                  isActive(TRANSFER_HREF)
+                    ? "text-text-on-accent bg-accent"
+                    : "text-text-on-accent bg-accent hover:bg-accent-hover"
+                }`}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                {TRANSFER_LABEL}
+              </Link>
             </nav>
 
             {/* Right side */}
@@ -166,6 +184,21 @@ export function Header() {
                   {item.label}
                 </Link>
               ))}
+              <Link
+                href={TRANSFER_HREF}
+                className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+                  isActive(TRANSFER_HREF)
+                    ? "text-text-on-accent bg-accent"
+                    : "text-text-on-accent bg-accent"
+                }`}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                {TRANSFER_LABEL}
+              </Link>
               <div className="flex items-center gap-2 pt-3 mt-2 border-t border-border-base">
                 <button
                   onClick={() => { setMobileOpen(false); setSearchOpen(true); }}

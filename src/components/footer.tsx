@@ -46,6 +46,7 @@ const COLUMNS: Array<{ heading: string; links: Array<[string, string]> }> = [
   {
     heading: "Company",
     links: [
+      ["Transfer Files", "/transfer"],
       ["About", "/about"],
       ["All PDF Tools", "/pdf-tools"],
       ["All Word Tools", "/word-tools"],
@@ -75,7 +76,7 @@ export function Footer() {
             </p>
           </div>
           <p className="text-[13px] text-text-secondary max-w-md sm:text-right">
-            {ALL_TOOLS.length} free PDF, Word &amp; image tools. Your files never leave your device.
+            {ALL_TOOLS.length} free PDF, Word &amp; image tools. <Link href="/transfer" className="underline decoration-border-strong underline-offset-2 hover:text-accent transition-colors">Transfer files</Link> up to 50 GB device-to-device.
           </p>
         </div>
 
