@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ALL_TOOLS, getToolBySlug, getRelatedTools, SUB_CATEGORY_LABELS } from "@/lib/catalog";
+import { absoluteUrl, toolUrl, categoryUrl, jsonLdProps } from "@/lib/site";
 import { ToolClient } from "./tool-client";
 
 interface ToolPageProps {
@@ -47,7 +48,7 @@ export async function generateMetadata({ params }: ToolPageProps): Promise<Metad
     openGraph: {
       title: `${tool.name} | FilesWow.com`,
       description: `${tool.description} Free, private, runs in your browser.`,
-      url: `https://fileswow.com/tools/${tool.slug}`,
+      url: toolUrl(tool.slug),
       type: "website",
       siteName: "FilesWow.com",
     },
@@ -57,7 +58,7 @@ export async function generateMetadata({ params }: ToolPageProps): Promise<Metad
       description: tool.description,
     },
     alternates: {
-      canonical: `https://fileswow.com/tools/${tool.slug}`,
+      canonical: toolUrl(tool.slug),
     },
   };
 }
@@ -79,7 +80,7 @@ export default async function ToolPage({ params }: ToolPageProps) {
     applicationCategory: "UtilitiesApplication",
     operatingSystem: "Web Browser",
     description: tool.description,
-    url: `https://fileswow.com/tools/${tool.slug}`,
+    url: toolUrl(tool.slug),
     offers: {
       "@type": "Offer",
       price: "0",
@@ -87,13 +88,6 @@ export default async function ToolPage({ params }: ToolPageProps) {
       availability: "https://schema.org/AvailableNow",
     },
     featureList: tool.howItWorks.join(", "),
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.8",
-      ratingCount: "150",
-      bestRating: "5",
-      worstRating: "1",
-    },
   };
 
   // HowTo schema
@@ -120,19 +114,19 @@ export default async function ToolPage({ params }: ToolPageProps) {
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: "https://fileswow.com",
+        item: absoluteUrl("/"),
       },
       {
         "@type": "ListItem",
         position: 2,
         name: categoryLabel,
-        item: `https://fileswow.com/${tool.category}-tools`,
+        item: categoryUrl(tool.category),
       },
       {
         "@type": "ListItem",
         position: 3,
         name: tool.name,
-        item: `https://fileswow.com/tools/${tool.slug}`,
+        item: toolUrl(tool.slug),
       },
     ],
   };
@@ -156,7 +150,7 @@ export default async function ToolPage({ params }: ToolPageProps) {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     name: tool.name,
-    url: `https://fileswow.com/tools/${tool.slug}`,
+    url: toolUrl(tool.slug),
     applicationCategory: "UtilitiesApplication",
     operatingSystem: "Any",
     description: tool.description,
@@ -168,34 +162,17 @@ export default async function ToolPage({ params }: ToolPageProps) {
     browserRequirements: "Requires a modern web browser with JavaScript enabled",
     softwareHelp: {
       "@type": "CreativeWork",
-      url: `https://fileswow.com/tools/${tool.slug}`,
+      url: toolUrl(tool.slug),
     },
   };
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareJsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(howToJsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-      />
-      {faqJsonLd && (
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
-        />
-      )}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppJsonLd) }}
-      />
+      <script {...jsonLdProps(softwareJsonLd)} />
+      <script {...jsonLdProps(howToJsonLd)} />
+      <script {...jsonLdProps(breadcrumbJsonLd)} />
+      {faqJsonLd && <script {...jsonLdProps(faqJsonLd)} />}
+      <script {...jsonLdProps(webAppJsonLd)} />
 
       <ToolClient tool={tool} relatedTools={relatedTools} />
     </>

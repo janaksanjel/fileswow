@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { WORD_TOOLS, SUB_CATEGORY_LABELS, WORD_SUB_CATEGORIES } from "@/lib/catalog";
+import { absoluteUrl, categoryUrl, toolUrl, jsonLdProps } from "@/lib/site";
 import { CategoryHubClient } from "../pdf-tools/category-hub-client";
 
 export const metadata: Metadata = {
@@ -22,11 +23,11 @@ export const metadata: Metadata = {
     title: "Word/DOCX Tools — Merge, Split, Convert & Edit",
     description:
       "30+ free Word/DOCX tools. Merge, split, convert, edit, and protect documents.",
-    url: "https://fileswow.com/word-tools",
+    url: categoryUrl("word"),
     type: "website",
   },
   alternates: {
-    canonical: "https://fileswow.com/word-tools",
+    canonical: categoryUrl("word"),
   },
 };
 
@@ -37,7 +38,7 @@ export default function WordToolsPage() {
     name: "Free Word/DOCX Tools Online",
     description:
       "30+ free Word tools processed entirely in your browser. No upload required.",
-    url: "https://fileswow.com/word-tools",
+    url: categoryUrl("word"),
     mainEntity: {
       "@type": "ItemList",
       numberOfItems: WORD_TOOLS.length,
@@ -45,7 +46,7 @@ export default function WordToolsPage() {
         "@type": "ListItem",
         position: i + 1,
         name: tool.name,
-        url: `https://fileswow.com/tools/${tool.slug}`,
+        url: toolUrl(tool.slug),
         description: tool.description,
       })),
     },
@@ -59,27 +60,21 @@ export default function WordToolsPage() {
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: "https://fileswow.com",
+        item: absoluteUrl("/"),
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Word Tools",
-        item: "https://fileswow.com/word-tools",
+        item: categoryUrl("word"),
       },
     ],
   };
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-      />
+      <script {...jsonLdProps(collectionJsonLd)} />
+      <script {...jsonLdProps(breadcrumbJsonLd)} />
       <CategoryHubClient
         tools={WORD_TOOLS}
         title="Word / DOCX Tools"

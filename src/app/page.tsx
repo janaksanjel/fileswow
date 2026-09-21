@@ -1,4 +1,5 @@
 import { ALL_TOOLS, getToolsByCategory, SUB_CATEGORY_LABELS, type SubCategory } from "@/lib/catalog";
+import { absoluteUrl, categoryUrl, jsonLdProps } from "@/lib/site";
 import { HomeClient } from "./home-client";
 
 export default function HomePage() {
@@ -14,7 +15,7 @@ export default function HomePage() {
     name: "FilesWow.com — Free PDF, Word & Image Tools Online",
     description:
       "100+ free PDF, Word, and image tools. Processed entirely in your browser. No upload required.",
-    url: "https://fileswow.com",
+    url: absoluteUrl("/"),
     mainEntity: {
       "@type": "ItemList",
       name: "Free Online Document Tools",
@@ -24,28 +25,28 @@ export default function HomePage() {
           "@type": "ListItem",
           position: 1,
           name: "PDF Tools",
-          url: "https://fileswow.com/pdf-tools",
+          url: categoryUrl("pdf"),
           description: `${pdfTools.length} free PDF tools`,
         },
         {
           "@type": "ListItem",
           position: 2,
           name: "Word Tools",
-          url: "https://fileswow.com/word-tools",
+          url: categoryUrl("word"),
           description: `${wordTools.length} free Word tools`,
         },
         {
           "@type": "ListItem",
           position: 3,
           name: "Image Tools",
-          url: "https://fileswow.com/image-tools",
+          url: categoryUrl("image"),
           description: `${imageTools.length} free image tools`,
         },
         {
           "@type": "ListItem",
           position: 4,
           name: "Text Tools",
-          url: "https://fileswow.com/text-tools",
+          url: categoryUrl("text"),
           description: `${textTools.length} free text tools`,
         },
       ],
@@ -110,14 +111,8 @@ export default function HomePage() {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(homeJsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
-      />
+      <script {...jsonLdProps(homeJsonLd)} />
+      <script {...jsonLdProps(faqJsonLd)} />
       <HomeClient pdfTools={pdfTools} wordTools={wordTools} imageTools={imageTools} textTools={textTools} crossTools={crossTools} />
     </>
   );

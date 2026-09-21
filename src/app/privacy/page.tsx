@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { absoluteUrl, jsonLdProps } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
     "Privacy policy for FilesWow.com. All file processing happens in your browser — files never leave your device. Learn about analytics and advertising cookies.",
   alternates: {
-    canonical: "https://fileswow.com/privacy",
+    canonical: absoluteUrl("/privacy"),
   },
 };
 
@@ -16,16 +17,13 @@ export default function PrivacyPage() {
     "@type": "WebPage",
     name: "Privacy Policy — FilesWow.com",
     description: "Privacy policy for FilesWow.com. All file processing happens client-side.",
-    url: "https://fileswow.com/privacy",
+    url: absoluteUrl("/privacy"),
     dateModified: "2026-09-17",
   };
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <script {...jsonLdProps(jsonLd)} />
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
         <nav className="flex items-center gap-1.5 text-xs text-text-tertiary mb-8">

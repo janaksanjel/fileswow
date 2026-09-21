@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { absoluteUrl, jsonLdProps } from "@/lib/site";
+
+const SITE_URL = absoluteUrl("/");
 import { TransferClient } from "./transfer-client";
 
-const SITE_URL = "https://fileswow.com";
-const PAGE_URL = `${SITE_URL}/transfer`;
+const PAGE_URL = absoluteUrl("/transfer");
 const SITE_NAME = "FilesWow.com";
 
 // Primary keyword cluster: "send files online / file transfer" head terms,
@@ -207,10 +209,10 @@ const faqJsonLd = {
 export default function TransferPage() {
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppJsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(howToJsonLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
+      <script {...jsonLdProps(webAppJsonLd)} />
+      <script {...jsonLdProps(breadcrumbJsonLd)} />
+      <script {...jsonLdProps(howToJsonLd)} />
+      <script {...jsonLdProps(faqJsonLd)} />
       <TransferClient />
     </>
   );

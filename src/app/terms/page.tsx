@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { absoluteUrl, jsonLdProps } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Terms of Service",
   description:
     "Terms of service for FilesWow.com. Learn about the usage terms for our free online document tools.",
   alternates: {
-    canonical: "https://fileswow.com/terms",
+    canonical: absoluteUrl("/terms"),
   },
 };
 
@@ -16,16 +17,13 @@ export default function TermsPage() {
     "@type": "WebPage",
     name: "Terms of Service — FilesWow.com",
     description: "Terms of service for FilesWow.com.",
-    url: "https://fileswow.com/terms",
+    url: absoluteUrl("/terms"),
     dateModified: "2025-01-01",
   };
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <script {...jsonLdProps(jsonLd)} />
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
         <nav className="flex items-center gap-1.5 text-xs text-text-tertiary mb-8">

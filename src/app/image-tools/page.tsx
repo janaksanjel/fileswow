@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { IMAGE_TOOLS, SUB_CATEGORY_LABELS, IMAGE_SUB_CATEGORIES } from "@/lib/catalog";
+import { absoluteUrl, categoryUrl, toolUrl, jsonLdProps } from "@/lib/site";
 import { CategoryHubClient } from "../pdf-tools/category-hub-client";
 
 export const metadata: Metadata = {
@@ -24,11 +25,11 @@ export const metadata: Metadata = {
     title: "Image Tools — Convert, Resize, Crop, Filter & Edit",
     description:
       "60+ free image tools. Convert, resize, crop, filter, and edit images.",
-    url: "https://fileswow.com/image-tools",
+    url: categoryUrl("image"),
     type: "website",
   },
   alternates: {
-    canonical: "https://fileswow.com/image-tools",
+    canonical: categoryUrl("image"),
   },
 };
 
@@ -39,7 +40,7 @@ export default function ImageToolsPage() {
     name: "Free Image Tools Online",
     description:
       "60+ free image tools processed entirely in your browser. No upload required.",
-    url: "https://fileswow.com/image-tools",
+    url: categoryUrl("image"),
     mainEntity: {
       "@type": "ItemList",
       numberOfItems: IMAGE_TOOLS.length,
@@ -47,7 +48,7 @@ export default function ImageToolsPage() {
         "@type": "ListItem",
         position: i + 1,
         name: tool.name,
-        url: `https://fileswow.com/tools/${tool.slug}`,
+        url: toolUrl(tool.slug),
         description: tool.description,
       })),
     },
@@ -61,27 +62,21 @@ export default function ImageToolsPage() {
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: "https://fileswow.com",
+        item: absoluteUrl("/"),
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Image Tools",
-        item: "https://fileswow.com/image-tools",
+        item: categoryUrl("image"),
       },
     ],
   };
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-      />
+      <script {...jsonLdProps(collectionJsonLd)} />
+      <script {...jsonLdProps(breadcrumbJsonLd)} />
       <CategoryHubClient
         tools={IMAGE_TOOLS}
         title="Image Tools"

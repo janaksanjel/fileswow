@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { TEXT_TOOLS, SUB_CATEGORY_LABELS, TEXT_SUB_CATEGORIES } from "@/lib/catalog";
+import { absoluteUrl, categoryUrl, toolUrl, jsonLdProps } from "@/lib/site";
 import { CategoryHubClient } from "../pdf-tools/category-hub-client";
 
 export const metadata: Metadata = {
@@ -20,11 +21,11 @@ export const metadata: Metadata = {
     title: "Text Tools — P2P Text Transfer & More",
     description:
       "Send text directly between your devices — browser to browser, no server involved.",
-    url: "https://fileswow.com/text-tools",
+    url: categoryUrl("text"),
     type: "website",
   },
   alternates: {
-    canonical: "https://fileswow.com/text-tools",
+    canonical: categoryUrl("text"),
   },
 };
 
@@ -35,7 +36,7 @@ export default function TextToolsPage() {
     name: "Free Text Tools Online",
     description:
       "Free text tools processed entirely in your browser — no upload required.",
-    url: "https://fileswow.com/text-tools",
+    url: categoryUrl("text"),
     mainEntity: {
       "@type": "ItemList",
       numberOfItems: TEXT_TOOLS.length,
@@ -43,7 +44,7 @@ export default function TextToolsPage() {
         "@type": "ListItem",
         position: i + 1,
         name: tool.name,
-        url: `https://fileswow.com/tools/${tool.slug}`,
+        url: toolUrl(tool.slug),
         description: tool.description,
       })),
     },
@@ -57,27 +58,21 @@ export default function TextToolsPage() {
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: "https://fileswow.com",
+        item: absoluteUrl("/"),
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "Text Tools",
-        item: "https://fileswow.com/text-tools",
+        item: categoryUrl("text"),
       },
     ],
   };
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-      />
+      <script {...jsonLdProps(collectionJsonLd)} />
+      <script {...jsonLdProps(breadcrumbJsonLd)} />
       <CategoryHubClient
         tools={TEXT_TOOLS}
         title="Text Tools"

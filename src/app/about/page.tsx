@@ -1,17 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { absoluteUrl, jsonLdProps } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "About — Free Private Document Tools",
   description:
     "Learn about FilesWow.com — 100+ free PDF, Word, and image tools that run entirely in your browser. Your files never leave your device.",
   alternates: {
-    canonical: "https://fileswow.com/about",
+    canonical: absoluteUrl("/about"),
   },
   openGraph: {
     title: "About FilesWow.com",
     description: "Free, private document tools. Your files never leave your device.",
-    url: "https://fileswow.com/about",
+    url: absoluteUrl("/about"),
     type: "website",
   },
 };
@@ -23,15 +24,12 @@ export default function AboutPage() {
     name: "About FilesWow.com",
     description:
       "FilesWow.com provides 100+ free PDF, Word, and image processing tools that run entirely in the browser.",
-    url: "https://fileswow.com/about",
+    url: absoluteUrl("/about"),
   };
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <script {...jsonLdProps(jsonLd)} />
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
         <nav className="flex items-center gap-1.5 text-xs text-text-tertiary mb-8">

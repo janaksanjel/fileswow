@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PDF_TOOLS, SUB_CATEGORY_LABELS, PDF_SUB_CATEGORIES } from "@/lib/catalog";
+import { absoluteUrl, categoryUrl, toolUrl, jsonLdProps } from "@/lib/site";
 import { CategoryHubClient } from "./category-hub-client";
 
 export const metadata: Metadata = {
@@ -24,11 +25,11 @@ export const metadata: Metadata = {
     title: "PDF Tools — Merge, Split, Convert, Edit & More",
     description:
       "60+ free PDF tools. Merge, split, compress, convert, and edit PDFs — all in your browser.",
-    url: "https://fileswow.com/pdf-tools",
+    url: categoryUrl("pdf"),
     type: "website",
   },
   alternates: {
-    canonical: "https://fileswow.com/pdf-tools",
+    canonical: categoryUrl("pdf"),
   },
 };
 
@@ -39,7 +40,7 @@ export default function PDFToolsPage() {
     name: "Free PDF Tools Online",
     description:
       "60+ free PDF tools processed entirely in your browser. No upload required.",
-    url: "https://fileswow.com/pdf-tools",
+    url: categoryUrl("pdf"),
     mainEntity: {
       "@type": "ItemList",
       numberOfItems: PDF_TOOLS.length,
@@ -47,7 +48,7 @@ export default function PDFToolsPage() {
         "@type": "ListItem",
         position: i + 1,
         name: tool.name,
-        url: `https://fileswow.com/tools/${tool.slug}`,
+        url: toolUrl(tool.slug),
         description: tool.description,
       })),
     },
@@ -61,27 +62,21 @@ export default function PDFToolsPage() {
         "@type": "ListItem",
         position: 1,
         name: "Home",
-        item: "https://fileswow.com",
+        item: absoluteUrl("/"),
       },
       {
         "@type": "ListItem",
         position: 2,
         name: "PDF Tools",
-        item: "https://fileswow.com/pdf-tools",
+        item: categoryUrl("pdf"),
       },
     ],
   };
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionJsonLd) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-      />
+      <script {...jsonLdProps(collectionJsonLd)} />
+      <script {...jsonLdProps(breadcrumbJsonLd)} />
       <CategoryHubClient
         tools={PDF_TOOLS}
         title="PDF Tools"
