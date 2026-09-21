@@ -186,6 +186,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         {process.env.GSC_VERIFICATION && (
           <meta name="google-site-verification" content={process.env.GSC_VERIFICATION} />
         )}
+        {/* Bing Webmaster Tools verification */}
+        <meta name="msvalidate.01" content="00840B0DE02EF6E56ECFDB8FCA2620EB" />
         {/* Google AdSense — site ownership verification + ad serving (required in <head> on every page) */}
         <script
           async
