@@ -109,6 +109,20 @@ export function Footer() {
             &copy; {new Date().getFullYear()} FilesWow.com — All rights reserved
           </p>
           <div className="flex items-center gap-3">
+            <a
+              href="https://www.producthunt.com/products/fileswow-com?embed=true&amp;utm_source=badge-featured&amp;utm_medium=badge&amp;utm_campaign=badge-fileswow-com"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="FilesWow.com on Product Hunt"
+            >
+              <img
+                alt="FilesWow.com - 100+ Free File Tools. No Uploads. 100% Private. | Product Hunt"
+                width={250}
+                height={54}
+                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1255284&amp;theme=light&amp;t=1789957273599"
+                loading="lazy"
+              />
+            </a>
             <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[11px] font-semibold text-text-secondary bg-bg-elevated">
               <span className="relative flex h-1.5 w-1.5">
                 <span className="absolute inline-flex h-full w-full rounded-full bg-success opacity-60 animate-ping" />
