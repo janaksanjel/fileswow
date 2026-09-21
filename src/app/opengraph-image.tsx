@@ -1,5 +1,8 @@
 import { ImageResponse } from "next/og";
 
+// Required for `output: export` (static HTML export) builds.
+export const dynamic = "force-static";
+
 export const alt = "FilesWow.com — Free PDF, Word & Image Tools Online. No upload required.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
