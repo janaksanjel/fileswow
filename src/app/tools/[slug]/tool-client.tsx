@@ -5,6 +5,7 @@ import { ToolShell } from "@/components/tool-shell";
 import { recordToolVisit } from "@/lib/usage";
 import { ProgressBar } from "@/components/progress-bar";
 import { getToolComponent } from "@/components/tool-registry";
+import { pingIndexNow } from "@/lib/indexnow-ping";
 import type { ToolDef } from "@/lib/catalog";
 
 const MIN_LOADING_MS = 1800; // every tool shows ≥ 1.8 s of progress
@@ -45,6 +46,12 @@ export function ToolClient({ tool, relatedTools }: ToolClientProps) {
   // Track usage for "Recently Used" and "Popular" sections
   useEffect(() => {
     recordToolVisit(tool.slug);
+  }, [tool.slug]);
+
+  // IndexNow: fire-and-forget ping to Bing/Yandex so real visits to this page
+  // keep search indexes instantly fresh. Silently no-ops on rate limit.
+  useEffect(() => {
+    pingIndexNow([`/tools/${tool.slug}`, "/"]);
   }, [tool.slug]);
 
   return (
