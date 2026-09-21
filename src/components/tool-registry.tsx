@@ -185,6 +185,9 @@ const toolComponents: Record<string, ComponentType<ToolUIProps>> = {
   "gamma-adjust": dynamic(() => import("./tools/gamma-adjust"), { ssr: false }) as any,
   // Image tools — Effects
   "watermark-image": dynamic(() => import("./tools/watermark-image"), { ssr: false }) as any,
+  "remove-watermark-image": dynamic(() => import("./tools/remove-watermark-image"), { ssr: false }) as any,
+  "remove-watermark-pdf": dynamic(() => import("./tools/remove-watermark-pdf"), { ssr: false }) as any,
+  "remove-watermark-word": dynamic(() => import("./tools/remove-watermark-word"), { ssr: false }) as any,
   "opacity-adjust": dynamic(() => import("./tools/opacity-adjust"), { ssr: false }) as any,
   "pixelate-image": dynamic(() => import("./tools/pixelate-image"), { ssr: false }) as any,
   "mosaic-image": dynamic(() => import("./tools/mosaic-image"), { ssr: false }) as any,

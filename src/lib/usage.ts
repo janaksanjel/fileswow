@@ -254,6 +254,9 @@ export function getEmptyEntriesSnapshot(): RecentToolEntry[] {
 export const POPULAR_DEFAULT_SLUGS: string[] = [
   "merge-pdf",
   "compress-pdf",
+  "remove-watermark-image",
+  "remove-watermark-pdf",
+  "remove-watermark-word",
   "pdf-to-word",
   "word-to-pdf",
   "split-pdf",
