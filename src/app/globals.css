@@ -559,8 +559,10 @@ kbd,
 /* ─── Floating Action Button ─────────────────────────────────── */
 .fab {
   position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
+  /* Sits beside (left of) the support-chat button, bottom-right — dragged
+     down from its old stacked spot so the chat popup never covers it. */
+  bottom: 4.875rem;
+  right: 5.25rem;
   z-index: 40;
   display: flex;
   flex-direction: column;

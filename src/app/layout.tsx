@@ -4,7 +4,6 @@ import "./globals.css";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
-import { FloatingActionButton } from "@/components/fab";
 import { CookieConsentBanner } from "@/components/cookie-consent";
 import { SupportBot } from "@/components/support-bot";
 import { SITE_URL, SITE_NAME, absoluteUrl, jsonLdProps } from "@/lib/site";
@@ -208,7 +207,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <Header />
           <main className="min-h-[calc(100vh-3rem)]" id="main-content">{children}</main>
           <Footer />
-          <FloatingActionButton />
           <CookieConsentBanner />
           <SupportBot />
         </ThemeProvider>

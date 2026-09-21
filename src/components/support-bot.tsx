@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ALL_TOOLS, CATEGORY_COUNTS, type ToolDef } from "@/lib/catalog";
 import { SITE_NAME } from "@/lib/site";
@@ -10,6 +10,9 @@ import { SITE_NAME } from "@/lib/site";
  * A fully client-side, rule-based chatbot that knows the whole site:
  * tools, categories, privacy model, transfer, and more.
  * No server, no API — instant answers with links to the right tools.
+ *
+ * Chat history is persisted to localStorage as a browser session.
+ * Clearing the chat starts a brand-new session.
  */
 
 interface BotLink {
@@ -26,14 +29,65 @@ interface ChatMessage {
 }
 
 const BOT_NAME = "Wow";
-const BOT_TAGLINE = "FilesWow Assistant";
 
-const GREETING: ChatMessage = {
-  id: 0,
-  from: "bot",
-  text: `Hi! I'm ${BOT_NAME} 👋 — your guide to ${SITE_NAME}. I can help you find the right tool, explain how everything works, or answer questions about privacy. What do you need?`,
-  chips: ["What is FilesWow?", "Find a tool", "PDF tools", "Is it really private?", "Transfer files"],
-};
+const GREETING_TEXT = `Hey there! 👋 I'm ${BOT_NAME} — the friendly helper around ${SITE_NAME}. Looking for a tool, curious how things work, or just browsing? Ask me anything — I don't bite.`;
+const GREETING_CHIPS = ["What is FilesWow?", "Find a tool", "Is it really private?", "Transfer files"];
+
+function makeGreeting(id: number): ChatMessage {
+  return { id, from: "bot", text: GREETING_TEXT, chips: GREETING_CHIPS };
+}
+
+// ─── Session persistence (localStorage) ───────────────────────────
+
+const STORAGE_KEY = "fwwow-chat-session-v1";
+const MAX_STORED_MESSAGES = 100;
+
+interface StoredSession {
+  sessionId: string;
+  startedAt: number;
+  messages: ChatMessage[];
+}
+
+function newSessionId(): string {
+  return `s_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function loadSession(): StoredSession {
+  if (typeof window !== "undefined") {
+    try {
+      const raw = window.localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as StoredSession;
+        if (
+          parsed &&
+          typeof parsed.sessionId === "string" &&
+          Array.isArray(parsed.messages) &&
+          parsed.messages.length > 0 &&
+          parsed.messages.every((m) => m && typeof m.id === "number" && typeof m.text === "string" && (m.from === "bot" || m.from === "user"))
+        ) {
+          return parsed;
+        }
+      }
+    } catch {
+      // Corrupted storage — fall through and start fresh.
+    }
+  }
+  return { sessionId: newSessionId(), startedAt: Date.now(), messages: [makeGreeting(0)] };
+}
+
+function saveSession(session: StoredSession) {
+  if (typeof window === "undefined") return;
+  try {
+    // Cap the stored history so localStorage never grows unbounded.
+    const trimmed = session.messages.slice(-MAX_STORED_MESSAGES);
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ ...session, messages: trimmed })
+    );
+  } catch {
+    // Storage full/blocked — chat still works, just won't persist.
+  }
+}
 
 // ─── Tool search over the catalog ─────────────────────────────────
 
@@ -89,16 +143,55 @@ function has(text: string, ...words: string[]): boolean {
 function answer(qRaw: string): Answer {
   const q = qRaw.toLowerCase();
 
+  // ── Identity questions come FIRST — they always win ────────────
+
+  // Who made the bot / the site — the human answer
+  if (
+    has(
+      q,
+      "who made you", "who made this", "who created you", "who created this", "who built you",
+      "who built this", "who developed", "your creator", "your developer", "your maker",
+      "your owner", "who owns", "who is the owner", "creator", "founder", "developer",
+      "janak", "sanjel", "nepal", "author", "who wrote", "whose site"
+    )
+  ) {
+    return {
+      text: "I was built by Janak Sanjel 👨‍💻 — a developer from Nepal who created FilesWow so everyone could have fast, private file tools without paywalls or sign-ups. He's the human behind me; I just do the typing. 😄 Want to see more of his work? His personal site is worth a visit:",
+      links: [
+        { label: "🌐 janaksanjel.com.np", href: "https://janaksanjel.com.np" },
+        { label: "ℹ️ About FilesWow", href: "/about" },
+      ],
+      chips: ["What is FilesWow?", "Find a tool", "Is it really private?"],
+    };
+  }
+
+  // Who the bot is — answered warmly, like a person would
+  if (
+    has(
+      q,
+      "who are you", "who r u", "hu r u", "what are you", "your name", "may i know your name",
+      "are you a bot", "are you human", "are you real", "are you ai", "are you robot",
+      "introduce yourself", "tell me about yourself", "what should i call you"
+    )
+  ) {
+    return {
+      text: "I'm Wow 🙂 — the little assistant that lives on FilesWow. Honestly? I'm software, not a person — but I was taught by one, and I really do enjoy helping people find the right tool in seconds instead of hunting through menus. So, what brings you here today?",
+      chips: ["Find a tool", "Is it really private?"],
+    };
+  }
+
+  // ── Everything else ─────────────────────────────────────────────
+
   // Greetings
   if (/^(hi|hello|hey|yo|hola|good (morning|afternoon|evening))\b/.test(q) || q === "hi!") {
     return {
-      text: "Hello! 👋 How can I help you today? Ask me things like \"how do I merge PDFs?\" or \"which tools are free?\"",
-      chips: ["Find a tool", "PDF tools", "Is it really private?", "What is FilesWow?"],
+      text: "Hey! 😊 Good to see you. What can I help you find today? You can ask me things like \"how do I merge PDFs?\" or \"which tools are free?\"",
+      chips: [ "Find a tool", "PDF tools", "Is it really private?", "What is FilesWow?"],
     };
   }
 
   // What is the site
-  if (has(q, "what is fileswow", "about this site", "what is this site", "about fileswow", "who are you", "what do you do", "what can you do")) {
+  if (has(q, "what is fileswow", "about this site", "what is this site", "about fileswow", "what do you do", "what can you do")) {
     return {
       text: `${SITE_NAME} is a suite of ${ALL_TOOLS.length} free online tools for PDF, Word and image files — merge, split, compress, convert, edit, sign and more. Everything runs 100% in your browser: no uploads, no accounts, no watermarks, completely private. There's also device-to-device file transfer up to 50 GB.`,
       links: [
@@ -112,7 +205,7 @@ function answer(qRaw: string): Answer {
   // Free / pricing
   if (has(q, "free", "price", "pricing", "cost", "pay", "subscription", "premium", "pro")) {
     return {
-      text: "Yes — every single tool is 100% free. No subscriptions, no accounts, no watermarks, and no limits on how many files you process.",
+      text: "Yep — every single tool here is 100% free. No subscriptions, no accounts, no watermarks, and no limits. Janak built it that way on purpose: good tools shouldn't come with a paywall.",
       chips: ["Find a tool", "What is FilesWow?"],
     };
   }
@@ -120,7 +213,7 @@ function answer(qRaw: string): Answer {
   // Privacy / safety / upload
   if (has(q, "private", "privacy", "safe", "secure", "upload", "server", "data", "cookie", "tracking", "gdpr")) {
     return {
-      text: "Your files never leave your device. All processing happens locally in your browser using JavaScript — nothing is uploaded to any server, so we physically can't see your files. Only optional, anonymous analytics cookies are used (you can decline them in Cookie settings). Read the full Privacy Policy for details.",
+      text: "Great question — and a fair one! Your files never leave your device. Everything happens locally in your browser, and nothing is uploaded to any server, so we physically can't peek at your files. Only optional, anonymous analytics cookies are used (you can decline them in Cookie settings). The Privacy Policy has every detail.",
       links: [{ label: "🔒 Privacy Policy", href: "/privacy" }],
       chips: ["What is FilesWow?", "Find a tool"],
     };
@@ -189,7 +282,7 @@ function answer(qRaw: string): Answer {
   // Contact / support
   if (has(q, "contact", "support", "email", "feedback", "bug", "report", "issue")) {
     return {
-      text: "Found a bug or want to share feedback? Visit our About page — you'll find all the ways to reach us there. And I'm always here if you need help finding a tool!",
+      text: "Found a bug, or just want to say hi? The About page has all the ways to reach us — real messages get read by a real human (Janak himself). And of course, I'm always here if you need help finding a tool!",
       links: [{ label: "ℹ️ About & Contact", href: "/about" }],
       chips: ["What is FilesWow?", "Find a tool"],
     };
@@ -197,10 +290,10 @@ function answer(qRaw: string): Answer {
 
   // Thanks / bye
   if (has(q, "thank", "thanks", "thx", "great", "awesome", "perfect")) {
-    return { text: "You're very welcome! 😊 Anything else I can help you with?", chips: ["Find a tool", "What is FilesWow?"] };
+    return { text: "Anytime! 😊 That's what I'm here for. Anything else I can help with?", chips: ["Find a tool", "What is FilesWow?"] };
   }
   if (has(q, "bye", "goodbye", "see you", "later")) {
-    return { text: "Goodbye! 👋 Come back anytime — I'll be right here." };
+    return { text: "See you around! 👋 I'll be right here if you ever need me." };
   }
 
   // Shortcut: known tool names mentioned directly (compress a pdf, word to pdf, ...)
@@ -238,23 +331,41 @@ function answer(qRaw: string): Answer {
   }
 
   return {
-    text: "I'm not sure about that one 🤔 — I'm best at finding tools and explaining how FilesWow works. Try asking like \"how do I merge PDFs?\" or pick a suggestion below.",
-    chips: ["What is FilesWow?", "Find a tool", "PDF tools", "Transfer files"],
+    text: "Hmm, you got me there 🤔 — I'm just a small helper, best at finding tools and explaining how FilesWow works. Try something like \"how do I merge PDFs?\" or pick a suggestion below.",
+    chips: ["What is FilesWow?", "Find a tool", "Transfer files"],
   };
 }
 
 // ─── Component ────────────────────────────────────────────────────
 
-let nextId = 1;
-
 export function SupportBot() {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([GREETING]);
+  const [messages, setMessages] = useState<ChatMessage[]>([makeGreeting(0)]);
   const [input, setInput] = useState("");
   const [typing, setTyping] = useState(false);
-  const [greeted, setGreeted] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const idCounter = useRef(1);
+  const sessionRef = useRef<StoredSession>({ sessionId: newSessionId(), startedAt: Date.now(), messages: [] });
+
+  // Restore the previous chat session from localStorage (client-only,
+  // after first paint, so SSR markup and hydration always match).
+  useEffect(() => {
+    const stored = loadSession();
+    sessionRef.current = stored;
+    setMessages(stored.messages);
+    const maxId = stored.messages.reduce((m, msg) => Math.max(m, msg.id), 0);
+    idCounter.current = maxId + 1;
+    setHydrated(true);
+  }, []);
+
+  // Persist chat history whenever it changes.
+  useEffect(() => {
+    if (!hydrated) return;
+    sessionRef.current = { ...sessionRef.current, messages };
+    saveSession(sessionRef.current);
+  }, [messages, hydrated]);
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -265,29 +376,45 @@ export function SupportBot() {
   // Focus input when opened
   useEffect(() => {
     if (open) {
-      setGreeted(true);
       const t = setTimeout(() => inputRef.current?.focus(), 150);
       return () => clearTimeout(t);
     }
   }, [open]);
 
-  const push = (msg: Omit<ChatMessage, "id">) => {
-    setMessages((prev) => [...prev, { ...msg, id: nextId++ }]);
-  };
+  const push = useCallback((msg: Omit<ChatMessage, "id">) => {
+    setMessages((prev) => [...prev, { ...msg, id: idCounter.current++ }]);
+  }, []);
 
-  const send = (raw: string) => {
-    const text = raw.trim();
-    if (!text || typing) return;
-    push({ from: "user", text });
-    setInput("");
-    setTyping(true);
-    // Small human-feeling delay before the answer
-    window.setTimeout(() => {
-      const a = answer(text);
-      push({ from: "bot", text: a.text, links: a.links, chips: a.chips });
-      setTyping(false);
-    }, 450 + Math.random() * 350);
-  };
+  const send = useCallback(
+    (raw: string) => {
+      const text = raw.trim();
+      if (!text || typing) return;
+      push({ from: "user", text });
+      setInput("");
+      setTyping(true);
+      // Small human-feeling delay before the answer
+      window.setTimeout(() => {
+        const a = answer(text);
+        push({ from: "bot", text: a.text, links: a.links, chips: a.chips });
+        setTyping(false);
+      }, 450 + Math.random() * 350);
+    },
+    [push, typing]
+  );
+
+  // Clear chat → start a brand-new session.
+  const clearChat = useCallback(() => {
+    const fresh: StoredSession = {
+      sessionId: newSessionId(),
+      startedAt: Date.now(),
+      messages: [makeGreeting(0)],
+    };
+    sessionRef.current = fresh;
+    idCounter.current = 1;
+    setMessages(fresh.messages);
+    saveSession(fresh);
+    inputRef.current?.focus();
+  }, []);
 
   const lastChips = [...messages].reverse().find((m) => m.from === "bot" && m.chips)?.chips;
 
@@ -298,18 +425,31 @@ export function SupportBot() {
         <div
           role="dialog"
           aria-label={`${BOT_NAME} support chat`}
-          className="fixed bottom-[4.75rem] left-3 right-3 sm:right-auto sm:w-[380px] z-50 flex flex-col rounded-2xl border border-border-base bg-bg-surface shadow-2xl overflow-hidden sm:h-[560px] h-[min(70vh,560px)]"
+          className="fixed bottom-[4.75rem] left-3 right-3 sm:left-auto sm:right-5 sm:w-[380px] z-50 flex flex-col rounded-2xl border border-border-base bg-bg-surface shadow-2xl overflow-hidden sm:h-[560px] h-[min(70vh,560px)]"
         >
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-accent to-accent-hover text-white shrink-0">
             <span className="relative w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-[17px]">
-              🤖
+              🙂
               <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-accent" />
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-[14px] font-bold leading-tight">{BOT_NAME}</p>
-              <p className="text-[11px] text-white/80 leading-tight">{BOT_TAGLINE} · always online</p>
+              <p className="text-[11px] text-white/80 leading-tight">FilesWow Assistant · always online</p>
             </div>
+            {/* Clear chat — starts a new session */}
+            {messages.length > 1 && (
+              <button
+                onClick={clearChat}
+                className="w-8 h-8 rounded-lg hover:bg-white/15 flex items-center justify-center transition-colors"
+                aria-label="Clear chat and start a new session"
+                title="Clear chat — start new session"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+                </svg>
+              </button>
+            )}
             <button
               onClick={() => setOpen(false)}
               className="w-8 h-8 rounded-lg hover:bg-white/15 flex items-center justify-center transition-colors"
@@ -335,19 +475,25 @@ export function SupportBot() {
                   <p className="whitespace-pre-wrap">{m.text}</p>
                   {m.links && m.links.length > 0 && (
                     <div className="mt-2 flex flex-col gap-1.5">
-                      {m.links.map((l) => (
-                        <Link
-                          key={l.href + l.label}
-                          href={l.href}
-                          onClick={() => setOpen(false)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-bg-elevated border border-border-base text-[12.5px] font-semibold text-accent hover:bg-accent hover:text-white hover:border-accent transition-all"
-                        >
-                          {l.label}
+                      {m.links.map((l) => {
+                        const cls = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-bg-elevated border border-border-base text-[12.5px] font-semibold text-accent hover:bg-accent hover:text-white hover:border-accent transition-all";
+                        const arrow = (
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                             <path d="M5 12h14M12 5l7 7-7 7" />
                           </svg>
-                        </Link>
-                      ))}
+                        );
+                        return l.href.startsWith("http") ? (
+                          <a key={l.href + l.label} href={l.href} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)} className={cls}>
+                            {l.label}
+                            {arrow}
+                          </a>
+                        ) : (
+                          <Link key={l.href + l.label} href={l.href} onClick={() => setOpen(false)} className={cls}>
+                            {l.label}
+                            {arrow}
+                          </Link>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -412,10 +558,10 @@ export function SupportBot() {
         </div>
       )}
 
-      {/* Floating button — LEFT side */}
+      {/* Floating button — bottom-right, dragged down low */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="fixed bottom-4 left-4 z-50 w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-gradient-to-b from-accent-light to-accent text-white shadow-xl border border-accent-hover/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+        className="fixed bottom-4 right-4 sm:right-5 z-50 w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-gradient-to-b from-accent-light to-accent text-white shadow-xl border border-accent-hover/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
         aria-label={open ? "Close support chat" : "Open support chat"}
         title={`Need help? Chat with ${BOT_NAME}`}
       >
@@ -424,16 +570,9 @@ export function SupportBot() {
             <path d="M18 6 6 18M6 6l12 12" />
           </svg>
         ) : (
-          <>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-            </svg>
-            {!greeted && (
-              <span className="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 rounded-full bg-danger text-white text-[10px] font-bold border-2 border-bg-base">
-                1
-              </span>
-            )}
-          </>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          </svg>
         )}
       </button>
     </>
