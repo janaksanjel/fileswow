@@ -20,8 +20,8 @@ export default function WordTemplateFillerTool({ onProcessing, onError }: ToolUI
     setResult(null);
     try {
       const mammoth = (await import("mammoth")).default;
-      const buffer = Buffer.from(await f.arrayBuffer());
-      const result = await mammoth.extractRawText({ buffer });
+      const arrayBuffer = await f.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer });
       const matches = [...result.value.matchAll(/\{\{(\w+)\}\}/g)];
       const unique = [...new Set(matches.map(m => m[1]))];
       setPlaceholders(unique.map(key => ({ key, value: "" })));
@@ -39,8 +39,8 @@ export default function WordTemplateFillerTool({ onProcessing, onError }: ToolUI
     try {
       const mammoth = (await import("mammoth")).default;
       const { Document, Packer, Paragraph, TextRun } = await import("docx");
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const result = await mammoth.convertToHtml({ buffer });
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.convertToHtml({ arrayBuffer });
       let html = result.value;
       for (const p of placeholders) {
         html = html.split(`{{${p.key}}}`).join(p.value || `[${p.key}]`);

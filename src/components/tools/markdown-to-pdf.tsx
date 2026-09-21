@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
+import { prepareScriptFonts, waitForFonts } from "@/lib/script-fonts";
 
 const SAMPLE_MD = `# Hello World\n\nThis is a **bold** and *italic* text example.\n\n## Features\n\n- Item 1\n- Item 2\n- Item 3\n\n### Code Example\n\n\`\`\`javascript\nconsole.log("Hello from FilesWow.com");\n\`\`\`\n\n> This is a blockquote\n\n| Name | Type |\n|------|------|\n| PDF | Document |\n| Word | Document |`;
 
@@ -41,10 +42,17 @@ export default function MarkdownToPdfTool({ onProcessing, onError }: ToolUIProps
 
       const tempDiv = document.createElement("div");
       tempDiv.innerHTML = htmlContent;
-      tempDiv.style.cssText = "position:absolute;left:-9999px;top:0;width:800px;";
       document.body.appendChild(tempDiv);
 
-      const canvas = await html2canvas(tempDiv.querySelector("body")!, { scale: 2 });
+      // Script-aware fonts: Devanagari (Nepali/Hindi), Arabic, CJK, etc.
+      const body = tempDiv.querySelector("body")!;
+      const { fontFamily, hasRtl } = await prepareScriptFonts(body.textContent || "");
+      body.style.fontFamily = fontFamily;
+      if (hasRtl) tempDiv.setAttribute("dir", "auto");
+
+      await waitForFonts();
+
+      const canvas = await html2canvas(body, { scale: 2, useCORS: true, logging: false });
       document.body.removeChild(tempDiv);
 
       const imgData = canvas.toDataURL("image/png");

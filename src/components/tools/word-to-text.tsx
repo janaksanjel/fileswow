@@ -18,8 +18,8 @@ export default function WordToTextTool({ onProcessing, onError }: ToolUIProps) {
     onProcessing?.(true);
     try {
       const mammoth = (await import("mammoth")).default;
-      const buffer = Buffer.from(await f.arrayBuffer());
-      const result = await mammoth.extractRawText({ buffer });
+      const arrayBuffer = await f.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer });
       setText(result.value);
     } catch (err) {
       onError?.(err instanceof Error ? err.message : "Failed to extract text");

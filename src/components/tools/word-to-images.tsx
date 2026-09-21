@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
+import { prepareScriptFonts, waitForFonts, waitForImages } from "@/lib/script-fonts";
 
 export default function WordToImagesTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
@@ -18,16 +19,22 @@ export default function WordToImagesTool({ onProcessing, onError }: ToolUIProps)
     onProcessing?.(true);
     try {
       const mammoth = (await import("mammoth")).default;
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const result = await mammoth.convertToHtml({ buffer });
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.convertToHtml({ arrayBuffer });
 
       const tempDiv = document.createElement("div");
       tempDiv.innerHTML = result.value;
-      tempDiv.style.cssText = "position:absolute;left:-9999px;top:0;width:800px;padding:40px;font-family:Arial,sans-serif;font-size:14px;color:#000;background:#fff;";
       document.body.appendChild(tempDiv);
 
+      // Script-aware fonts: Devanagari (Nepali/Hindi), Arabic, CJK, etc.
+      const { fontFamily, hasRtl } = await prepareScriptFonts(tempDiv.textContent || "");
+      tempDiv.style.cssText = `position:absolute;left:-9999px;top:0;width:800px;padding:40px;font-family:${fontFamily};font-size:14px;color:#000;background:#fff;line-height:1.65;`;
+      if (hasRtl) tempDiv.setAttribute("dir", "auto");
+
+      await Promise.all([waitForFonts(), waitForImages(tempDiv)]);
+
       const html2canvas = (await import("html2canvas")).default;
-      const canvas = await html2canvas(tempDiv, { scale: 2 });
+      const canvas = await html2canvas(tempDiv, { scale: 2, useCORS: true, logging: false });
       document.body.removeChild(tempDiv);
 
       const dataUrl = canvas.toDataURL("image/png");

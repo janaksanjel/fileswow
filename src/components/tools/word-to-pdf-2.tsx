@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
+import { prepareScriptFonts, waitForFonts, waitForImages } from "@/lib/script-fonts";
 
 export default function WordToPdf2Tool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
@@ -25,15 +26,20 @@ export default function WordToPdf2Tool({ onProcessing, onError }: ToolUIProps) {
       const html2canvas = (await import("html2canvas")).default;
 
       const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const result = await mammoth.default.convertToHtml({ buffer });
+      const result = await mammoth.default.convertToHtml({ arrayBuffer });
 
       const tempDiv = document.createElement("div");
       tempDiv.innerHTML = result.value || "<p>No content</p>";
-      tempDiv.style.cssText = "position:absolute;left:-9999px;top:0;width:800px;padding:40px;font-family:Arial,sans-serif;font-size:14px;color:#000;background:#fff;";
       document.body.appendChild(tempDiv);
 
-      const canvas = await html2canvas(tempDiv, { scale: 1.5 });
+      // Script-aware fonts: Devanagari (Nepali/Hindi), Arabic, CJK, etc.
+      const { fontFamily, hasRtl } = await prepareScriptFonts(tempDiv.textContent || "");
+      tempDiv.style.cssText = `position:absolute;left:-9999px;top:0;width:800px;padding:40px;font-family:${fontFamily};font-size:14px;color:#000;background:#fff;line-height:1.65;`;
+      if (hasRtl) tempDiv.setAttribute("dir", "auto");
+
+      await Promise.all([waitForFonts(), waitForImages(tempDiv)]);
+
+      const canvas = await html2canvas(tempDiv, { scale: 1.5, useCORS: true, logging: false });
       document.body.removeChild(tempDiv);
 
       const imgData = canvas.toDataURL("image/png");

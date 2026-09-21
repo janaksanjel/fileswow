@@ -30,8 +30,8 @@ export default function MergeWordTool({ onProcessing, onError }: ToolUIProps) {
         if (i > 0) paragraphs.push(new Paragraph({ children: [], pageBreakBefore: true }));
         paragraphs.push(new Paragraph({ children: [new TextRun({ text: files[i].name, bold: true, size: 28 })], heading: HeadingLevel.HEADING_1 }));
         try {
-          const buffer = Buffer.from(await files[i].arrayBuffer());
-          const result = await mammoth.convertToHtml({ buffer });
+          const arrayBuffer = await files[i].arrayBuffer();
+          const result = await mammoth.convertToHtml({ arrayBuffer });
           const div = document.createElement("div");
           div.innerHTML = result.value;
           const text = div.textContent || div.innerText || "";

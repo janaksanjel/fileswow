@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
+import { prepareScriptFonts, waitForFonts, waitForImages } from "@/lib/script-fonts";
 
 export default function WordToPdfTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
@@ -25,16 +26,32 @@ export default function WordToPdfTool({ onProcessing, onError }: ToolUIProps) {
       const html2canvas = (await import("html2canvas")).default;
 
       const arrayBuffer = await file.arrayBuffer();
-      const buffer = Buffer.from(arrayBuffer);
-      const result = await mammoth.default.convertToHtml({ buffer });
+      const result = await mammoth.default.convertToHtml({ arrayBuffer });
       const html = result.value || "<p>No content</p>";
 
       const tempDiv = document.createElement("div");
       tempDiv.innerHTML = html;
-      tempDiv.style.cssText = "position:absolute;left:-9999px;top:0;width:800px;padding:40px;font-family:Arial,sans-serif;font-size:14px;color:#000;background:#fff;";
       document.body.appendChild(tempDiv);
 
-      const canvas = await html2canvas(tempDiv, { scale: 1.5 });
+      // ── Script-aware font loading ─────────────────────────────
+      // Detect every Unicode script in the document (Devanagari,
+      // Arabic, CJK…) and load a proper webfont for each. Without
+      // this, non-Latin text rasterizes as boxes because html2canvas
+      // can't use the browser's implicit font fallback.
+      const allText = tempDiv.textContent || "";
+      const { fontFamily, hasRtl } = await prepareScriptFonts(allText);
+      tempDiv.style.cssText = `position:absolute;left:-9999px;top:0;width:800px;padding:40px;font-family:${fontFamily};font-size:14px;color:#000;background:#fff;line-height:1.65;`;
+      if (hasRtl) tempDiv.setAttribute("dir", "auto");
+
+      // Mammoth emits data-URI images — make sure they're decoded
+      // before html2canvas captures the node.
+      await Promise.all([waitForFonts(), waitForImages(tempDiv)]);
+
+      const canvas = await html2canvas(tempDiv, {
+        scale: 1.5,
+        useCORS: true,
+        logging: false,
+      });
       document.body.removeChild(tempDiv);
 
       const imgData = canvas.toDataURL("image/png");
@@ -45,7 +62,7 @@ export default function WordToPdfTool({ onProcessing, onError }: ToolUIProps) {
 
       let heightLeft = pdfHeight;
       let position = 0;
-      pdf.addImage(imgData, "PNG", 0, position, pdfWidth, pdfHeight);
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
       heightLeft -= pageHeight;
 
       while (heightLeft > 0) {
@@ -67,12 +84,15 @@ export default function WordToPdfTool({ onProcessing, onError }: ToolUIProps) {
   return (
     <div className="space-y-6">
       {!file ? (
-        <DropZone accept=".docx,.doc" onFilesSelected={handleFile} label="Drop a Word document" description="Convert DOCX to PDF" />
+        <DropZone accept=".docx,.doc" onFilesSelected={handleFile} label="Drop a Word document" description="Convert DOCX to PDF — Nepali, Hindi, Arabic & 20+ scripts supported" />
       ) : (
         <div className="space-y-4">
           <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
             <span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-accent-start/10 text-accent-end">DOCX</span>
-            <div className="flex-1"><p className="text-sm text-text-primary truncate">{file.name}</p><p className="text-xs text-text-tertiary">{(file.size / 1024).toFixed(0)} KB</p></div>
+            <div className="flex-1">
+              <p className="text-sm text-text-primary truncate">{file.name}</p>
+              <p className="text-xs text-text-tertiary">{(file.size / 1024).toFixed(0)} KB</p>
+            </div>
             <button onClick={() => { setFile(null); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">Remove</button>
           </div>
 

@@ -18,8 +18,8 @@ export default function WordToMarkdownTool({ onProcessing, onError }: ToolUIProp
     onProcessing?.(true);
     try {
       const mammoth = (await import("mammoth")).default;
-      const buffer = Buffer.from(await f.arrayBuffer());
-      const result = await mammoth.convertToHtml({ buffer });
+      const arrayBuffer = await f.arrayBuffer();
+      const result = await mammoth.convertToHtml({ arrayBuffer });
       // Convert HTML to simple markdown
       let md = result.value
         .replace(/<h1[^>]*>(.*?)<\/h1>/gi, "# $1\n\n")

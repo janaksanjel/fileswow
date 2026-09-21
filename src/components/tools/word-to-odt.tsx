@@ -19,8 +19,8 @@ export default function WordToOdtTool({ onProcessing, onError }: ToolUIProps) {
     try {
       const mammoth = (await import("mammoth")).default;
       const JSZip = (await import("jszip")).default;
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const result = await mammoth.convertToHtml({ buffer });
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.convertToHtml({ arrayBuffer });
 
       const odt = new JSZip();
       const contentXml = `<?xml version="1.0" encoding="UTF-8"?>

@@ -21,8 +21,8 @@ export default function WordHeaderFooterTool({ onProcessing, onError }: ToolUIPr
     try {
       const mammoth = (await import("mammoth")).default;
       const { Document, Packer, Paragraph, TextRun } = await import("docx");
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const result = await mammoth.convertToHtml({ buffer });
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.convertToHtml({ arrayBuffer });
       const div = document.createElement("div");
       div.innerHTML = result.value;
       const plainText = div.textContent || "";

@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
+import { prepareScriptFonts, waitForFonts } from "@/lib/script-fonts";
 
 type OutputFormat = "pdf" | "docx" | "txt";
 
@@ -41,9 +42,13 @@ export default function UniversalConverterTool({ onProcessing, onError }: ToolUI
           const html2canvas = (await import("html2canvas")).default;
           const div = document.createElement("div");
           div.innerHTML = html;
-          div.style.cssText = "position:absolute;left:-9999px;top:0;width:800px;padding:40px;font-family:Arial,sans-serif;";
           document.body.appendChild(div);
-          const canvas = await html2canvas(div, { scale: 1.5 });
+          // Script-aware fonts: Devanagari (Nepali/Hindi), Arabic, CJK, etc.
+          const { fontFamily, hasRtl } = await prepareScriptFonts(div.textContent || "");
+          div.style.cssText = `position:absolute;left:-9999px;top:0;width:800px;padding:40px;font-family:${fontFamily};`;
+          if (hasRtl) div.setAttribute("dir", "auto");
+          await waitForFonts();
+          const canvas = await html2canvas(div, { scale: 1.5, useCORS: true, logging: false });
           document.body.removeChild(div);
           const pdf = new jsPDF("p", "mm", "a4");
           pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, 210, (canvas.height * 210) / canvas.width);

@@ -19,8 +19,8 @@ export default function WordToEpubTool({ onProcessing, onError }: ToolUIProps) {
     try {
       const mammoth = (await import("mammoth")).default;
       const JSZip = (await import("jszip")).default;
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const result = await mammoth.convertToHtml({ buffer });
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.convertToHtml({ arrayBuffer });
 
       const epub = new JSZip();
       epub.file("mimetype", "application/epub+zip");

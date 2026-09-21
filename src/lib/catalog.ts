@@ -1074,11 +1074,13 @@ const pdfTools: ToolDef[] = [
     relatedSlugs: ['pdf-to-word', 'powerpoint-to-pdf', 'excel-to-pdf'],
     howItWorks: [
       'Upload your Word document.',
-      'The tool converts through HTML as an intermediate step.',
-      'Download the PDF.',
+      'The tool detects the scripts in your document (Nepali, Hindi, Arabic, Thai, Chinese, etc.) and loads matching Unicode fonts automatically.',
+      'Download the PDF with all text rendered correctly.',
     ],
     faq: [
       { q: 'Will fonts and layout be preserved exactly?', a: 'Best effort. Simple documents convert well. Complex layouts with custom fonts, tables, and precise positioning may shift. This is a limitation of all client-side approaches.' },
+      { q: 'Does it support Nepali, Hindi, Arabic and other non-English languages?', a: 'Yes. The tool detects the writing scripts in your document — Devanagari, Arabic, Bengali, Tamil, Thai, Chinese, Japanese, Korean and 20+ more — and automatically loads matching Unicode fonts so the PDF renders every character correctly.' },
+      { q: 'Do my files or fonts get uploaded anywhere?', a: 'No. Your document is processed entirely in your browser. Only open-source font files are downloaded to your browser when a non-Latin script is detected — your document never leaves your device.' },
     ],
   },
   {

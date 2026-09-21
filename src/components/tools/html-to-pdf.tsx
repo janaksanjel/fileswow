@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
+import { prepareScriptFonts, waitForFonts } from "@/lib/script-fonts";
 
 export default function HtmlToPdfTool({ onProcessing, onError }: ToolUIProps) {
   const [html, setHtml] = useState("<h1>Hello World</h1>\n<p>This is a paragraph.</p>\n<ul>\n  <li>Item 1</li>\n  <li>Item 2</li>\n</ul>");
@@ -21,10 +22,16 @@ export default function HtmlToPdfTool({ onProcessing, onError }: ToolUIProps) {
       // Create a temporary div to render HTML
       const tempDiv = document.createElement("div");
       tempDiv.innerHTML = html;
-      tempDiv.style.cssText = "position:absolute;left:-9999px;top:0;width:800px;padding:40px;font-family:Arial,sans-serif;font-size:14px;color:#000;background:#fff;";
       document.body.appendChild(tempDiv);
 
-      const canvas = await html2canvas(tempDiv, { scale: 2, useCORS: true });
+      // Script-aware fonts: Devanagari (Nepali/Hindi), Arabic, CJK, etc.
+      const { fontFamily, hasRtl } = await prepareScriptFonts(tempDiv.textContent || "");
+      tempDiv.style.cssText = `position:absolute;left:-9999px;top:0;width:800px;padding:40px;font-family:${fontFamily};font-size:14px;color:#000;background:#fff;`;
+      if (hasRtl) tempDiv.setAttribute("dir", "auto");
+
+      await waitForFonts();
+
+      const canvas = await html2canvas(tempDiv, { scale: 2, useCORS: true, logging: false });
       document.body.removeChild(tempDiv);
 
       const imgData = canvas.toDataURL("image/png");
