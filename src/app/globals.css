@@ -573,6 +573,17 @@ kbd,
   pointer-events: auto;
 }
 
+/* ─── Support bot — keep panel clear of the cookie-settings pill ─ */
+.fab-cookie {
+  transition: bottom 0.25s ease, opacity 0.25s ease;
+}
+
+@media (min-width: 640px) {
+  .fab-cookie {
+    bottom: 1.25rem;
+  }
+}
+
 /* ─── Tool tier badge ────────────────────────────────────────── */
 .tier-badge {
   display: inline-flex;
