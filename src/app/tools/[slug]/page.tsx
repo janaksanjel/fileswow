@@ -19,16 +19,17 @@ export async function generateMetadata({ params }: ToolPageProps): Promise<Metad
 
   const categoryLabel = tool.category === "pdf" ? "PDF" : tool.category === "word" ? "Word" : tool.category === "image" ? "Image" : tool.category === "text" ? "Text" : "Cross-format";
 
-  // SEO: keep titles ≤ 60 chars. Add the brand suffix only when it fits.
-  const BASE_SUFFIX = " — Free Online Tool";
-  const BRAND_SUFFIX = " | FilesWow.com";
-  const base = `${tool.name}${BASE_SUFFIX}`;
+  // SEO: keep final titles ≤ 60 chars. The root layout's title template
+  // ("%s | FilesWow.com") already appends the brand — do NOT add it here.
+  const BRAND = " | FilesWow.com";
+  const DESCRIPTOR = " — Free Online Tool";
+  const withDescriptor = `${tool.name}${DESCRIPTOR}`;
   const title =
-    base.length + BRAND_SUFFIX.length <= 60
-      ? base + BRAND_SUFFIX
-      : base.length <= 60
-        ? base
-        : `${tool.name} | FilesWow.com`;
+    withDescriptor.length + BRAND.length <= 60
+      ? withDescriptor
+      : tool.name.length + BRAND.length <= 60
+        ? tool.name
+        : { absolute: tool.name };
 
   return {
     title,
@@ -59,6 +60,9 @@ export async function generateMetadata({ params }: ToolPageProps): Promise<Metad
     },
     alternates: {
       canonical: toolUrl(tool.slug),
+      languages: {
+        "x-default": toolUrl(tool.slug),
+      },
     },
   };
 }
@@ -120,7 +124,9 @@ export default async function ToolPage({ params }: ToolPageProps) {
         "@type": "ListItem",
         position: 2,
         name: categoryLabel,
-        item: categoryUrl(tool.category),
+        // Cross-format tools have no hub page; link the breadcrumb to the
+        // home page's #cross section instead of a 404ing /cross-tools URL.
+        item: tool.category === "cross" ? absoluteUrl("/#cross") : categoryUrl(tool.category),
       },
       {
         "@type": "ListItem",

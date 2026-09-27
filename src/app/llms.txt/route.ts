@@ -1,5 +1,5 @@
 import { ALL_TOOLS, getToolsByCategory } from "@/lib/catalog";
-import { SITE_URL, SITE_NAME, toolUrl, categoryUrl } from "@/lib/site";
+import { SITE_URL, SITE_NAME, toolUrl, categoryUrl, absoluteUrl } from "@/lib/site";
 
 export const dynamic = "force-static";
 
@@ -14,6 +14,10 @@ function section(title: string, tools: ReturnType<typeof getToolsByCategory>): s
   const lines = tools.map((t) => `- [${t.name}](${toolUrl(t.slug)}): ${t.description}`);
   return `## ${title}\n\n${lines.join("\n")}\n`;
 }
+
+// Cross-format tools have no dedicated hub page (categoryUrl("cross") would 404),
+// so point AI engines at the home page's #cross section instead.
+const crossUrl = absoluteUrl("/#cross");
 
 export function GET() {
   const pdf = getToolsByCategory("pdf");
@@ -36,7 +40,7 @@ The canonical host is ${SITE_URL}. All tool pages are server-rendered static pag
 - [Word Tools](${categoryUrl("word")}): ${word.length} tools for DOCX conversion, merging, editing, and protection.
 - [Image Tools](${categoryUrl("image")}): ${image.length} tools to convert, resize, compress, crop, and edit images.
 - [Text Tools](${categoryUrl("text")}): ${text.length} tools including P2P text transfer between devices.
-${cross.length > 0 ? `- [Cross-format Tools](${categoryUrl("cross")}): ${cross.length} tools spanning multiple file formats.\n` : ""}
+${cross.length > 0 ? `- [Cross-format Tools](${crossUrl}): ${cross.length} tools spanning multiple file formats.\n` : ""}
 ## Key pages
 
 - [Home](${SITE_URL}): start here — search across all tools.

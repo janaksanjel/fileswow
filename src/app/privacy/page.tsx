@@ -8,6 +8,9 @@ export const metadata: Metadata = {
     "Privacy policy for FilesWow.com. All file processing happens in your browser — files never leave your device. Learn about analytics and advertising cookies.",
   alternates: {
     canonical: absoluteUrl("/privacy"),
+    languages: {
+      "x-default": absoluteUrl("/privacy"),
+    },
   },
 };
 

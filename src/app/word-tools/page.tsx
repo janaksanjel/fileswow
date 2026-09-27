@@ -28,6 +28,9 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: categoryUrl("word"),
+    languages: {
+      "x-default": categoryUrl("word"),
+    },
   },
 };
 

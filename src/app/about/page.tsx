@@ -8,6 +8,9 @@ export const metadata: Metadata = {
     "Learn about FilesWow.com — 100+ free PDF, Word, and image tools that run entirely in your browser. Your files never leave your device.",
   alternates: {
     canonical: absoluteUrl("/about"),
+    languages: {
+      "x-default": absoluteUrl("/about"),
+    },
   },
   openGraph: {
     title: "About FilesWow.com",

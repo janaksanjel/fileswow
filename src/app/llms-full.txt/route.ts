@@ -1,5 +1,5 @@
 import { ALL_TOOLS, getToolsByCategory } from "@/lib/catalog";
-import { SITE_URL, SITE_NAME, toolUrl, categoryUrl } from "@/lib/site";
+import { SITE_URL, SITE_NAME, toolUrl, categoryUrl, absoluteUrl } from "@/lib/site";
 
 export const dynamic = "force-static";
 
@@ -37,6 +37,10 @@ export function GET() {
   const text = getToolsByCategory("text");
   const cross = getToolsByCategory("cross");
 
+  // Cross-format tools have no dedicated hub page (categoryUrl("cross") would 404),
+  // so point AI engines at the home page's #cross section instead.
+  const crossUrl = absoluteUrl("/#cross");
+
   const body = `# ${SITE_NAME}
 
 > ${ALL_TOOLS.length}+ free PDF, Word, image, and text tools that run entirely in the
@@ -60,7 +64,7 @@ Sitemap: ${SITE_URL}/sitemap.xml
 - [Word Tools](${categoryUrl("word")}): ${word.length} tools — DOCX convert, merge, edit, protect.
 - [Image Tools](${categoryUrl("image")}): ${image.length} tools — convert, resize, compress, crop, edit.
 - [Text Tools](${categoryUrl("text")}): ${text.length} tools — P2P text transfer between devices.
-${cross.length > 0 ? `- [Cross-format Tools](${categoryUrl("cross")}): ${cross.length} tools.\n` : ""}
+${cross.length > 0 ? `- [Cross-format Tools](${crossUrl}): ${cross.length} tools.\n` : ""}
 ## File transfer
 
 ### P2P File Transfer

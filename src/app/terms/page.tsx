@@ -8,6 +8,9 @@ export const metadata: Metadata = {
     "Terms of service for FilesWow.com. Learn about the usage terms for our free online document tools.",
   alternates: {
     canonical: absoluteUrl("/terms"),
+    languages: {
+      "x-default": absoluteUrl("/terms"),
+    },
   },
 };
 

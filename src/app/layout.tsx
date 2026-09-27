@@ -73,6 +73,11 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   alternates: {
     canonical: "/",
+    // Site is English-only: x-default (emitted as <link rel="alternate"
+    // hreflang="x-default">) declares the URL that serves all locales.
+    languages: {
+      "x-default": absoluteUrl("/"),
+    },
   },
   openGraph: {
     title: "FilesWow.com — Free PDF, Word & Image Tools Online",

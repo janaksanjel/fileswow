@@ -47,6 +47,9 @@ export const metadata: Metadata = {
   ],
   alternates: {
     canonical: PAGE_URL,
+    languages: {
+      "x-default": PAGE_URL,
+    },
   },
   robots: {
     index: true,

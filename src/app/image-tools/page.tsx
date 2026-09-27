@@ -30,6 +30,9 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: categoryUrl("image"),
+    languages: {
+      "x-default": categoryUrl("image"),
+    },
   },
 };
 
