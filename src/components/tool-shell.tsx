@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import type { ToolDef } from "@/lib/catalog";
+import type { ToolGuide } from "@/lib/content";
 import { ToolCard } from "./tool-card";
 import { ToolIcon } from "./icon";
 import { AdSlot } from "./ad-unit";
@@ -9,10 +10,12 @@ import { AdSlot } from "./ad-unit";
 interface ToolShellProps {
   tool: ToolDef;
   relatedTools?: ToolDef[];
+  guide?: ToolGuide | null;
+  faq?: { q: string; a: string }[];
   children: React.ReactNode;
 }
 
-export function ToolShell({ tool, relatedTools = [], children }: ToolShellProps) {
+export function ToolShell({ tool, relatedTools = [], guide = null, faq, children }: ToolShellProps) {
   const categoryHref =
     tool.category === "pdf"
       ? "/pdf-tools"
@@ -117,12 +120,32 @@ export function ToolShell({ tool, relatedTools = [], children }: ToolShellProps)
         </section>
       )}
 
-      {/* FAQ */}
-      {tool.faq.length > 0 && (
-        <section className="mb-10">
-          <h2 className="heading-md text-text-primary mb-4">FAQ</h2>
-          <div className="space-y-2.5">
-            {tool.faq.map((item, i) => (
+      {/* Editorial guide — substantial hand-written content for this tool. */}
+      {guide && guide.paragraphs.length > 0 && (
+        <section className="mb-10" aria-labelledby="guide-heading">
+          <h2 id="guide-heading" className="heading-md text-text-primary mb-4">
+            Guide: {tool.name}
+          </h2>
+          <div className="space-y-4">
+            {guide.paragraphs.map((paragraph, i) => (
+              <p key={i} className="body-md text-text-secondary leading-relaxed">
+                {paragraph}
+              </p>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* FAQ — merged list: catalog FAQ first, then editorial FAQ (deduped).
+          Matches the FAQPage JSON-LD emitted in page.tsx. */}
+      {(() => {
+        const items = faq ?? tool.faq;
+        if (items.length === 0) return null;
+        return (
+          <section className="mb-10">
+            <h2 className="heading-md text-text-primary mb-4">FAQ</h2>
+            <div className="space-y-2.5">
+              {items.map((item, i) => (
               <details
                 key={i}
                 className="group bg-bg-surface border border-border-base rounded-xl px-4 sm:px-5 [&_summary::-webkit-details-marker]:hidden"
@@ -146,10 +169,11 @@ export function ToolShell({ tool, relatedTools = [], children }: ToolShellProps)
                 </summary>
                 <p className="body-md text-text-secondary leading-relaxed pb-4 -mt-1">{item.a}</p>
               </details>
-            ))}
-          </div>
-        </section>
-      )}
+              ))}
+            </div>
+          </section>
+        );
+      })()}
 
       {/* Ad — between tool content and related tools.
           Renders nothing (no gap) when no ad slot is configured. */}

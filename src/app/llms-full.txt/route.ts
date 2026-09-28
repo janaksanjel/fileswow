@@ -1,4 +1,5 @@
 import { ALL_TOOLS, getToolsByCategory } from "@/lib/catalog";
+import { GUIDES, guideUrl } from "@/lib/guides";
 import { SITE_URL, SITE_NAME, toolUrl, categoryUrl, absoluteUrl } from "@/lib/site";
 
 export const dynamic = "force-static";
@@ -28,6 +29,33 @@ function toolsSection(title: string, tools: ReturnType<typeof getToolsByCategory
     return lines.join("\n");
   });
   return `## ${title}\n\n${blocks.join("\n")}\n`;
+}
+
+function guidesSection(): string {
+  const blocks = GUIDES.map((g) => {
+    const lines = [
+      `### ${g.title}`,
+      "",
+      `URL: ${guideUrl(g.slug)}`,
+      `Last updated: ${g.updated}`,
+      "",
+      g.description,
+      "",
+      ...g.intro,
+      "",
+    ];
+    for (const s of g.sections) {
+      lines.push(`## ${s.h2}`, "");
+      for (const p of s.paragraphs) lines.push(p, "");
+      if (s.bullets) for (const b of s.bullets) lines.push(`- ${b}`);
+      lines.push("");
+    }
+    lines.push("Related tools:");
+    for (const slug of g.related) lines.push(`- ${toolUrl(slug)}`);
+    lines.push("");
+    return lines.join("\n");
+  });
+  return `## In-depth guides\n\n${blocks.join("\n")}\n`;
 }
 
 export function GET() {
@@ -79,6 +107,7 @@ ${toolsSection("Word Tools", word)}
 ${toolsSection("Image Tools", image)}
 ${toolsSection("Text Tools", text)}
 ${toolsSection("Cross-format Tools", cross)}
+${guidesSection()}
 `;
 
   return new Response(body, {

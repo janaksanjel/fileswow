@@ -7,15 +7,18 @@ import { ProgressBar } from "@/components/progress-bar";
 import { getToolComponent } from "@/components/tool-registry";
 import { pingIndexNow } from "@/lib/indexnow-ping";
 import type { ToolDef } from "@/lib/catalog";
+import type { ToolGuide } from "@/lib/content";
 
 const MIN_LOADING_MS = 1800; // every tool shows ≥ 1.8 s of progress
 
 interface ToolClientProps {
   tool: ToolDef;
   relatedTools: ToolDef[];
+  guide: ToolGuide | null;
+  faq: { q: string; a: string }[];
 }
 
-export function ToolClient({ tool, relatedTools }: ToolClientProps) {
+export function ToolClient({ tool, relatedTools, guide, faq }: ToolClientProps) {
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const startRef = useRef(0);
@@ -55,7 +58,7 @@ export function ToolClient({ tool, relatedTools }: ToolClientProps) {
   }, [tool.slug]);
 
   return (
-    <ToolShell tool={tool} relatedTools={relatedTools}>
+    <ToolShell tool={tool} relatedTools={relatedTools} guide={guide} faq={faq}>
       {/* Processing indicator */}
       <ProgressBar active={processing} />
 

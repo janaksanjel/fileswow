@@ -1,4 +1,5 @@
 import { ALL_TOOLS, getToolsByCategory } from "@/lib/catalog";
+import { GUIDES, guideUrl } from "@/lib/guides";
 import { SITE_URL, SITE_NAME, toolUrl, categoryUrl, absoluteUrl } from "@/lib/site";
 
 export const dynamic = "force-static";
@@ -45,6 +46,13 @@ ${cross.length > 0 ? `- [Cross-format Tools](${crossUrl}): ${cross.length} tools
 
 - [Home](${SITE_URL}): start here — search across all tools.
 - [P2P File Transfer](${categoryUrl("pdf").replace("/pdf-tools", "/transfer")}): send files up to 50 GB directly between devices with a 6-digit code; peer-to-peer over WebRTC, nothing stored.
+- [Guides](${absoluteUrl("/guides")}): in-depth tutorials for common document and image tasks.
+
+## Guides
+
+${GUIDES.map(
+  (g) => `- [${g.title}](${guideUrl(g.slug)}): ${g.description}`
+).join("\n")}
 
 ${section("PDF Tools", pdf)}
 ${section("Word Tools", word)}

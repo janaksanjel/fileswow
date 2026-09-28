@@ -44,6 +44,17 @@ const COLUMNS: Array<{ heading: string; links: Array<[string, string]> }> = [
     ],
   },
   {
+    heading: "Guides",
+    links: [
+      ["All Guides", "/guides"],
+      ["How to Merge PDFs", "/guides/how-to-merge-pdf-files"],
+      ["Compress a PDF", "/guides/compress-pdf-guide"],
+      ["PDF to Word", "/guides/pdf-to-word-conversion"],
+      ["Sign Documents Online", "/guides/e-sign-documents-guide"],
+      ["Image Formats Explained", "/guides/image-format-guide"],
+    ],
+  },
+  {
     heading: "Company",
     links: [
       ["Transfer Files", "/transfer"],
@@ -81,7 +92,7 @@ export function Footer() {
         </div>
 
         {/* Links grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-8 gap-y-10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-x-8 gap-y-10">
           {COLUMNS.map((col) => (
             <div key={col.heading} className={col.heading === "Company" ? "col-span-2 sm:col-span-1" : ""}>
               <h3 className="caption font-bold text-text-tertiary uppercase tracking-wider mb-3.5">

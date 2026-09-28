@@ -2,6 +2,7 @@ export const dynamic = "force-static";
 
 import type { MetadataRoute } from "next";
 import { ALL_TOOLS } from "@/lib/catalog";
+import { GUIDES } from "@/lib/guides";
 import { SITE_URL, absoluteUrl } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -47,6 +48,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.9,
     },
     {
+      url: absoluteUrl("/guides"),
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.8,
+    },
+    {
       url: absoluteUrl("/about"),
       lastModified: now,
       changeFrequency: "monthly",
@@ -74,5 +81,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: tool.tier === 1 ? 0.8 : tool.tier === 2 ? 0.6 : 0.4,
   }));
 
-  return [...staticPages, ...toolPages];
+  // Editorial guides — dated by their actual last-updated date
+  const guidePages: MetadataRoute.Sitemap = GUIDES.map((guide) => ({
+    url: absoluteUrl(`/guides/${guide.slug}`),
+    lastModified: new Date(guide.updated),
+    changeFrequency: "monthly" as const,
+    priority: 0.7,
+  }));
+
+  return [...staticPages, ...toolPages, ...guidePages];
 }

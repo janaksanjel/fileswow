@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ALL_TOOLS, getToolBySlug, getRelatedTools, SUB_CATEGORY_LABELS } from "@/lib/catalog";
 import { absoluteUrl, toolUrl, categoryUrl, jsonLdProps } from "@/lib/site";
+import { getToolGuide, getToolFaq } from "@/lib/content";
 import { ToolClient } from "./tool-client";
 
 interface ToolPageProps {
@@ -137,11 +138,36 @@ export default async function ToolPage({ params }: ToolPageProps) {
     ],
   };
 
-  // FAQ schema
-  const faqJsonLd = tool.faq.length > 0 ? {
+  // Editorial guide + merged FAQ (catalog FAQ first, editorial FAQ deduped in)
+  const guide = getToolGuide(slug);
+  const faq = getToolFaq(slug, tool.faq);
+
+  // Guide as Article schema — signals substantial written content to crawlers
+  const guideJsonLd = guide
+    ? {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        headline: `Guide to ${tool.name}`,
+        description: tool.description,
+        mainEntityOfPage: { "@type": "WebPage", "@id": toolUrl(tool.slug) },
+        author: {
+          "@type": "Organization",
+          name: "FilesWow.com",
+          url: absoluteUrl("/"),
+        },
+        publisher: {
+          "@type": "Organization",
+          name: "FilesWow.com",
+          url: absoluteUrl("/"),
+        },
+      }
+    : null;
+
+  // FAQ schema — mirrors the visible accordion (merged FAQ), not just catalog FAQ
+  const faqJsonLd = faq.length > 0 ? {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    mainEntity: tool.faq.map((item) => ({
+    mainEntity: faq.map((item) => ({
       "@type": "Question",
       name: item.q,
       acceptedAnswer: {
@@ -177,10 +203,11 @@ export default async function ToolPage({ params }: ToolPageProps) {
       <script {...jsonLdProps(softwareJsonLd)} />
       <script {...jsonLdProps(howToJsonLd)} />
       <script {...jsonLdProps(breadcrumbJsonLd)} />
+      {guideJsonLd && <script {...jsonLdProps(guideJsonLd)} />}
       {faqJsonLd && <script {...jsonLdProps(faqJsonLd)} />}
       <script {...jsonLdProps(webAppJsonLd)} />
 
-      <ToolClient tool={tool} relatedTools={relatedTools} />
+      <ToolClient tool={tool} relatedTools={relatedTools} guide={guide} faq={faq} />
     </>
   );
 }
