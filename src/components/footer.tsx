@@ -1,26 +1,30 @@
 import Link from "next/link";
 import { ALL_TOOLS } from "@/lib/catalog";
+import { BLOG_POSTS } from "@/lib/blog";
 
 const COLUMNS: Array<{ heading: string; links: Array<[string, string]> }> = [
   {
-    heading: "PDF Tools",
+    heading: "Popular PDF Tools",
     links: [
       ["Merge PDF", "/tools/merge-pdf"],
       ["Split PDF", "/tools/split-pdf"],
       ["Compress PDF", "/tools/compress-pdf"],
       ["PDF to Word", "/tools/pdf-to-word"],
-      ["Watermark PDF", "/tools/watermark-pdf"],
-      ["Protect PDF", "/tools/protect-pdf"],
+      ["Word to PDF", "/tools/word-to-pdf"],
+      ["Sign PDF", "/tools/sign-pdf"],
+      ["Edit PDF", "/tools/edit-pdf"],
     ],
   },
   {
-    heading: "Word Tools",
+    heading: "Convert & Edit",
     links: [
-      ["Word to PDF", "/tools/word-to-pdf"],
-      ["Merge Word", "/tools/merge-word"],
+      ["JPG to PDF", "/tools/jpg-to-pdf"],
+      ["PDF to JPG", "/tools/pdf-to-jpg"],
+      ["PDF to Excel", "/tools/pdf-to-excel"],
+      ["HTML to PDF", "/tools/html-to-pdf"],
       ["Word to Text", "/tools/word-to-text"],
-      ["Word to HTML", "/tools/word-to-html"],
-      ["Protect Word", "/tools/protect-word"],
+      ["OCR PDF", "/tools/ocr-pdf"],
+      ["All 100+ Tools", "/search"],
     ],
   },
   {
@@ -29,42 +33,39 @@ const COLUMNS: Array<{ heading: string; links: Array<[string, string]> }> = [
       ["Compress Image", "/tools/compress-image"],
       ["Resize Image", "/tools/resize-image"],
       ["Crop Image", "/tools/crop-image"],
-      ["JPG to PNG", "/tools/jpg-to-png"],
       ["Remove Background", "/tools/background-remove-image"],
+      ["JPG to WebP", "/tools/jpg-to-webp"],
+      ["All Image Tools", "/image-tools"],
     ],
   },
   {
-    heading: "Convert",
+    heading: "Popular Guides",
     links: [
-      ["PDF to JPG", "/tools/pdf-to-jpg"],
-      ["JPG to PDF", "/tools/jpg-to-pdf"],
-      ["HTML to PDF", "/tools/html-to-pdf"],
-      ["PDF to Text", "/tools/pdf-to-text"],
-      ["Word to Markdown", "/tools/word-to-markdown"],
-    ],
-  },
-  {
-    heading: "Guides",
-    links: [
+      ["Merge PDFs Free", "/blog/how-to-merge-pdf-files-online-free"],
+      ["Compress to a Size Limit", "/blog/compress-pdf-to-specific-size"],
+      ["PDF to Word (Editable)", "/blog/convert-pdf-to-word-editable"],
+      ["Sign PDFs Online", "/blog/how-to-sign-a-pdf-online"],
+      ["JPG to PDF", "/blog/jpg-to-pdf-converter-guide"],
+      ["Split PDF Files", "/blog/split-pdf-into-multiple-files"],
       ["All Guides", "/guides"],
-      ["How to Merge PDFs", "/guides/how-to-merge-pdf-files"],
-      ["Compress a PDF", "/guides/compress-pdf-guide"],
-      ["PDF to Word", "/guides/pdf-to-word-conversion"],
-      ["Sign Documents Online", "/guides/e-sign-documents-guide"],
-      ["Image Formats Explained", "/guides/image-format-guide"],
     ],
+  },
+  {
+    heading: "Blog",
+    links: BLOG_POSTS.slice(0, 7).map(
+      (p) => [p.shortTitle, `/blog/${p.slug}`] as [string, string]
+    ),
   },
   {
     heading: "Company",
     links: [
-      ["Transfer Files", "/transfer"],
-      ["All Tools A–Z", "/search"],
-      ["About", "/about"],
-      ["Contact", "/contact"],
       ["All PDF Tools", "/pdf-tools"],
       ["All Word Tools", "/word-tools"],
       ["All Image Tools", "/image-tools"],
       ["All Text Tools", "/text-tools"],
+      ["P2P File Transfer", "/transfer"],
+      ["About", "/about"],
+      ["Contact", "/contact"],
       ["Privacy", "/privacy"],
       ["Terms", "/terms"],
     ],
@@ -89,14 +90,17 @@ export function Footer() {
             </p>
           </div>
           <p className="text-[13px] text-text-secondary max-w-md sm:text-right">
-            {ALL_TOOLS.length} free PDF, Word &amp; image tools. <Link href="/transfer" className="underline decoration-border-strong underline-offset-2 hover:text-accent transition-colors">Transfer files</Link> up to 50 GB device-to-device. <Link href="/contact" className="underline decoration-border-strong underline-offset-2 hover:text-accent transition-colors">Contact us</Link> anytime.
+            {ALL_TOOLS.length} free PDF, Word &amp; image tools that run in your
+            browser — <Link href="/transfer" className="underline decoration-border-strong underline-offset-2 hover:text-accent transition-colors">transfer files</Link> up to 50 GB device-to-device,{" "}
+            <Link href="/blog" className="underline decoration-border-strong underline-offset-2 hover:text-accent transition-colors">read the blog</Link> for step-by-step tutorials, or{" "}
+            <Link href="/contact" className="underline decoration-border-strong underline-offset-2 hover:text-accent transition-colors">contact us</Link> anytime.
           </p>
         </div>
 
         {/* Links grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-x-8 gap-y-10">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-x-8 gap-y-10">
           {COLUMNS.map((col) => (
-            <div key={col.heading} className={col.heading === "Company" ? "col-span-2 sm:col-span-1" : ""}>
+            <div key={col.heading}>
               <h3 className="caption font-bold text-text-tertiary uppercase tracking-wider mb-3.5">
                 {col.heading}
               </h3>

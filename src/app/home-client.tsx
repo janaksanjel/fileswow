@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useEffect, useCallback, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { ToolCard } from "@/components/tool-card";
@@ -16,6 +17,7 @@ import {
   hasPersonalHistorySnapshot,
 } from "@/lib/usage";
 import { AdSlot } from "@/components/ad-unit";
+import { BLOG_POSTS } from "@/lib/blog";
 
 interface HomeClientProps {
   pdfTools: ToolDef[];
@@ -240,6 +242,52 @@ export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTo
           <CategoryGroup id="cross" title="Cross-Format Tools" tools={crossTools} sections={[]} />
         )}
       </div>
+
+      {/* Blog — latest tutorials (SEO + internal linking) */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-14" aria-labelledby="home-blog-heading">
+        <div className="flex items-end justify-between gap-4 mb-5">
+          <div>
+            <h2 id="home-blog-heading" className="heading-lg text-text-primary mb-1.5">
+              Learn it in <span className="text-gradient">5 minutes</span>
+            </h2>
+            <p className="body-md text-text-secondary">
+              Step-by-step tutorials from the FilesWow blog.
+            </p>
+          </div>
+          <Link
+            href="/blog"
+            className="hidden sm:inline-flex items-center gap-1.5 shrink-0 text-[13px] font-semibold text-accent hover:gap-2.5 transition-all"
+          >
+            All posts
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
+          </Link>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {BLOG_POSTS.slice(0, 3).map((post) => (
+            <Link key={post.slug} href={`/blog/${post.slug}`} className="group card p-5">
+              <span className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide bg-accent/10 text-accent inline-block mb-3">
+                Tutorial
+              </span>
+              <h3 className="text-[14.5px] font-bold text-text-primary mb-1.5 leading-snug group-hover:text-accent transition-colors [text-wrap:balance]">
+                {post.title}
+              </h3>
+              <p className="text-[12.5px] text-text-secondary leading-relaxed line-clamp-2">
+                {post.description}
+              </p>
+              <span className="mt-3 inline-flex items-center gap-1 text-[12px] font-semibold text-accent">
+                Read guide
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
 
       {/* Bottom trust strip */}
       <section className="border-t border-border-base bg-bg-surface">

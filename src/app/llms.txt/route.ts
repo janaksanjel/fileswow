@@ -1,5 +1,6 @@
 import { ALL_TOOLS, getToolsByCategory } from "@/lib/catalog";
 import { GUIDES, guideUrl } from "@/lib/guides";
+import { BLOG_POSTS } from "@/lib/blog";
 import { SITE_URL, SITE_NAME, toolUrl, categoryUrl, absoluteUrl } from "@/lib/site";
 
 export const dynamic = "force-static";
@@ -48,11 +49,18 @@ ${cross.length > 0 ? `- [Cross-format Tools](${crossUrl}): ${cross.length} tools
 - [All Tools A–Z](${absoluteUrl("/search")}): complete index of every tool, with a search box (/search?q=QUERY returns matching tools).
 - [P2P File Transfer](${categoryUrl("pdf").replace("/pdf-tools", "/transfer")}): send files up to 50 GB directly between devices with a 6-digit code; peer-to-peer over WebRTC, nothing stored.
 - [Guides](${absoluteUrl("/guides")}): in-depth tutorials for common document and image tasks.
+- [Blog](${absoluteUrl("/blog")}): step-by-step how-to articles for PDF, Word, and image tasks.
 
 ## Guides
 
 ${GUIDES.map(
   (g) => `- [${g.title}](${guideUrl(g.slug)}): ${g.description}`
+).join("\n")}
+
+## Blog posts
+
+${BLOG_POSTS.map(
+  (p) => `- [${p.title}](${absoluteUrl(`/blog/${p.slug}`)}): ${p.description}`
 ).join("\n")}
 
 ${section("PDF Tools", pdf)}

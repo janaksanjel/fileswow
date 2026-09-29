@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: "/word-tools", label: "Word Tools" },
   { href: "/image-tools", label: "Image Tools" },
   { href: "/text-tools", label: "Text Tools" },
+  { href: "/blog", label: "Blog" },
 ];
 
 const TRANSFER_HREF = "/transfer";
