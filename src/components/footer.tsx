@@ -58,6 +58,7 @@ const COLUMNS: Array<{ heading: string; links: Array<[string, string]> }> = [
     heading: "Company",
     links: [
       ["Transfer Files", "/transfer"],
+      ["All Tools A–Z", "/search"],
       ["About", "/about"],
       ["Contact", "/contact"],
       ["All PDF Tools", "/pdf-tools"],

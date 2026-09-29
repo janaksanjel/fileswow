@@ -45,6 +45,7 @@ ${cross.length > 0 ? `- [Cross-format Tools](${crossUrl}): ${cross.length} tools
 ## Key pages
 
 - [Home](${SITE_URL}): start here — search across all tools.
+- [All Tools A–Z](${absoluteUrl("/search")}): complete index of every tool, with a search box (/search?q=QUERY returns matching tools).
 - [P2P File Transfer](${categoryUrl("pdf").replace("/pdf-tools", "/transfer")}): send files up to 50 GB directly between devices with a 6-digit code; peer-to-peer over WebRTC, nothing stored.
 - [Guides](${absoluteUrl("/guides")}): in-depth tutorials for common document and image tasks.
 
