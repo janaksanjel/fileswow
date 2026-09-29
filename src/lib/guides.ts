@@ -774,6 +774,217 @@ export const GUIDES: Guide[] = [
     ],
     related: ["word-tables-to-excel", "word-to-text", "word-template-filler", "word-to-html", "pdf-to-word"],
   },
+  {
+    slug: "pdf-password-protection-guide",
+    title: "PDF Passwords and Permissions: What They Actually Protect",
+    description:
+      "The honest guide to PDF security: what a password stops and what it doesn't, user vs. owner passwords, why metadata leaks, and a protection checklist for confidential documents.",
+    category: "pdf",
+    updated: "2026-09-29",
+    intro: [
+      "Clicking 'encrypt with a password' feels like putting a document in a safe. The reality is more nuanced: PDF encryption is strong mathematics wrapped around a weak link — the choices you make about which password, which restrictions, and what metadata travels alongside the encrypted pages. This guide explains the two-password model, what each protection layer actually prevents, where real-world leaks happen (almost never through the cipher), and a practical checklist for documents whose confidentiality matters.",
+      "The headline worth internalizing first: AES-256, the strongest encryption PDFs support, has never been practically broken. When a 'protected' document leaks, the cause is almost always one of the human layers — the password was shared in the same email as the file, the metadata still named the wrong recipient, the permissions password was never set, or the recipient simply forwarded the unlocked copy you sent them. Document security is a chain, and the cipher is rarely the weak link.",
+    ],
+    sections: [
+      {
+        h2: "Two passwords, two very different jobs",
+        paragraphs: [
+          "The user password (open password) locks the document itself: without it, the file is unreadable cipher. This is the layer that protects confidentiality, and it's the one that matters when a file travels to someone who shouldn't open it — an email misfire, a shared folder with the wrong permissions. The owner password (permissions password) is different and routinely misunderstood: a file with only an owner password opens freely for anyone — they can read everything — but viewing applications honor restrictions on printing, copying, and editing. It is an instruction to well-behaved software, not a lock.",
+          "The consequence: if your threat model is 'I don't want this read by the wrong person,' an owner password alone provides zero confidentiality. If your threat model is 'I want to discourage casual copying,' an owner password does that — while accepting that any of a dozen free tools (including the one on this site, which requires the legitimate password precisely for this reason) removes it for anyone with the user password, or with no password at all. Set the user password for secrets; set the owner password for etiquette.",
+        ],
+        bullets: [
+          "User (open) password: actual confidentiality — required for confidential content.",
+          "Owner (permissions) password: discourages printing/copying/editing; not secrecy.",
+          "AES-256: choose it over legacy 40/128-bit RC4 whenever the tool offers the option.",
+          "Neither password protects against a recipient who voluntarily forwards the file.",
+        ],
+      },
+      {
+        h2: "Where protected documents actually leak",
+        paragraphs: [
+          "The password travels with the file: the single most common failure. 'Here's the contract — password is Spring2026!' in the same email as the attachment means the protection exists in name only; anyone intercepting either message has both halves. Send the password out-of-band: a phone call, a different messaging app, or split across two channels. It feels paranoid for about the one week it takes to become a habit.",
+          "Metadata tells the story you didn't: the document properties — author name, title, the software and machine that produced it, revision history — ride along unless explicitly stripped. A redacted-looking PDF that still carries a title like 'Layoffs_2026_draft_v3' or an author field naming a person who was never meant to be visible has leaked context before a single page is read. The metadata editor shows what's there; the stripper removes it. Check this on anything leaving your organization.",
+        ],
+      },
+      {
+        h2: "Redaction versus hiding",
+        paragraphs: [
+          "Covering a word with a black rectangle changes its color, not its existence — the text lives on under the box, one copy-paste from exposure. Genuine redaction deletes the content: the text object is removed from the file before the bar is drawn. The distinction has produced some of the most embarrassing document leaks on record, precisely because a redacted-by-drawing file looks perfectly protected in every viewer.",
+          "The same logic applies to buried remnants: deleted pages that linger in a file's structure on some incremental saves, embedded attachments nobody remembers adding, comments and annotation threads from review rounds. A protection pass on an important document should include: redact properly, strip metadata, and flatten forms so field values can't be edited back out of their boxes.",
+        ],
+      },
+      {
+        h2: "A protection checklist for confidential documents",
+        paragraphs: [
+          "Before anything sensitive leaves your device, in order: fix the metadata first (title, author — set what should be seen, strip what shouldn't); redact genuinely if any content must not reach the recipient; set the user password with AES-256 if the content is confidential, and send that password out-of-band; add an owner password to discourage casual printing or copying when the recipient is trusted to read but you'd rather they not redistribute; verify the result on a machine that doesn't have the password cached — the encryption checker reports what protection the file actually carries, which occasionally differs from what you believed you applied.",
+          "And the layer above all tools: the recipient. Protection authenticates and encrypts; it does not create trust. For documents whose control truly matters — contracts in negotiation, board materials, personal records — the strongest technical measure is minimizing distribution: fewer copies, named recipients, and a shared understanding that the document is confidential. Every protection in this guide is defeated by an authorized recipient who chooses to forward the file. Technology narrows the attack surface; it cannot replace judgment about who receives the document in the first place.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "Is a permissions password real security?",
+        a: "No — it restricts printing, copying, and editing only in applications that honor it. Anyone can read the document. Confidential content needs a user (open) password.",
+      },
+      {
+        q: "How strong is PDF encryption?",
+        a: "AES-256 PDF encryption has never been practically broken. Real-world leaks come from shared passwords, leftover metadata, or recipients forwarding files — not the cipher.",
+      },
+      {
+        q: "How should I share the password itself?",
+        a: "Out-of-band: a phone call or a different app than the one carrying the file. Password-in-the-same-email equals no protection.",
+      },
+      {
+        q: "Does encryption hide the document's metadata?",
+        a: "Some viewers gate it behind the password, but you should not rely on it: strip sensitive metadata before encrypting, so the context never ships at all.",
+      },
+      {
+        q: "Can I check what protection a PDF actually has?",
+        a: "Yes — the encryption checker reports the cipher strength and which restrictions are set, which is worth doing on any document you're about to trust.",
+      },
+    ],
+    related: ["protect-pdf", "unlock-pdf", "pdf-encrypt-check", "redact-pdf", "pdf-metadata-stripper"],
+  },
+  {
+    slug: "document-scanning-guide",
+    title: "Phone Scanning Done Right: From Bad Photo to Clean Document",
+    description:
+      "Why scanner-app output looks professional and camera photos don't: capture technique, the correction pipeline (crop, straighten, threshold), and turning images into searchable PDFs.",
+    category: "image",
+    updated: "2026-09-29",
+    intro: [
+      "A photo of a document is not a scan — or at least, it isn't yet. The camera version has keystone distortion from shooting at an angle, uneven lighting with a shadow across half the page, a gray instead of white background, and text too soft for OCR. Scanner apps fix this with a pipeline of corrections, and every one of those corrections is available here as a standalone tool. This guide walks the pipeline in order: capture, crop, straighten, clean, and convert — with the settings that separate a document that looks photographed from one that looks scanned.",
+      "The order matters more than the individual steps. Straighten before cropping (the crop frame rotates with the correction); clean and threshold before converting to PDF (the conversion bakes whatever state the image is in); OCR last (recognition quality is capped by everything that came before). People who get poor results usually aren't missing a tool — they're running the same pipeline in an order that undoes earlier corrections.",
+    ],
+    sections: [
+      {
+        h2: "Capture: the five seconds that decide everything",
+        paragraphs: [
+          "Light: even, diffuse light is the single biggest quality factor. A window on an overcast day is ideal; two lamps at opposite corners beat one overhead source. Avoid direct overhead light, which bounces off glossy paper into hotspots, and avoid any angle where your own shadow crosses the page. If the light can't be fixed, the threshold step can compensate — partially — by forcing white backgrounds at the cost of some faint content.",
+          "Geometry: shoot straight down, filling the frame. Every degree off-perpendicular adds keystone distortion — the page becomes a trapezoid with text narrower at the far edge — which no amount of later correction fully repairs. Hold steady and tap to focus on the text itself, not the page center: focus error is the difference between OCR-ready text and a soft blur that recognition reads at 70%. And capture at full resolution; storage is cheap, and resolution lost at capture cannot be recreated.",
+        ],
+      },
+      {
+        h2: "The correction pipeline, in order",
+        paragraphs: [
+          "Straighten first: level the horizon to a tenth of a degree — recognition assumes horizontal text lines, and even a 3° tilt measurably degrades OCR. Crop second, as tightly as the content allows: margins become gray padding in the PDF, and tight crops make thumbnails, prints, and screen reads all better. Perspective correction (for the trapezoid shots that couldn't be avoided) belongs in this stage too — un-skew the page before anything else touches it.",
+          "Then the cleaning pass, where photos become documents. Threshold (black-and-white conversion with a live-adjustable cutoff) turns the gray camera background into paper-white and pushes text to true black — this is the step that makes a phone photo look scanned, and on anything destined for OCR it's usually worth the loss of grayscale detail. Contrast and sharpening handle the in-between cases: mild low-contrast scans that aren't bad enough to warrant full thresholding. One pass, in this order, and the image is ready for assembly.",
+        ],
+        bullets: [
+          "Straighten (and un-skew) → crop tight → threshold or contrast → convert → OCR.",
+          "Threshold for OCR and print; contrast-only when faint stamps or photos matter.",
+          "300 DPI effective resolution at final size is the target — resize down, never up.",
+        ],
+      },
+      {
+        h2: "From images to a real document",
+        paragraphs: [
+          "Assembly is the easy part once the images are clean: JPG to PDF (one image per page) or Images to PDF (many at once, with reordering) wraps them into a single document at a consistent page size — usually A4 or Letter so prints behave. Orientation should already be correct from the straighten step; if a page slips through sideways, real per-page rotation fixes it at the PDF level non-destructively.",
+          "The last step is the one that changes what the document can do: OCR. Recognition attaches an invisible text layer under the image, making the PDF searchable and its text selectable — the difference between a document you can only look at and one you can work with. Capture quality, thresholding, and straightening all pay off here: a clean pipeline routinely exceeds 95% recognition accuracy, while a rushed photo of a crumpled receipt can fall below 80%. Run OCR page by page for long documents, then verify by searching for three words from different pages.",
+        ],
+      },
+      {
+        h2: "When to rescan instead of repair",
+        paragraphs: [
+          "Some photos are past saving: focus miss on the text, a shadow that sits exactly on a line of numbers, a page folded through the signature. The correction pipeline can spend your time and still deliver a worse document than a twenty-second reshoot would. The honest test: if the text itself is hard for you to read on the photo, it will be impossible for OCR — recapture rather than repair.",
+          "For recurring scanning — expenses, intake forms, mail — build the habit instead of the rescue: same surface, same light, fill the frame, shoot, and run the batch through the pipeline weekly. Ten consistent captures beat fifty rescues, and the batch converter turns the routine into a single drop-and-download step.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "Why does my document photo look gray instead of white?",
+        a: "Cameras expose for the whole scene, and paper is never lit evenly. Threshold conversion forces the background to pure white and text to black — the step that makes photos look scanned.",
+      },
+      {
+        q: "What resolution should document photos be?",
+        a: "Aim for 300 DPI at final page size — roughly 2,500×3,300 pixels for an A4 page. Higher helps nothing after that; lower starts dropping thin character strokes.",
+      },
+      {
+        q: "Why is OCR accuracy poor on my photo?",
+        a: "Usually capture: skew, shadows, focus, or gray-on-gray contrast. Straighten, threshold, and reshoot if the text is blurry — recognition can't exceed what the image actually shows.",
+      },
+      {
+        q: "Should I scan in color or black-and-white?",
+        a: "Black-and-white (thresholded) for text documents — smaller, sharper, better for OCR. Grayscale or color when stamps, photos, or signatures carry information that contrast loss would erase.",
+      },
+      {
+        q: "Can I combine photos taken on different days into one PDF?",
+        a: "Yes — process each through the pipeline, then merge or assemble with Images to PDF. Consistent correction matters more than consistent capture timing.",
+      },
+    ],
+    related: ["scan-to-pdf", "jpg-to-pdf", "images-to-pdf", "straighten-image", "threshold-image"],
+  },
+  {
+    slug: "file-size-reduction-guide",
+    title: "Every Way to Shrink a File (and When Each One Applies)",
+    description:
+      "PDFs, images, Word documents, and folders of them: why files are big, the reduction tool for each case, and the order of operations that hits a size limit with minimum quality loss.",
+    category: "text",
+    updated: "2026-09-29",
+    intro: [
+      "'The file is too big' arrives in many forms: the 25 MB portal that rejects a 30 MB PDF, the email attachment ceiling, the folder of scans that needs to travel as one archive. The solutions are just as varied — and applying the wrong one wastes time or quality. This guide maps file weight to its actual causes and the reduction strategy for each: compression for image-heavy PDFs, resizing for photos, subsetting and cleanup for Word documents, and splitting when no amount of shrinking will fit the budget.",
+      "The unifying principle: size has causes, and each cause has its own fix. A PDF that's huge because of one embedded photo will not benefit from re-saving; a Word document bloated by tracked changes and embedded fonts ignores image logic entirely. Diagnose first — the file inspector tells you where the bytes live — then apply the tool that addresses that cause. Everything below runs locally in your browser, so even multi-hundred-megabyte files are practical.",
+    ],
+    sections: [
+      {
+        h2: "PDFs: find the weight before you compress",
+        paragraphs: [
+          "Open the inspector first. If images dominate (the usual case — scans, photo-embedded reports), compression is the answer, and the level choice follows the destination: medium for email and web (typically 40–70% off scans, visually transparent), high only for hard limits, low or none for print. If fonts dominate (CJK documents can carry 10+ MB of glyphs), compression won't touch it — accept the size or re-author with system fonts. If structure dominates (incremental saves stacking revisions), a clean re-save through a normalizer strips the dead weight.",
+          "Then the levers people miss. Optimize for web (linearization) doesn't shrink much but transforms perceived speed — pages render before the download finishes. Splitting by size doesn't shrink at all but guarantees compliance when a portal enforces a ceiling: compress to get near the target, split to guarantee it. And the scanner's lever: a 600 DPI source compresses well but is still heavier than a 300 DPI rescan — capture resolution is the upstream fix no post-processing quite matches.",
+        ],
+      },
+      {
+        h2: "Images: resize, then encode",
+        paragraphs: [
+          "Two numbers decide image weight: pixel count and encoding efficiency — and pixel count is usually the bigger sin. A 4000×3000 camera photo displayed in an 800px article column carries 16× the needed pixels; no quality setting fixes that. Resize to the largest rendered size first (×2 for retina), then choose the format: WebP for web delivery (25–34% under JPG at equal quality), JPG at 85–90% for universal compatibility, PNG only for sharp-edged graphics, screenshots, and anything needing transparency.",
+          "Quality settings are more forgiving than people expect: 80–85% is visually transparent for photographic content, and the cliff is below 70% where artifacts appear around text and flat edges. The compounding effect is where the wins live — resize to half the linear dimensions plus WebP instead of JPG typically lands a 4 MB camera photo near 200 KB with no visible difference. For folders of images, batch conversion applies the identical recipe to all of them in one pass.",
+        ],
+        bullets: [
+          "Resize to render size × 2 (retina) before any format conversion.",
+          "WebP 80–85% for photos on the web; JPG 85–90% for email-bound compatibility.",
+          "PNG for screenshots and logos — and never re-save a JPG repeatedly.",
+        ],
+      },
+      {
+        h2: "Word documents: the invisible bloat",
+        paragraphs: [
+          "DOCX files are ZIP archives, and their size hides in odd corners: embedded fonts (each can weigh megabytes), full-resolution images pasted from phones (unresized, unconverted), tracked changes and comments accumulating through review rounds, unused style definitions from template ancestors, and embedded objects — a linked spreadsheet that arrived as a full embedded copy. Compression for Word targets the safe parts: re-encoding images inside the package at web-appropriate quality, which typically halves a document whose bloat is photographic.",
+          "The rest is hygiene: accept or reject tracked changes before distribution (smaller, and it removes history you may not intend to share); run a style cleaner to strip orphaned formatting definitions; check the metadata editor for embedded thumbnails. And when the document must not change — a signed agreement, a filed form — convert to PDF first, then compress the PDF: the PDF's compression tools are more precise about what they sacrifice, and the snapshot semantic fits 'this is final.'",
+        ],
+      },
+      {
+        h2: "When shrinking isn't enough: split deliberately",
+        paragraphs: [
+          "Some files cannot reach their target: a 200-page scan at acceptable quality may never fit a 10 MB portal. That's the moment to stop compressing and start splitting — split by size cuts at page boundaries against a byte budget (aim 10% under the stated limit for gateway overhead), producing parts that concatenate back to the original. Label the parts ('Part 1 of 3') in the email; recipients reassemble by downloading all before opening.",
+          "The decision rule, compressed: one file under one limit → compress; a folder under one limit → batch-convert, then ZIP (archives re-compress what's left); a document that refuses both → split by size; a document that must remain single and whole → renegotiate the limit or the medium, because the last 10% of compression costs the most quality. Knowing which situation you're in is most of the solution.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "Why won't my text-only PDF compress?",
+        a: "There's nothing to re-encode — its bytes are fonts and structure. Check the inspector; if fonts dominate, only re-authoring with lighter fonts helps.",
+      },
+      {
+        q: "Compress before or after splitting?",
+        a: "Compress first, then split by size. Splitting doesn't shrink anything — it guarantees the ceiling once compression has done what it can.",
+      },
+      {
+        q: "What's the fastest way to shrink a folder of photos?",
+        a: "Batch resize to render dimensions, batch-convert to WebP at 80–85%, download as ZIP. The whole folder typically drops 80–90%.",
+      },
+      {
+        q: "Why is my Word file so big with almost no images?",
+        a: "Usually embedded fonts, accumulated tracked changes, or an embedded object like a pasted spreadsheet. Accept changes, run a style cleaner, and check the metadata.",
+      },
+      {
+        q: "How far under a size limit should I aim?",
+        a: "About 10% — gateways and mail servers measure with their own overhead, and a part that's exactly at the limit is the part that bounces.",
+      },
+    ],
+    related: ["compress-pdf", "split-pdf-by-size", "optimize-pdf-web", "compress-word", "compress-image"],
+  },
 ];
 
 // ── Dev-time validation: related slugs must exist in the tool catalog ──

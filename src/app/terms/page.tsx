@@ -46,7 +46,7 @@ export default function TermsPage() {
 
         <div className="space-y-6 body-md text-text-secondary leading-relaxed">
           <p>
-            <em>Last updated: January 1, 2025</em>
+            <em>Last updated: September 29, 2026</em>
           </p>
 
           <h2 className="heading-md text-text-primary pt-4">
@@ -74,6 +74,13 @@ export default function TermsPage() {
             <li>
               Use the service for any illegal purpose or in violation of any
               applicable laws.
+            </li>
+            <li>
+              Use tools that modify document protections or markings (password
+              removal, watermark removal) on files you do not own or are not
+              authorized to modify. Such protections often assert legal rights,
+              and removing them from another party&apos;s work may infringe
+              copyright.
             </li>
             <li>
               Attempt to reverse-engineer, decompile, or extract the source code
@@ -127,7 +134,14 @@ export default function TermsPage() {
 
           <h2 className="heading-md text-text-primary pt-4">Contact</h2>
           <p>
-            Questions about these terms? Contact us at{" "}
+            Questions about these terms? Visit our{" "}
+            <Link
+              href="/contact"
+              className="font-bold text-text-primary underline decoration-accent decoration-[3px] underline-offset-2 hover:bg-accent-subtle transition-colors"
+            >
+              contact page
+            </Link>{" "}
+            or email{" "}
             <a
               href="mailto:legal@fileswow.com"
               className="font-bold text-text-primary underline decoration-accent decoration-[3px] underline-offset-2 hover:bg-accent-subtle transition-colors"

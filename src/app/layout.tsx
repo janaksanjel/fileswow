@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/lib/theme-provider";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { CookieConsentBanner } from "@/components/cookie-consent";
+import { AnalyticsConsentGate } from "@/components/analytics-consent-gate";
 import { SupportBot } from "@/components/support-bot";
 import { SITE_URL, SITE_NAME, absoluteUrl, jsonLdProps } from "@/lib/site";
 
@@ -182,12 +183,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <script {...jsonLdProps(websiteJsonLd)} />
         <script {...jsonLdProps(softwareJsonLd)} />
         <link rel="dns-prefetch" href="https://www.google-analytics.com" />
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-RGZ4FLC926" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `window.dataLayer = window.dataLayer || []; function gtag(){dataLayer.push(arguments);} gtag('js', new Date()); gtag('config', 'G-RGZ4FLC926');`,
-          }}
-        />
+        {/* Google Analytics loads only after cookie consent — see AnalyticsConsentGate */}
+        <AnalyticsConsentGate />
         {/* Google Search Console verification — set GSC_VERIFICATION to the full `google-site-verification` meta content value */}
         {process.env.GSC_VERIFICATION && (
           <meta name="google-site-verification" content={process.env.GSC_VERIFICATION} />

@@ -15,6 +15,19 @@ interface ToolShellProps {
   children: React.ReactNode;
 }
 
+/**
+ * Tools that sit near Google's "enabling dishonest behavior" policy line
+ * (bypassing protection / rights markings). They're legitimate when used on
+ * documents you own — the banner makes the acceptable-use boundary explicit,
+ * visible to both users and any policy reviewer.
+ */
+const RESPONSIBLE_USE_SLUGS = new Set([
+  "remove-watermark-pdf",
+  "remove-watermark-word",
+  "remove-watermark-image",
+  "unlock-pdf",
+]);
+
 export function ToolShell({ tool, relatedTools = [], guide = null, faq, children }: ToolShellProps) {
   const categoryHref =
     tool.category === "pdf"
@@ -64,6 +77,23 @@ export function ToolShell({ tool, relatedTools = [], guide = null, faq, children
           </div>
         </div>
       </div>
+
+      {/* Responsible-use notice for tools that interact with protections/markings */}
+      {RESPONSIBLE_USE_SLUGS.has(tool.slug) && (
+        <div className="mb-6 px-4 py-3 rounded-xl bg-warning/[0.06] border border-warning/25 flex items-start gap-3">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-warning mt-0.5 shrink-0" aria-hidden="true">
+            <path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />
+          </svg>
+          <p className="text-[13px] leading-relaxed text-text-secondary">
+            <strong className="text-text-primary font-semibold">Use only on documents you own or are authorized to modify.</strong>{" "}
+            Watermarks and password protection often assert legal rights — removing them from someone else&apos;s work may infringe copyright. See our{" "}
+            <Link href="/terms" className="font-semibold text-text-primary underline decoration-warning underline-offset-2 hover:opacity-80 transition-opacity">
+              Terms of Service
+            </Link>
+            .
+          </p>
+        </div>
+      )}
 
       {/* Privacy Notice */}
       <div className="flex items-center gap-3 mb-6 px-4 py-3 rounded-xl bg-success/[0.05] border border-success/20">
