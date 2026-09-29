@@ -1,0 +1,116 @@
+{
+  "on": true,
+  "_BUTTON_SWITCH": "👉 Set 'on': true to show ads. Set 'on': false to STOP ALL ADS instantly.",
+  "homePage": {
+    "topLeaderboard": {
+      "desktopSlotKey": "banner728x90",
+      "mobileSlotKey": "banner468x60",
+      "enabled": true
+    },
+    "enableSocialBar": true,
+    "enablePopunder": true,
+    "enableSideRails": true
+  },
+  "slots": {
+    "popunder": {
+      "id": "31474501",
+      "name": "Popunder_1",
+      "format": "popunder",
+      "enabled": true,
+      "scriptUrl": "https://pl31575000.profitableratecpmnetwork.com/95/41/d6/9541d683ff8f03726fee48dd4010cc38.js",
+      "rawCode": "<script src=\"https://pl31575000.profitableratecpmnetwork.com/95/41/d6/9541d683ff8f03726fee48dd4010cc38.js\"></script>",
+      "note": "Popunder ad. Set 'enabled': false to turn off."
+    },
+    "socialBar": {
+      "id": "31474502",
+      "name": "SocialBar_1",
+      "format": "social_bar",
+      "enabled": true,
+      "scriptUrl": "https://pl31575001.profitableratecpmnetwork.com/1a/4e/5b/1a4e5b84ac6d47373a9b8abe702d7891.js",
+      "rawCode": "<script src=\"https://pl31575001.profitableratecpmnetwork.com/1a/4e/5b/1a4e5b84ac6d47373a9b8abe702d7891.js\"></script>",
+      "note": "Floating Social Bar. High CTR. Set 'enabled': false to turn off."
+    },
+    "nativeBanner": {
+      "id": "31474503",
+      "name": "NativeBanner_1",
+      "format": "native_banner",
+      "enabled": false,
+      "scriptUrl": "",
+      "containerId": "",
+      "rawCode": ""
+    },
+    "smartlink": {
+      "id": "31474504",
+      "name": "Smartlink_1",
+      "format": "smartlink",
+      "enabled": true,
+      "url": "https://www.profitableratecpmnetwork.com/w2p44g38?key=b29b3fded135027331adcafda4671bbb"
+    },
+    "banner468x60": {
+      "id": "31474505",
+      "name": "468x60_1",
+      "format": "banner",
+      "width": 468,
+      "height": 60,
+      "enabled": true,
+      "key": "973a8d702e80f29a9af3af4636b1855c",
+      "scriptUrl": "https://www.highrevenueformat.com/973a8d702e80f29a9af3af4636b1855c/invoke.js",
+      "rawCode": ""
+    },
+    "banner160x300": {
+      "id": "31474506",
+      "name": "160x300_1",
+      "format": "banner",
+      "width": 160,
+      "height": 300,
+      "enabled": true,
+      "key": "33fd91a3563f8ddf2108a5b31ff4d8e6",
+      "scriptUrl": "https://www.highrevenueformat.com/33fd91a3563f8ddf2108a5b31ff4d8e6/invoke.js",
+      "rawCode": ""
+    },
+    "banner320x50": {
+      "id": "31474507",
+      "name": "320x50_1",
+      "format": "banner",
+      "width": 320,
+      "height": 50,
+      "enabled": false,
+      "key": "",
+      "scriptUrl": "",
+      "rawCode": ""
+    },
+    "banner728x90": {
+      "id": "31474508",
+      "name": "728x90_1",
+      "format": "banner",
+      "width": 728,
+      "height": 90,
+      "enabled": true,
+      "key": "7f292b240b0b34d2ae0663d17bfc9b67",
+      "scriptUrl": "https://www.highrevenueformat.com/7f292b240b0b34d2ae0663d17bfc9b67/invoke.js",
+      "rawCode": ""
+    },
+    "banner160x600": {
+      "id": "31474509",
+      "name": "160x600_1",
+      "format": "banner",
+      "width": 160,
+      "height": 600,
+      "enabled": false,
+      "key": "",
+      "scriptUrl": "",
+      "rawCode": ""
+    },
+    "banner300x250": {
+      "id": "31474510",
+      "name": "300x250_1",
+      "format": "banner",
+      "width": 300,
+      "height": 250,
+      "enabled": false,
+      "key": "",
+      "scriptUrl": "",
+      "rawCode": ""
+    }
+  }
+}
