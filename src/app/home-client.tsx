@@ -17,7 +17,6 @@ import {
   hasPersonalHistorySnapshot,
 } from "@/lib/usage";
 import { AdSlot } from "@/components/ad-unit";
-import { AdsterraResponsiveBanner, AdsterraBanner, AdsterraPageScripts, AdsterraSideRails } from "@/components/adsterra-ad";
 import { BLOG_POSTS } from "@/lib/blog";
 
 interface HomeClientProps {
@@ -79,8 +78,6 @@ export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTo
 
   return (
     <div>
-      <AdsterraPageScripts />
-      <AdsterraSideRails slotKey="banner160x300" />
       {/* Hero */}
       <section className="hero-glow hero-grid pt-16 sm:pt-24 pb-14 sm:pb-20">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 text-center relative">
@@ -231,14 +228,8 @@ export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTo
         </section>
       )}
 
-      {/* Adsterra Top Leaderboard: 728x90 on Desktop, 468x60 on Mobile/Tablet */}
-      <AdsterraResponsiveBanner
-        desktopSlot="banner728x90"
-        mobileSlot="banner468x60"
-        className="max-w-6xl mx-auto px-4 sm:px-6 mb-10"
-      />
-
-      {/* Ad — between the discovery sections and the category groups (AdSense fallback) */}
+      {/* Ad — between the discovery sections and the category groups.
+          Renders nothing (no gap) when no ad slot is configured. */}
       <AdSlot slot="home" label="leaderboard (home)" className="max-w-6xl mx-auto px-4 sm:px-6 mb-12" />
 
       {/* Category groups — every category on one page, anchor-linked from the hero */}
@@ -251,13 +242,6 @@ export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTo
           <CategoryGroup id="cross" title="Cross-Format Tools" tools={crossTools} sections={[]} />
         )}
       </div>
-
-      {/* Adsterra Middle Placement: 728x90 on Desktop, 468x60 on Mobile */}
-      <AdsterraResponsiveBanner
-        desktopSlot="banner728x90"
-        mobileSlot="banner468x60"
-        className="max-w-6xl mx-auto px-4 sm:px-6 mb-12"
-      />
 
       {/* Blog — latest tutorials (SEO + internal linking) */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-14" aria-labelledby="home-blog-heading">
@@ -304,13 +288,6 @@ export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTo
           ))}
         </div>
       </section>
-
-      {/* Adsterra Bottom Placement: 728x90 on Desktop, 468x60 on Mobile */}
-      <AdsterraResponsiveBanner
-        desktopSlot="banner728x90"
-        mobileSlot="banner468x60"
-        className="max-w-6xl mx-auto px-4 sm:px-6 mb-14"
-      />
 
       {/* Bottom trust strip */}
       <section className="border-t border-border-base bg-bg-surface">

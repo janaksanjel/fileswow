@@ -30,30 +30,6 @@ const WORD_GUIDES: ToolGuideMap = {
       { q: "Do shared styles survive?", a: "Yes — each split file embeds the style definitions it uses, so formatting holds outside the original." },
     ],
   },
-  "word-to-pdf-2": {
-    paragraphs: [
-      `Quick Word to PDF gives you an instant, client-side route from a .docx file to a portable PDF without leaving the Word tools suite. When you need to turn a draft, letter, or memo into a locked-down document ready for sharing, this lightweight converter parses the file and renders each page in a matter of seconds.`,
-      `The engine combines mammoth.js for extracting the document's semantic structure with jsPDF and html2canvas for client-side rendering. It includes automatic script detection: whether your text contains Latin characters, Devanagari (Nepali/Hindi), Arabic, or East Asian scripts, matching Unicode web fonts are loaded on the fly so complex characters never turn into unreadable boxes or question marks.`,
-      `Every byte is processed locally within your browser's execution sandbox. No files are uploaded to remote servers or stored in any cloud queue, making it safe for confidential drafts, financial notes, and personal paperwork. For intricate documents with nested tables or advanced desktop styling, the primary Word to PDF tool remains available as an alternative.`,
-    ],
-    faq: [
-      { q: "How is this different from the primary Word to PDF tool?", a: "This quick version is streamlined for fast conversions of standard Word files directly within the Word tools suite, while utilizing client-side HTML canvas rendering." },
-      { q: "Does it support international scripts like Devanagari and Arabic?", a: "Yes — script detection automatically fetches and applies Unicode web fonts so characters in Devanagari, Arabic, and other world scripts render accurately." },
-      { q: "Are my documents uploaded to a server?", a: "No. All conversion happens directly inside your web browser — your files never leave your device." },
-    ],
-  },
-  "pdf-to-word-2": {
-    paragraphs: [
-      `When you need the text and basic structure of a PDF back in an editable format quickly, PDF to Word (Quick) extracts the content and rebuilds a brand new Word (.docx) document right on your device. It bypasses bulky server conversion queues to deliver an editable file you can open immediately in Microsoft Word, Google Docs, or LibreOffice.`,
-      `Under the hood, the converter parses the PDF's structural page tree and text runs using client-side WebAssembly and pdf-lib, then constructs valid OpenXML (.docx) sections, headings, and paragraphs. The resulting document is a real, editable Word file with intact paragraph blocks rather than an uneditable series of flattened images.`,
-      `Because conversion takes place entirely within your browser session, your confidential PDFs — contracts, medical records, or internal memos — remain strictly private. For scanned documents without an existing text layer, run the PDF through OCR PDF first before converting.`,
-    ],
-    faq: [
-      { q: "How accurate is the quick conversion?", a: "Text, headings, and standard paragraph flows convert smoothly. Highly intricate multi-column desktop publishing layouts may require light adjustments once opened in Word." },
-      { q: "Can I convert scanned PDFs with this tool?", a: "Scanned PDFs contain images rather than selectable text. Run OCR PDF first to generate a searchable text layer, then use this tool to convert it to Word." },
-      { q: "Do my files stay private?", a: "Yes. Processing runs entirely in client-side JavaScript — your document is never transmitted to an external server." },
-    ],
-  },
   "word-to-text": {
     paragraphs: [
       `Under every .docx is plain text trying to get out — for search indexing, for translation pipelines, for pasting into systems that reject formatting, for LLM prompts that don't need XML noise. This extractor pulls the document's text with paragraph structure intact, minus the formatting machinery.`,
