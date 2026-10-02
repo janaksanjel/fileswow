@@ -350,6 +350,29 @@ const WORD_GUIDES: ToolGuideMap = {
     ],
   },
 
+  "word-to-pdf-2": {
+    paragraphs: [
+      `This is the Word-to-PDF converter accessible from the Word tools section — the same engine as the PDF tools' Word to PDF, surfaced here so you don't have to leave the Word workflow to reach it. Upload a .docx, get a PDF; the conversion handles Unicode scripts, tables, and inline images.`,
+      `The "Quick" label reflects the entry point, not a capability cut: mammoth.js extracts the document's semantic content and jsPDF renders it to PDF with automatic font loading for non-Latin scripts. Simple documents convert cleanly; complex layouts with precise positioning may shift, as with any client-side approach.`,
+      `For the full feature set — script detection options, layout controls — the dedicated Word to PDF tool in the PDF section is the same converter with more surface area exposed.`,
+    ],
+    faq: [
+      { q: "Is this different from the PDF section's Word to PDF?", a: "Same engine, same output quality — this entry point lives in the Word tools section for workflow convenience." },
+      { q: "Does it support non-Latin scripts?", a: "Yes — Devanagari, Arabic, CJK, Thai, and 20+ other scripts are detected and rendered with matching Unicode fonts automatically." },
+    ],
+  },
+  "pdf-to-word-2": {
+    paragraphs: [
+      `This is the PDF-to-Word converter accessible from the Word tools section — the same engine as the PDF tools' PDF to Word, surfaced here so the round-trip stays within the Word workflow. Upload a PDF, get a .docx; text and basic layout extract and rebuild as a real Word document.`,
+      `mupdf.js handles the layout extraction and the docx library rebuilds the structure: paragraphs, headings where detectable, and tables where the geometry is clear. The "Quick" label reflects the entry point, not a capability reduction.`,
+      `For complex PDFs with intricate multi-column layouts, the dedicated PDF to Word tool in the PDF section exposes the same pipeline with additional layout options.`,
+    ],
+    faq: [
+      { q: "Is this different from the PDF section's PDF to Word?", a: "Same engine and output quality — this entry point lives in the Word tools section for workflow convenience." },
+      { q: "How accurate is the conversion?", a: "Best effort — simple text-based PDFs convert well; complex layouts with multi-column text or heavy graphics may shift." },
+    ],
+  },
+
   // ── Cross-format & utility tools ───────────────────────────────
   "universal-converter": {
     paragraphs: [

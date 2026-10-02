@@ -7,6 +7,80 @@ import { PDFDocument, degrees, rgb, StandardFonts } from "pdf-lib";
 export type { PDFDocument };
 
 /**
+ * Load a PDF with pdf.js (for text extraction — pdf-lib cannot read text).
+ */
+export async function loadPdfJs(file: File) {
+  const pdfjsLib = await import("pdfjs-dist");
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+  const buffer = await file.arrayBuffer();
+  return pdfjsLib.getDocument({ data: buffer }).promise;
+}
+
+/**
+ * Extract text lines (with y-position) from a PDF using pdf.js.
+ * Works with Unicode scripts (Devanagari/Nepali, etc.) since pdf.js
+ * decodes glyphs via the fonts' embedded ToUnicode/CMaps.
+ */
+export async function extractPdfLines(file: File): Promise<Array<{
+  page: number;
+  y: number;
+  fontSize: number;
+  text: string;
+}>> {
+  const pdf = await loadPdfJs(file);
+  const lines: Array<{ page: number; y: number; fontSize: number; text: string }> = [];
+
+  for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+    const page = await pdf.getPage(pageNum);
+    const textContent = await page.getTextContent();
+
+    // Group text items into lines by their transformed y-position.
+    const items = textContent.items as Array<{
+      str: string;
+      transform: number[];
+      height: number;
+      hasEOL?: boolean;
+    }>;
+
+    let current: { y: number; parts: string[]; fontSize: number } | null = null;
+
+    for (const item of items) {
+      const y = item.transform[5];
+      const fontSize = Math.hypot(item.transform[1], item.transform[3]) || item.height || 10;
+      const text = item.str;
+      if (!text) {
+        if (item.hasEOL && current) {
+          lines.push({ page: pageNum, y: current.y, fontSize: current.fontSize, text: current.parts.join("") });
+          current = null;
+        }
+        continue;
+      }
+
+      // Same visual line if y is within a small tolerance.
+      if (current && Math.abs(current.y - y) <= Math.max(2, fontSize * 0.5)) {
+        current.parts.push(text);
+        current.fontSize = Math.max(current.fontSize, fontSize);
+      } else {
+        if (current) {
+          lines.push({ page: pageNum, y: current.y, fontSize: current.fontSize, text: current.parts.join("") });
+        }
+        current = { y, parts: [text], fontSize };
+      }
+
+      if (item.hasEOL && current) {
+        lines.push({ page: pageNum, y: current.y, fontSize: current.fontSize, text: current.parts.join("") });
+        current = null;
+      }
+    }
+    if (current) {
+      lines.push({ page: pageNum, y: current.y, fontSize: current.fontSize, text: current.parts.join("") });
+    }
+  }
+
+  return lines;
+}
+
+/**
  * Load a PDF from a File object.
  */
 export async function loadPdf(file: File): Promise<PDFDocument> {
