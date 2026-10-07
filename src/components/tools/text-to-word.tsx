@@ -1,48 +1,77 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { DownloadButton } from "@/components/download-button";
+import RichTextEditor from "@/components/rich-text-editor";
 import type { ToolUIProps } from "@/components/tool-registry";
 
 export default function TextToWordTool({ onProcessing, onError }: ToolUIProps) {
-  const [text, setText] = useState("");
-  const [result, setResult] = useState<Blob | null>(null);
+  const editorElRef = useRef<HTMLDivElement | null>(null);
+  const [keepFormatting, setKeepFormatting] = useState(true);
+  const [result, setResult] = useState<{ blob: Blob; paragraphCount: number } | null>(null);
+  const [filename, setFilename] = useState("document.docx");
   const [processing, setProcessing] = useState(false);
 
-  const handleConvert = async () => {
-    if (!text.trim()) return;
+  const handleEditorReady = useCallback((el: HTMLDivElement | null) => {
+    editorElRef.current = el;
+  }, []);
+
+  const handleConvert = useCallback(async () => {
+    const editor = editorElRef.current;
+    if (!editor || processing) return;
+    if (editor.innerText.trim() === "") {
+      onError?.("Type or paste some text first — the document is empty.");
+      return;
+    }
     setProcessing(true);
     onProcessing?.(true);
     try {
-      const { Document, Packer, Paragraph, TextRun } = await import("docx");
-      const paragraphs = text.split("\n").map(line =>
-        new Paragraph({ children: [new TextRun({ text: line || " ", size: 24 })] })
-      );
-      const doc = new Document({ sections: [{ children: paragraphs }] });
-      const blob = await Packer.toBlob(doc);
-      setResult(blob);
+      // Derive the download filename from the first heading (DOM is
+      // available here; never read refs during render).
+      const heading = editor.querySelector("h1, h2")?.textContent?.trim();
+      const slug = (heading || "document").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
+      setFilename(`${slug || "document"}.docx`);
+
+      const { richTextToDocx } = await import("@/lib/richtext-docx");
+      const res = await richTextToDocx(editor);
+      setResult(res);
     } catch (err) {
       onError?.(err instanceof Error ? err.message : "Failed to create Word document");
     } finally {
       setProcessing(false);
       onProcessing?.(false);
     }
-  };
+  }, [onProcessing, onError, processing]);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <label className="block text-sm text-text-secondary mb-2">Enter your text</label>
-        <textarea value={text} onChange={(e) => { setText(e.target.value); setResult(null); }} rows={12} className="w-full px-4 py-3 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm font-mono focus:border-accent focus:outline-none resize-y" placeholder="Paste or type text here..." />
-        <p className="mt-1 text-xs text-text-tertiary">{text.length} characters · {text.split("\n").length} lines</p>
-      </div>
-      {result && (
-        <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-          <p className="text-sm text-success mb-3">✓ Word document created!</p>
-          <DownloadButton blob={result} filename="document.docx" />
+    <div className="space-y-5">
+      <RichTextEditor
+        editorId="rte-word"
+        keepFormatting={keepFormatting}
+        onKeepFormattingChange={setKeepFormatting}
+        onEditorReady={handleEditorReady}
+      />
+
+      {result ? (
+        <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center space-y-3">
+          <p className="text-sm text-success font-semibold">✓ Word document created — {result.paragraphCount} paragraph{result.paragraphCount === 1 ? "" : "s"}, fully editable</p>
+          <div className="flex items-center justify-center gap-2">
+            <DownloadButton blob={result.blob} filename={filename} label="Download DOCX" />
+            <button type="button" className="btn-secondary" onClick={() => setResult(null)}>Edit more</button>
+          </div>
         </div>
+      ) : (
+        <button onClick={handleConvert} disabled={processing} className="btn-primary w-full py-3">
+          {processing ? (
+            <span className="flex items-center justify-center gap-2">
+              <span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />
+              Building document…
+            </span>
+          ) : (
+            "Convert to Word"
+          )}
+        </button>
       )}
-      {!result && <button onClick={handleConvert} disabled={processing || !text.trim()} className="btn-primary w-full py-3">{processing ? "Creating..." : "Convert to Word"}</button>}
     </div>
   );
 }

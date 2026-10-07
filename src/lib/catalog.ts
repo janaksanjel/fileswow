@@ -1613,18 +1613,23 @@ const wordTools: ToolDef[] = [
   {
     slug: 'text-to-word',
     name: 'Text to Word',
-    description: 'Convert plain text to a Word document.',
+    description: 'Turn rich text into an editable Word document — paste with formatting kept (fonts, colors, lists) and export a real .docx.',
     category: 'word',
     subCategory: 'convert',
     tier: 1,
-    engine: 'docx',
+    engine: 'docx + rich text editor',
     icon: '📝',
     relatedSlugs: ['word-to-text', 'text-to-pdf'],
     howItWorks: [
-      'Paste your text or upload a text file.',
-      'Download as a Word document.',
+      'Type or paste your text — pasted formatting (bold, colors, lists, fonts) is preserved.',
+      'Style the document with the editor toolbar: headings, alignment, lists, colors, and links.',
+      'Download an editable .docx with real Word styles — nothing is uploaded.',
     ],
-    faq: [],
+    faq: [
+      { q: 'Does pasting keep the original formatting?', a: 'Yes — paste from Word, Google Docs, email, or a web page and bold, italics, colors, fonts, sizes, alignment, and lists carry into the editor and the Word file. Turn "Keep source formatting" off to paste as plain text instead.' },
+      { q: 'Is the .docx really editable in Word?', a: 'Yes — the output uses real Word structures: heading styles, bold/italic runs, true bullet and numbered lists, and live hyperlinks. Everything can be edited, restyled, and tracked in Word or Google Docs.' },
+      { q: 'Are emoji and non-English scripts supported?', a: 'Yes — .docx is fully Unicode, so emoji, Devanagari, Arabic, CJK, and other scripts survive the conversion (unlike plain-text converters).' },
+    ],
   },
   {
     slug: 'word-to-html',

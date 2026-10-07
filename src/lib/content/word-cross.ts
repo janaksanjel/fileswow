@@ -45,13 +45,13 @@ const WORD_GUIDES: ToolGuideMap = {
   },
   "text-to-word": {
     paragraphs: [
-      `Plain text becomes a Word document the moment collaboration starts: comments, track changes, and email attachments all speak .docx. This converter wraps your text in a proper Word document — real paragraphs, your choice of font and spacing, margins that print sensibly.`,
-      `Blank lines become paragraph breaks, tabs survive, and long lines wrap naturally. It's the quickest way to take meeting notes, a draft, or generated text from a .txt file into the document ecosystem where edits and reviews happen.`,
-      `For text with simple structure (markdown-ish headings, dashes), Markdown to Word converts semantics — real heading styles and lists — rather than leaving literal # characters in the output.`,
+      `The Text to Word editor is a small word processor that lives in your browser — the same canvas as Text to PDF. Type directly, or paste from Word, Google Docs, an email, or a web page: the paste pipeline keeps what you copied, including bold, italics, colors, highlights, font families and sizes, alignment, bullet and numbered lists, and links. A one-click toggle strips everything to plain text when you want only the words.`,
+      `The export is a real .docx, not a text file with a Word extension: headings map to Word's Heading styles, emphasis becomes true bold/italic runs, lists use Word's native numbering so they renumber when edited, links stay clickable, and images embed into the document. Because DOCX is fully Unicode, emoji and non-Latin scripts convert cleanly — no "?" substitution.`,
+      `Common uses: turning notes, drafts, and generated text into documents ready for comments and track changes, rescuing pasted-from-email formatting into a clean file, and producing .docx deliverables without installing Word — all offline, all private.`,
     ],
     faq: [
       { q: "Will long lines wrap or break?", a: "They wrap naturally at the page width; your original line breaks are preserved as paragraph boundaries where they occur." },
-      { q: "Can I choose the font?", a: "Yes — font family, size, and line spacing are set before conversion." },
+      { q: "Can I choose the font?", a: "Yes — style any selection with the editor toolbar (family, size, color, alignment); the Word export carries the styling over as real formatting." },
     ],
   },
   "word-to-html": {
