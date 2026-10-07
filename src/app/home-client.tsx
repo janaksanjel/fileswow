@@ -62,19 +62,18 @@ export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTo
     clearUsageHistory();
   }, []);
 
-  // Hero search
+  // Hero search — debounce via effect (subscription-style timer), but derive
+  // the empty-query case during render instead of setState-in-effect.
+  const heroQueryEmpty = heroQuery.trim() === "";
   useEffect(() => {
-    if (!heroQuery.trim()) {
-      setHeroResults([]);
-      return;
-    }
+    if (heroQueryEmpty) return;
     const timer = setTimeout(() => {
       const found = searchTools(heroQuery, 8);
       setHeroResults(found);
       setHeroSelectedIdx(0);
     }, 100);
     return () => clearTimeout(timer);
-  }, [heroQuery]);
+  }, [heroQuery, heroQueryEmpty]);
 
   return (
     <div>
@@ -133,7 +132,7 @@ export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTo
             </div>
 
             {/* Hero search results dropdown */}
-            {heroResults.length > 0 && (
+            {!heroQueryEmpty && heroResults.length > 0 && (
               <div className="absolute top-full left-0 right-0 mt-2.5 bg-bg-surface rounded-2xl shadow-xl ring-1 ring-border-base overflow-hidden z-50 text-left animate-fade-in-up">
                 <div className="py-1.5 max-h-[360px] overflow-y-auto">
                   {heroResults.map((result, i) => (
@@ -242,6 +241,38 @@ export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTo
           <CategoryGroup id="cross" title="Cross-Format Tools" tools={crossTools} sections={[]} />
         )}
       </div>
+
+      {/* How it works — the reference-standard 3-step flow. Quiet, factual,
+          and true to the product: upload → tool runs in-browser → download. */}
+      <section className="border-t border-border-base bg-bg-surface" aria-labelledby="how-it-works-heading">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
+          <div className="text-center mb-12">
+            <h2 id="how-it-works-heading" className="heading-lg text-text-primary mb-3">
+              Three steps. <span className="text-gradient">No learning curve.</span>
+            </h2>
+            <p className="body-md text-text-secondary max-w-md mx-auto">
+              Every tool works the same simple way — no account, no upload, no waiting in queues.
+            </p>
+          </div>
+          <ol className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6 max-w-4xl mx-auto">
+            <HowStep
+              step="1"
+              title="Add your file"
+              description="Drag & drop or pick a file. It opens right on your device — nothing is uploaded."
+            />
+            <HowStep
+              step="2"
+              title="Choose what to do"
+              description="Pick a tool and adjust options if you need to. Defaults are sensible; changes are optional."
+            />
+            <HowStep
+              step="3"
+              title="Download the result"
+              description="Your finished file is ready in seconds, generated entirely in your browser."
+            />
+          </ol>
+        </div>
+      </section>
 
       {/* Blog — latest tutorials (SEO + internal linking) */}
       <section className="max-w-6xl mx-auto px-4 sm:px-6 pb-14" aria-labelledby="home-blog-heading">
@@ -377,7 +408,41 @@ export function HomeClient({ pdfTools, wordTools, imageTools, textTools, crossTo
           <FaqAccordion items={FAQ_ITEMS} />
         </div>
       </section>
+
+      {/* Final CTA — one calm closing action, per the reference hierarchy */}
+      <section className="border-t border-border-base" aria-labelledby="final-cta-heading">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16 sm:py-20 text-center">
+          <h2 id="final-cta-heading" className="heading-lg text-text-primary mb-3 [text-wrap:balance]">
+            Ready when you are.
+          </h2>
+          <p className="body-md text-text-secondary max-w-md mx-auto mb-8">
+            Pick a task — merging, compressing, converting — and it&apos;s done
+            before your coffee cools. No sign-up, ever.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link href="/search" className="btn-primary px-7 py-3 text-[15px]">
+              Explore all tools
+            </Link>
+            <Link href="/tools/merge-pdf" className="btn-secondary px-7 py-3 text-[15px]">
+              Try Merge PDF
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
+  );
+}
+
+/* One numbered step in the "How it works" band */
+function HowStep({ step, title, description }: { step: string; title: string; description: string }) {
+  return (
+    <li className="relative text-center">
+      <span className="inline-flex items-center justify-center w-11 h-11 rounded-2xl bg-accent-subtle text-accent text-[15px] font-bold mb-4">
+        {step}
+      </span>
+      <h3 className="text-[15.5px] font-bold text-text-primary mb-1.5">{title}</h3>
+      <p className="text-[13px] text-text-secondary leading-relaxed max-w-[26ch] mx-auto">{description}</p>
+    </li>
   );
 }
 

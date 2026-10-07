@@ -2,15 +2,20 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTheme } from "@/lib/theme-provider";
 import { SearchModal } from "@/components/search-modal";
+import { ToolIcon } from "@/components/icon";
+import { MEGA_MENU } from "@/lib/mega-menu";
 
-const NAV_ITEMS = [
+const TOOL_NAV_ITEMS = [
   { href: "/pdf-tools", label: "PDF Tools" },
   { href: "/word-tools", label: "Word Tools" },
   { href: "/image-tools", label: "Image Tools" },
   { href: "/text-tools", label: "Text Tools" },
+];
+
+const SECONDARY_NAV_ITEMS = [
   { href: "/blog", label: "Blog" },
 ];
 
@@ -20,12 +25,19 @@ const TRANSFER_LABEL = "Transfer Files";
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [megaOpen, setMegaOpen] = useState(false);
   const pathname = usePathname();
   const { theme, toggle } = useTheme();
+  const megaCloseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
+  // Close all menus on navigation — the React-recommended "adjust state
+  // during render" pattern instead of a setState-in-effect.
+  const [prevPath, setPrevPath] = useState(pathname);
+  if (prevPath !== pathname) {
+    setPrevPath(pathname);
     setMobileOpen(false);
-  }, [pathname]);
+    setMegaOpen(false);
+  }
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -33,10 +45,32 @@ export function Header() {
         e.preventDefault();
         setSearchOpen((prev) => !prev);
       }
+      if (e.key === "Escape") {
+        setMegaOpen(false);
+      }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (megaCloseTimer.current) clearTimeout(megaCloseTimer.current);
+    };
+  }, []);
+
+  const openMega = () => {
+    if (megaCloseTimer.current) {
+      clearTimeout(megaCloseTimer.current);
+      megaCloseTimer.current = null;
+    }
+    setMegaOpen(true);
+  };
+
+  const scheduleCloseMega = () => {
+    if (megaCloseTimer.current) clearTimeout(megaCloseTimer.current);
+    megaCloseTimer.current = setTimeout(() => setMegaOpen(false), 140);
+  };
 
   const isActive = (href: string) => pathname === href;
 
@@ -65,8 +99,128 @@ export function Header() {
             </Link>
 
             {/* Desktop nav */}
-            <nav className="hidden md:flex items-center gap-1">
-              {NAV_ITEMS.map((item) => (
+            <nav className="hidden md:flex items-center gap-1" aria-label="Main">
+              {TOOL_NAV_ITEMS.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`px-3 py-1.5 text-[13px] font-semibold rounded-full transition-colors ${
+                    isActive(item.href)
+                      ? "text-accent bg-accent-subtle"
+                      : "text-text-secondary hover:text-text-primary hover:bg-bg-elevated"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+
+              {/* Tools mega menu trigger — right end after text tools */}
+              <div
+                className="relative"
+                onMouseEnter={openMega}
+                onMouseLeave={scheduleCloseMega}
+              >
+                <button
+                  type="button"
+                  aria-expanded={megaOpen}
+                  aria-haspopup="true"
+                  onMouseEnter={openMega}
+                  onFocus={openMega}
+                  onClick={() => setMegaOpen((v) => !v)}
+                  className={`flex items-center gap-1.5 px-3 py-2 text-[13px] font-semibold rounded-full transition-colors cursor-pointer ${
+                    megaOpen
+                      ? "text-accent bg-accent-subtle"
+                      : "text-text-secondary hover:text-text-primary hover:bg-bg-elevated"
+                  }`}
+                >
+                  All Tools
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                    className={`transition-transform duration-200 ${megaOpen ? "rotate-180" : ""}`}
+                  >
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
+
+                {/* Mega menu panel — server-rendered links live in the DOM
+                    (crawled on every page) and open on hover/focus/click. */}
+                <div
+                  onMouseEnter={openMega}
+                  onMouseLeave={scheduleCloseMega}
+                  className={`absolute top-full left-1/2 -translate-x-1/2 pt-2 z-50 transition-all duration-150 ${
+                    megaOpen
+                      ? "opacity-100 translate-y-0 pointer-events-auto"
+                      : "opacity-0 -translate-y-1 pointer-events-none"
+                  }`}
+                  role="region"
+                  aria-label="All tools menu"
+                >
+                  <div className="w-[min(92vw,880px)] rounded-2xl bg-bg-surface border border-border-base shadow-[var(--elevation-xl)] p-6">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-5">
+                      {MEGA_MENU.map((group) => (
+                        <div key={group.title}>
+                          <div className="flex items-center gap-2 mb-2.5">
+                            <Link
+                              href={group.href}
+                              className="text-[11px] font-bold uppercase tracking-widest text-text-primary hover:text-accent transition-colors"
+                            >
+                              {group.title}
+                            </Link>
+                            <span className="flex-1 h-px bg-border-base" aria-hidden="true" />
+                          </div>
+                          <ul className="space-y-0.5">
+                            {group.tools.map((tool) => (
+                              <li key={tool.slug}>
+                                <Link
+                                  href={`/tools/${tool.slug}`}
+                                  className="group flex items-start gap-2.5 px-2 py-1.5 -mx-1 rounded-lg hover:bg-bg-hover transition-colors"
+                                >
+                                  <span className="w-7 h-7 rounded-lg bg-bg-elevated ring-1 ring-inset ring-border-base flex items-center justify-center shrink-0 mt-0.5">
+                                    <ToolIcon name={tool.slug} size={14} className="text-text-secondary group-hover:text-accent transition-colors" />
+                                  </span>
+                                  <span className="min-w-0">
+                                    <span className="block text-[12.5px] font-semibold text-text-primary leading-tight group-hover:text-accent transition-colors">
+                                      {tool.name}
+                                    </span>
+                                    <span className="block text-[11px] text-text-tertiary leading-snug">
+                                      {tool.description}
+                                    </span>
+                                  </span>
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-5 pt-4 border-t border-border-base flex items-center justify-between">
+                      <p className="text-[11.5px] text-text-tertiary">
+                        Every tool runs in your browser — files never upload.
+                      </p>
+                      <Link
+                        href="/search"
+                        className="text-[12px] font-semibold text-accent hover:gap-2 inline-flex items-center gap-1 transition-all"
+                      >
+                        Browse all tools
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <line x1="5" y1="12" x2="19" y2="12" />
+                          <polyline points="12 5 19 12 12 19" />
+                        </svg>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {SECONDARY_NAV_ITEMS.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
@@ -111,10 +265,10 @@ export function Header() {
                 <kbd>⌘K</kbd>
               </button>
 
-              {/* Search trigger (tablet) */}
+              {/* Search trigger (tablet/mobile) */}
               <button
                 onClick={() => setSearchOpen(true)}
-                className="lg:hidden icon-btn"
+                className="lg:hidden icon-btn min-w-11 min-h-11"
                 aria-label="Search tools"
                 title="Search (Ctrl+K)"
               >
@@ -127,7 +281,7 @@ export function Header() {
               {/* Theme toggle */}
               <button
                 onClick={(e) => toggle({ x: e.clientX, y: e.clientY })}
-                className="hidden md:flex icon-btn"
+                className="hidden md:flex icon-btn min-w-11 min-h-11"
                 aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
                 title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
               >
@@ -146,7 +300,7 @@ export function Header() {
               {/* Mobile menu toggle */}
               <button
                 onClick={() => setMobileOpen(!mobileOpen)}
-                className="md:hidden icon-btn"
+                className="md:hidden icon-btn min-w-11 min-h-11"
                 aria-label="Toggle menu"
                 aria-expanded={mobileOpen}
               >
@@ -171,7 +325,33 @@ export function Header() {
         {mobileOpen && (
           <div className="md:hidden border-t border-border-base bg-bg-surface/95 backdrop-blur-xl">
             <div className="px-4 py-3 space-y-1">
-              {NAV_ITEMS.map((item) => (
+              {TOOL_NAV_ITEMS.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`block px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+                    isActive(item.href)
+                      ? "text-accent bg-accent-subtle"
+                      : "text-text-secondary hover:text-text-primary hover:bg-bg-elevated"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+              <Link
+                href="/search"
+                className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+                  isActive("/search")
+                    ? "text-accent bg-accent-subtle"
+                    : "text-text-secondary hover:text-text-primary hover:bg-bg-elevated"
+                }`}
+              >
+                <span>All Tools</span>
+                <span className="text-[11px] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-full border border-accent/20">
+                  100+ Tools →
+                </span>
+              </Link>
+              {SECONDARY_NAV_ITEMS.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
