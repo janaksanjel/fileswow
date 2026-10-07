@@ -6,87 +6,97 @@ import { GUIDES } from "@/lib/guides";
 import { BLOG_POSTS } from "@/lib/blog";
 import { SITE_URL, absoluteUrl } from "@/lib/site";
 
+/**
+ * lastmod integrity: Google uses <lastmod> only when it is consistently
+ * accurate. Shipping `new Date()` (build time) here stamps every URL as
+ * "changed today" on every deploy — real content did not change — so the
+ * dates get distrusted and crawl prioritization degrades (pages linger in
+ * "Discovered – currently not indexed"). Keep this a real date and bump it
+ * only when tool/content pages actually change.
+ */
+const CONTENT_LAST_UPDATED = "2026-10-07";
+
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = SITE_URL;
-  const now = new Date();
+  const contentDate = new Date(CONTENT_LAST_UPDATED);
 
   // Static pages with high priority
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: base,
-      lastModified: now,
+      lastModified: contentDate,
       changeFrequency: "weekly",
       priority: 1.0,
     },
     {
       url: absoluteUrl("/pdf-tools"),
-      lastModified: now,
+      lastModified: contentDate,
       changeFrequency: "weekly",
       priority: 0.9,
     },
     {
       url: absoluteUrl("/word-tools"),
-      lastModified: now,
+      lastModified: contentDate,
       changeFrequency: "weekly",
       priority: 0.9,
     },
     {
       url: absoluteUrl("/image-tools"),
-      lastModified: now,
+      lastModified: contentDate,
       changeFrequency: "weekly",
       priority: 0.9,
     },
     {
       url: absoluteUrl("/text-tools"),
-      lastModified: now,
+      lastModified: contentDate,
       changeFrequency: "weekly",
       priority: 0.9,
     },
     {
       url: absoluteUrl("/transfer"),
-      lastModified: now,
+      lastModified: contentDate,
       changeFrequency: "weekly",
       priority: 0.9,
     },
     {
       url: absoluteUrl("/guides"),
-      lastModified: now,
+      lastModified: contentDate,
       changeFrequency: "weekly",
       priority: 0.8,
     },
     {
       url: absoluteUrl("/blog"),
-      lastModified: now,
+      lastModified: contentDate,
       changeFrequency: "weekly",
       priority: 0.8,
     },
     {
       url: absoluteUrl("/search"),
-      lastModified: now,
+      lastModified: contentDate,
       changeFrequency: "weekly",
       priority: 0.7,
     },
     {
       url: absoluteUrl("/about"),
-      lastModified: now,
+      lastModified: contentDate,
       changeFrequency: "monthly",
       priority: 0.5,
     },
     {
       url: absoluteUrl("/contact"),
-      lastModified: now,
+      lastModified: contentDate,
       changeFrequency: "monthly",
       priority: 0.5,
     },
     {
       url: absoluteUrl("/privacy"),
-      lastModified: now,
+      lastModified: contentDate,
       changeFrequency: "monthly",
       priority: 0.3,
     },
     {
       url: absoluteUrl("/terms"),
-      lastModified: now,
+      lastModified: contentDate,
       changeFrequency: "monthly",
       priority: 0.3,
     },
@@ -95,7 +105,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   // Tool pages — tier 1 tools get higher priority
   const toolPages: MetadataRoute.Sitemap = ALL_TOOLS.map((tool) => ({
     url: absoluteUrl(`/tools/${tool.slug}`),
-    lastModified: now,
+    lastModified: contentDate,
     changeFrequency: "monthly" as const,
     priority: tool.tier === 1 ? 0.8 : tool.tier === 2 ? 0.6 : 0.4,
   }));

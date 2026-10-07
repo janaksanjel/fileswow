@@ -1,86 +1,102 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { DropZone } from "@/components/drop-zone";
-import { DownloadButton } from "@/components/download-button";
+import { StepFlow, type StepOutput } from "@/components/step-flow";
 import type { ToolUIProps } from "@/components/tool-registry";
 
 export default function MergeWordTool({ onProcessing, onError }: ToolUIProps) {
   const [files, setFiles] = useState<File[]>([]);
-  const [result, setResult] = useState<Blob | null>(null);
+  const [outputs, setOutputs] = useState<StepOutput[]>([]);
   const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFiles = useCallback((newFiles: File[]) => {
-    setFiles(prev => [...prev, ...newFiles]);
-    setResult(null);
+  const handleFilesChanged = useCallback((next: File[]) => {
+    setFiles(next);
+    setOutputs([]);
   }, []);
 
-  const removeFile = (i: number) => setFiles(prev => prev.filter((_, idx) => idx !== i));
-
-  const handleMerge = async () => {
+  const handleMerge = useCallback(async () => {
     if (files.length < 2) return;
     setProcessing(true);
     onProcessing?.(true);
     try {
       const mammoth = (await import("mammoth")).default;
       const { Document, Packer, Paragraph, TextRun, HeadingLevel } = await import("docx");
-      const paragraphs: any[] = [];
+      const paragraphs: unknown[] = [];
 
       for (let i = 0; i < files.length; i++) {
         if (i > 0) paragraphs.push(new Paragraph({ children: [], pageBreakBefore: true }));
-        paragraphs.push(new Paragraph({ children: [new TextRun({ text: files[i].name, bold: true, size: 28 })], heading: HeadingLevel.HEADING_1 }));
+        paragraphs.push(
+          new Paragraph({
+            children: [new TextRun({ text: files[i].name, bold: true, size: 28 })],
+            heading: HeadingLevel.HEADING_1,
+          })
+        );
         try {
           const arrayBuffer = await files[i].arrayBuffer();
           const result = await mammoth.convertToHtml({ arrayBuffer });
           const div = document.createElement("div");
           div.innerHTML = result.value;
           const text = div.textContent || div.innerText || "";
-          text.split("\n").filter(Boolean).forEach(line => {
-            paragraphs.push(new Paragraph({ children: [new TextRun({ text: line.trim(), size: 22 })] }));
-          });
+          text
+            .split("\n")
+            .filter(Boolean)
+            .forEach((line) => {
+              paragraphs.push(new Paragraph({ children: [new TextRun({ text: line.trim(), size: 22 })] }));
+            });
         } catch {
-          paragraphs.push(new Paragraph({ children: [new TextRun({ text: `[Could not read ${files[i].name}]`, color: "999999" })] }));
+          paragraphs.push(
+            new Paragraph({
+              children: [new TextRun({ text: `[Could not read ${files[i].name}]`, color: "999999" })],
+            })
+          );
         }
       }
 
-      const doc = new Document({ sections: [{ children: paragraphs }] });
+      const doc = new Document({ sections: [{ children: paragraphs as never[] }] });
       const blob = await Packer.toBlob(doc);
-      setResult(blob);
+      setOutputs([{ name: "merged.docx", blob }]);
     } catch (err) {
-      onError?.(err instanceof Error ? err.message : "Failed to merge Word documents");
+      const msg = err instanceof Error ? err.message : "Failed to merge Word documents";
+      setError(msg);
+      onError?.(msg);
     } finally {
       setProcessing(false);
       onProcessing?.(false);
     }
-  };
+  }, [files, onProcessing, onError]);
 
   return (
-    <div className="space-y-6">
-      {files.length === 0 ? (
-        <DropZone accept=".docx,.doc" multiple onFilesSelected={handleFiles} label="Drop Word documents" description="Select 2 or more DOCX files" />
-      ) : (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between"><p className="text-sm text-text-secondary">{files.length} file(s)</p><button onClick={() => { setFiles([]); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger">Clear all</button></div>
-          <div className="space-y-2">
-            {files.map((f, i) => (
-              <div key={`${f.name}-${i}`} className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
-                <span className="text-xs text-text-tertiary w-6 text-center font-mono">{i + 1}</span>
-                <span className="text-sm text-text-primary truncate flex-1">{f.name}</span>
-                <span className="text-xs text-text-tertiary">{(f.size / 1024).toFixed(0)}KB</span>
-                <button onClick={() => removeFile(i)} className="text-text-tertiary hover:text-danger text-xs">✕</button>
-              </div>
-            ))}
-          </div>
-          <DropZone accept=".docx,.doc" multiple onFilesSelected={handleFiles} label="Add more" description="Drop more DOCX files" />
-          {result && (
-            <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">✓ Merged!</p>
-              <DownloadButton blob={result} filename="merged.docx" />
-            </div>
-          )}
-          {!result && <button onClick={handleMerge} disabled={processing || files.length < 2} className="btn-primary w-full py-3">{processing ? "Merging..." : `Merge ${files.length} documents`}</button>}
+    <StepFlow
+      accept=".docx,.doc"
+      multiple
+      hint="DOCX files · 2 or more"
+      actionLabel={`Merge ${files.length || ""} document${files.length === 1 ? "" : "s"}`.trim()}
+      processingLabel="Merging..."
+      outputs={outputs}
+      canRun={files.length >= 2}
+      processing={processing}
+      fileCount={files.length}
+      onFilesChanged={handleFilesChanged}
+      onResetFilesOnly={() => setOutputs([])}
+      onRun={handleMerge}
+      onReset={() => {
+        setFiles([]);
+        setOutputs([]);
+        setError(null);
+      }}
+      error={error}
+      onDismissError={() => setError(null)}
+      renderOperation={({ files: count }) => (
+        <div className="px-3.5 py-3 rounded-xl bg-bg-elevated/60 border border-border-base">
+          <p className="text-[12.5px] text-text-secondary leading-relaxed">
+            Documents are combined in the order shown in Step 1, each starting on a new page.
+            {count < 2 && (
+              <span className="text-warning font-semibold"> Add at least 2 documents to merge.</span>
+            )}
+          </p>
         </div>
       )}
-    </div>
+    />
   );
 }

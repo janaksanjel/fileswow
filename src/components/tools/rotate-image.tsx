@@ -1,25 +1,24 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { DropZone } from "@/components/drop-zone";
-import { DownloadButton } from "@/components/download-button";
+import { StepFlow, type StepOutput } from "@/components/step-flow";
 import type { ToolUIProps } from "@/components/tool-registry";
 
-export default function rotate_image_Tool({ onProcessing, onError }: ToolUIProps) {
-  const [file, setFile] = useState<File | null>(null);
-  const [result, setResult] = useState<Blob | null>(null);
-  const [processing, setProcessing] = useState(false);
+export default function RotateImageTool({ onProcessing, onError }: ToolUIProps) {
+  const [files, setFiles] = useState<File[]>([]);
   const [mode, setMode] = useState("rotate-90");
-  const [originalSize, setOriginalSize] = useState(0);
+  const [outputs, setOutputs] = useState<StepOutput[]>([]);
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFile = useCallback((files: File[]) => {
-    const f = files[0];
-    if (!f) return;
-    setFile(f); setResult(null); setOriginalSize(f.size);
+  const handleFilesChanged = useCallback((next: File[]) => {
+    setFiles(next);
+    setOutputs([]);
   }, []);
 
-  const process = async () => {
-    if (!file) return;
+  const process = useCallback(async () => {
+    if (!files.length) return;
+    const file = files[0];
     setProcessing(true);
     onProcessing?.(true);
     try {
@@ -27,7 +26,7 @@ export default function rotate_image_Tool({ onProcessing, onError }: ToolUIProps
       const url = URL.createObjectURL(file);
       await new Promise<void>((res, rej) => { img.onload = () => res(); img.onerror = () => rej(new Error("Failed to load")); img.src = url; });
 
-      let w = img.naturalWidth, h = img.naturalHeight;
+      const w = img.naturalWidth, h = img.naturalHeight;
       let drawW = w, drawH = h;
 
       if (mode === "rotate-90" || mode === "rotate-270") { drawW = h; drawH = w; }
@@ -50,51 +49,63 @@ export default function rotate_image_Tool({ onProcessing, onError }: ToolUIProps
 
       URL.revokeObjectURL(url);
       const blob = await new Promise<Blob>((res, rej) => canvas.toBlob((b) => b ? res(b) : rej(new Error("Failed")), "image/png"));
-      setResult(blob);
-    } catch (err) { onError?.(err instanceof Error ? err.message : "Failed"); }
-    finally { setProcessing(false); onProcessing?.(false); }
-  };
-
-  const fmt = (b: number) => b < 1048576 ? (b / 1024).toFixed(1) + " KB" : (b / 1048576).toFixed(1) + " MB";
-  const modes = [{"v":"rotate-90","l":"90° CW"},{"v":"rotate-180","l":"180°"},{"v":"rotate-270","l":"90° CCW"},{"v":"rotate-custom","l":"Custom"}];
+      setOutputs([{ name: "rotated-" + file.name.replace(/\.[^.]+$/, ".png"), blob }]);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to rotate image";
+      setError(msg);
+      onError?.(msg);
+    } finally {
+      setProcessing(false);
+      onProcessing?.(false);
+    }
+  }, [files, mode, onProcessing, onError]);
+  const modes = [
+    { v: "rotate-90", l: "90° CW" },
+    { v: "rotate-180", l: "180°" },
+    { v: "rotate-270", l: "90° CCW" },
+    { v: "flip-h", l: "Flip H" },
+    { v: "flip-v", l: "Flip V" },
+  ];
 
   return (
-    <div className="space-y-6">
-      {!file ? (
-        <DropZone accept="image/*" onFilesSelected={handleFile} label="Rotate Image" />
-      ) : (
-        <div className="space-y-4">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
-            <div className="flex-1">
-              <p className="text-sm text-text-primary truncate">{file.name}</p>
-              <p className="text-xs text-text-tertiary">{fmt(originalSize)}</p>
-            </div>
-            <button onClick={() => { setFile(null); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">Remove</button>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {modes.map((m: any) => (
-              <button key={m.v} onClick={() => setMode(m.v)}
-                className={`px-3 py-2 rounded-lg text-sm font-medium transition-all ${
-                  mode === m.v ? "bg-accent-start text-white" : "bg-bg-elevated text-text-secondary border border-border-base"
-                }`}>{m.l}</button>
-            ))}
-          </div>
-
-          {result && (
-            <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10">
-              <p className="text-sm text-success mb-1">✓ Done!</p>
-              <DownloadButton blob={result} filename={"modified-" + file.name} />
-            </div>
-          )}
-
-          {!result && (
-            <button onClick={process} disabled={processing} className="btn-primary w-full py-3">
-              {processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />Processing...</span> : "Rotate Image"}
+    <StepFlow
+      accept="image/*"
+      maxFiles={1}
+      hint="JPG, PNG, WebP"
+      actionLabel={mode.startsWith("flip") ? "Flip Image" : "Rotate Image"}
+      processingLabel="Processing..."
+      outputs={outputs}
+      canRun={files.length > 0}
+      processing={processing}
+      fileCount={files.length}
+      onFilesChanged={handleFilesChanged}
+      onResetFilesOnly={() => setOutputs([])}
+      onRun={process}
+      onReset={() => {
+        setFiles([]);
+        setOutputs([]);
+        setError(null);
+      }}
+      error={error}
+      onDismissError={() => setError(null)}
+      renderOperation={() => (
+        <div className="flex flex-wrap gap-2">
+          {modes.map((m) => (
+            <button
+              key={m.v}
+              type="button"
+              onClick={() => setMode(m.v)}
+              className={`px-3.5 py-2 rounded-lg text-[13px] font-semibold transition-all ${
+                mode === m.v
+                  ? "bg-accent text-text-on-accent shadow-sm"
+                  : "bg-bg-elevated text-text-secondary hover:text-text-primary border border-border-base"
+              }`}
+            >
+              {m.l}
             </button>
-          )}
+          ))}
         </div>
       )}
-    </div>
+    />
   );
 }

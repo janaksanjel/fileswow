@@ -15,6 +15,8 @@ const WORD_GUIDES: ToolGuideMap = {
       `Typical jobs: combining chapter files into a book manuscript, assembling departmental inputs into one report, concatenating legal pleadings. For "combine then freeze," merge here first and convert to PDF second.`,
     ],
     faq: [
+      { q: "How do I merge Word documents and keep formatting?", a: "Add the .docx files in reading order and merge — each document keeps its own styles, fonts, headers, and section settings, so the second file doesn't inherit the first file's theme and layout stays intact." },
+      { q: "Will merging two documents mess up footnote numbering?", a: "No — footnotes and endnotes travel with their own document's section, so numbering continues correctly instead of colliding or restarting unexpectedly. Cross-references inside each document keep pointing at their own notes." },
       { q: "Will page numbering restart for each document?", a: "Each source keeps its own section settings — numbering schemes are preserved rather than merged into one continuous sequence." },
       { q: "Can I merge .doc files?", a: "Save them as .docx in Word first; the legacy binary format isn't parseable in the browser." },
     ],
@@ -180,6 +182,7 @@ const WORD_GUIDES: ToolGuideMap = {
       `For documents with front matter, run it twice with different ranges and start numbers — lowercase roman for the preface, arabic starting at 1 for chapter one.`,
     ],
     faq: [
+      { q: "How do I insert page numbers in Word online?", a: "Upload the .docx, pick the position and format (bottom-center, top-right, \"Page X of Y\"), and download — the tool inserts real Word PAGE fields into the footer or header, so the numbers stay live when the document is edited later." },
       { q: "Will numbers update if I edit the document?", a: "Yes — they're live PAGE fields, recalculated by Word whenever the document reflows." },
       { q: "Can numbering start at a specific page?", a: "Yes — set the range and starting number, useful for skipping covers and front matter." },
     ],
@@ -345,6 +348,7 @@ const WORD_GUIDES: ToolGuideMap = {
       `Change geometry before final styling: pagination, image placement, and tables all respond to page size, so late changes cascade.`,
     ],
     faq: [
+      { q: "How do I change page setup in a Word file online?", a: "Upload the .docx, choose the page size, orientation, or margins, and download — the tool rewrites the document's section settings, and Word reflows the content cleanly when you reopen it. No Word installation needed." },
       { q: "Will my images resize?", a: "They keep their sizes; reflow repositions them. Very wide images may need manual adjustment after orientation changes." },
       { q: "Can I set custom margins?", a: "Yes — preset or exact measurements, applied per section or document-wide." },
     ],

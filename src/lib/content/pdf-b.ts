@@ -76,13 +76,13 @@ const PDF_GUIDES_B: ToolGuideMap = {
   },
   "text-to-pdf": {
     paragraphs: [
-      `Plain text is the most portable format on earth and the least presentable — a .txt resume or manuscript reads like a telegraph. This tool typesets text into a PDF: choose font family, size, margins, and line spacing, and get a properly paginated document with consistent typography.`,
-      `Wrapping and pagination are handled for you, including page breaks on form-feed characters for files that intend them. Monospace options preserve ASCII tables and code alignment; proportional fonts suit prose.`,
-      `Common uses: converting code listings into submittable PDFs, turning notes into printable handouts, and producing clean hard copies of logs for signatures — all offline, all private.`,
+      `The Text to PDF editor is a small word processor that lives in your browser. Type directly, or paste from Word, Google Docs, an email, or a web page — the paste pipeline keeps what you copied: bold, italics, colors, highlights, font families and sizes, alignment, bullet and numbered lists, and links. A one-click toggle strips everything to plain text when you want only the words.`,
+      `Export is where the quality lives: instead of screenshotting the editor, the tool re-typesets your document with real vector text — selectable, searchable, and sharp at any zoom. Fonts map to the closest standard PDF face, sizes and colors carry over at print resolution, and wrapping, justification, lists, and images are laid out per page using your chosen page size, margins, and line spacing. Page numbers stamp as "Page X of Y" in the position you pick.`,
+      `Common uses: turning notes, resumes, and cover letters into submittable PDFs, formatting code listings in monospace, and producing clean hard copies for signatures — all offline, all private, nothing uploaded.`,
     ],
     faq: [
-      { q: "Are special characters supported?", a: "Standard Unicode text renders with matching font support; exotic scripts may need the Word pipeline, which auto-loads Unicode fonts." },
-      { q: "Can I control page breaks?", a: "Yes — insert form-feed characters in your text where you want new pages, or let the tool paginate naturally." },
+      { q: "Are special characters supported?", a: "The standard PDF fonts cover Latin scripts (including smart quotes and dashes). Emoji and non-Latin scripts are replaced with \"?\" and counted in a warning — for full Unicode output, use Word to PDF." },
+      { q: "Can I control page breaks?", a: "The editor paginates automatically at your chosen page size — blank lines, headings, and spacing flow naturally. Page numbers come from the Page setup panel." },
     ],
   },
   "pdf-to-text": {
@@ -158,6 +158,7 @@ const PDF_GUIDES_B: ToolGuideMap = {
       `All processing runs in your browser, which is why this tool suits the documents you most want to convert and least want to upload: contracts, HR paperwork, board minutes.`,
     ],
     faq: [
+      { q: "Why does my PDF layout shift when converting to Word?", a: "PDF stores fixed positions on a page; Word stores reflowable content. The converter rebuilds paragraphs, headings, and tables rather than pinning every character, so precisely-positioned text may reflow — the trade that keeps the document fully editable instead of a picture of text." },
       { q: "How accurate is the conversion?", a: "Best effort — simple documents convert well; complex layouts, tables, and multi-column designs may shift. Client-side conversion trades pixel-perfection for privacy." },
       { q: "Are scanned PDFs supported?", a: "Only after OCR — run OCR PDF first so a text layer exists to convert." },
       { q: "Do fonts carry over?", a: "Common fonts map to close equivalents; the document remains fully editable either way." },

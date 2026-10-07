@@ -61,6 +61,7 @@ const PDF_GUIDES_A: ToolGuideMap = {
       `Compression runs through WebAssembly builds of Ghostscript/qpdf in your browser. Because nothing uploads, even a 300 MB tender document is practical — the limit is your device's memory, not a server's patience. If the result is still too large, the bigger lever is usually scan resolution: a 200 DPI scan compresses dramatically better than 600 DPI with no readability loss for text.`,
     ],
     faq: [
+      { q: "How do I compress a PDF to 1MB?", a: "Run the compression on High first and check the result — image-heavy PDFs usually drop well below 1MB. If it's still over the limit, rescan or re-export the source at a lower DPI; text-only PDFs are already too small for compression to matter." },
       { q: "Why didn't my text-only PDF get smaller?", a: "Text PDFs are already tiny — there are no images to re-encode. Fonts and structure take up nearly all the remaining bytes, and removing those would break the document." },
       { q: "Will compression break my PDF's text layer?", a: "No. Text objects are left intact; only image streams are re-encoded. The document stays searchable and selectable." },
       { q: "Which level should I choose for printing?", a: "Low, or skip compression entirely. Print exposes image softening that screens never show." },
@@ -227,6 +228,8 @@ const PDF_GUIDES_A: ToolGuideMap = {
       `For documents that already carry printed numbers and just gained pages (an insert here, a deletion there), consider re-stamping uniformly rather than patching — mixed numbering schemes are worse than none.`,
     ],
     faq: [
+      { q: "How do I add page numbers to a PDF?", a: "Upload the PDF, pick a position (the four corners or bottom-center), choose a format like \"Page X\" or \"X of Y\", and apply — the numbers are drawn into the pages permanently and print identically in every viewer." },
+      { q: "Where should page numbers go on a page?", a: "Bottom-center is the most common convention; bottom-right is standard in reports and legal documents. This tool offers all four corners plus bottom-center so you can match the document's existing style." },
       { q: "Can numbering skip a cover page?", a: "Yes — set the starting page and starting number independently, so the cover stays unnumbered while page 2 begins at 1." },
       { q: "Can I use Roman numerals for front matter?", a: "Choose the Roman numeral format for a range, then run the tool again with Arabic numerals for the body." },
     ],
@@ -447,6 +450,9 @@ const PDF_GUIDES_A: ToolGuideMap = {
       `For mixed formats (PNG screenshots plus JPG photos), Images to PDF handles both; for bulk folders of one format, this tool with multi-select is the fastest path.`,
     ],
     faq: [
+      { q: "How do I convert a JPG to a PDF?", a: "Drag your JPG into the tool (or tap to pick the file), choose a page size — fit-to-page A4 or Letter is the usual choice — and download the PDF. Each image becomes one page, and multiple JPGs combine into a single document in your chosen order." },
+      { q: "Can you convert a JPG to a PDF for free?", a: "Yes — this tool is completely free with no signup, watermark, or page limit. Everything runs in your browser, so the image never leaves your device." },
+      { q: "How do I change a JPEG to a PDF on my phone?", a: "The same way — open this page in your phone's browser, tap to pick the photo (or snap a new one), and download the PDF. It works in Safari and Chrome without installing an app." },
       { q: "Will converting to PDF reduce image quality?", a: "No — the original image data is embedded. Quality loss only happens if you explicitly enable recompression." },
       { q: "Can I set the order of pages?", a: "Yes — drag the image thumbnails into the desired sequence before converting." },
     ],
@@ -469,6 +475,7 @@ const PDF_GUIDES_A: ToolGuideMap = {
       `For large batches, sort by filename before adding — the tool preserves selection order, and folder exports usually name files so alphabetical order is the intended reading order.`,
     ],
     faq: [
+      { q: "How do I combine multiple photos into one PDF?", a: "Select all the images at once (JPG, PNG, WebP — any mix), drag them into the right order, and convert — every photo becomes a page in one combined PDF at your chosen page size." },
       { q: "Which formats can I combine?", a: "JPG, PNG, WebP, GIF, and BMP in any combination; HEIC and TIFF convert via their dedicated tools first for best fidelity." },
       { q: "Can I add images later to an existing PDF?", a: "Yes — convert the new batch, then use Insert PDF Pages to splice them into the existing document." },
     ],

@@ -1,34 +1,34 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { DropZone } from "@/components/drop-zone";
-import { DownloadButton } from "@/components/download-button";
+import { StepFlow, type StepOutput } from "@/components/step-flow";
 import type { ToolUIProps } from "@/components/tool-registry";
 
 export default function RotatePdfTool({ onProcessing, onError }: ToolUIProps) {
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [angle, setAngle] = useState<90 | 180 | 270>(90);
   const [pageSelection, setPageSelection] = useState("all");
-  const [result, setResult] = useState<Blob | null>(null);
+  const [outputs, setOutputs] = useState<StepOutput[]>([]);
   const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [pageCount, setPageCount] = useState(0);
 
-  const handleFile = useCallback(async (files: File[]) => {
-    const f = files[0];
-    if (!f) return;
-    setFile(f);
-    setResult(null);
-    try {
-      const { loadPdf } = await import("@/lib/engines/pdf");
-      const doc = await loadPdf(f);
-      setPageCount(doc.getPageCount());
-    } catch {
-      setPageCount(0);
+  const handleFilesChanged = useCallback(async (next: File[]) => {
+    setFiles(next);
+    setOutputs([]);
+    if (next.length > 0) {
+      try {
+        const { loadPdf } = await import("@/lib/engines/pdf");
+        const doc = await loadPdf(next[0]);
+        setPageCount(doc.getPageCount());
+      } catch {
+        setPageCount(0);
+      }
     }
   }, []);
 
-  const handleRotate = async () => {
-    if (!file) return;
+  const handleRotate = useCallback(async () => {
+    if (!files.length) return;
     setProcessing(true);
     onProcessing?.(true);
     try {
@@ -36,53 +36,64 @@ export default function RotatePdfTool({ onProcessing, onError }: ToolUIProps) {
       const pages =
         pageSelection === "all"
           ? []
-          : pageSelection.split(",").map((s) => parseInt(s.trim())).filter((n) => !isNaN(n));
-      const doc = await rotatePages(file, pages, angle);
+          : pageSelection
+              .split(",")
+              .map((s) => parseInt(s.trim()))
+              .filter((n) => !isNaN(n));
+      const doc = await rotatePages(files[0], pages, angle);
       const blob = await savePdf(doc);
-      setResult(blob);
+      setOutputs([{ name: `rotated-${files[0].name}`, blob }]);
     } catch (err) {
-      onError?.(err instanceof Error ? err.message : "Failed to rotate PDF");
+      const msg = err instanceof Error ? err.message : "Failed to rotate PDF";
+      setError(msg);
+      onError?.(msg);
     } finally {
       setProcessing(false);
       onProcessing?.(false);
     }
-  };
+  }, [files, angle, pageSelection, onProcessing, onError]);
 
   return (
-    <div className="space-y-6">
-      {!file && (
-        <DropZone
-          accept=".pdf"
-          onFilesSelected={handleFile}
-          label="Drop a PDF to rotate"
-          description="Select a single PDF file"
-        />
-      )}
-
-      {file && (
+    <StepFlow
+      accept=".pdf"
+      maxFiles={1}
+      hint="Single PDF file"
+      actionLabel={`Rotate ${angle}°`}
+      processingLabel="Rotating..."
+      outputs={outputs}
+      canRun={files.length > 0}
+      processing={processing}
+      fileCount={files.length}
+      onFilesChanged={handleFilesChanged}
+      onResetFilesOnly={() => {
+        setOutputs([]);
+        setPageCount(0);
+      }}
+      onRun={handleRotate}
+      onReset={() => {
+        setFiles([]);
+        setOutputs([]);
+        setError(null);
+        setPageCount(0);
+      }}
+      error={error}
+      onDismissError={() => setError(null)}
+      renderOperation={() => (
         <div className="space-y-4">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
-            <span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-accent-start/10 text-accent-end">PDF</span>
-            <div className="flex-1">
-              <p className="text-sm text-text-primary truncate">{file.name}</p>
-              <p className="text-xs text-text-tertiary">{pageCount} pages</p>
-            </div>
-            <button onClick={() => { setFile(null); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">
-              Remove
-            </button>
-          </div>
-
-          {/* Angle selector */}
+          {/* Angle */}
           <div>
-            <label className="block text-sm text-text-secondary mb-2">Rotation angle</label>
+            <label className="block text-[12.5px] font-semibold text-text-secondary mb-2">
+              Rotation angle
+            </label>
             <div className="flex gap-2">
               {[90, 180, 270].map((a) => (
                 <button
                   key={a}
+                  type="button"
                   onClick={() => setAngle(a as 90 | 180 | 270)}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`flex-1 py-2 rounded-lg text-sm font-semibold transition-all ${
                     angle === a
-                      ? "bg-accent-start text-white"
+                      ? "bg-accent text-text-on-accent shadow-sm"
                       : "bg-bg-elevated text-text-secondary hover:text-text-primary border border-border-base"
                   }`}
                 >
@@ -91,45 +102,25 @@ export default function RotatePdfTool({ onProcessing, onError }: ToolUIProps) {
               ))}
             </div>
           </div>
-
-          {/* Page selection */}
+          {/* Pages */}
           <div>
-            <label className="block text-sm text-text-secondary mb-2">Pages to rotate</label>
+            <label className="block text-[12.5px] font-semibold text-text-secondary mb-2">
+              Pages to rotate
+            </label>
             <input
               type="text"
               value={pageSelection}
               onChange={(e) => setPageSelection(e.target.value)}
               placeholder="all"
-              className="w-full px-4 py-2.5 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm font-mono focus:border-accent focus:outline-none transition-colors"
+              className="w-full px-3.5 py-2.5 rounded-xl bg-bg-input border border-border-strong text-text-primary text-sm font-mono focus:border-accent focus:outline-none transition-colors"
             />
-            <p className="mt-1 text-xs text-text-tertiary">Enter "all" or comma-separated page numbers (e.g., 1, 3, 5-8)</p>
+            <p className="mt-1 text-[11px] text-text-tertiary">
+              Enter &quot;all&quot; or comma-separated pages (e.g., 1, 3, 5-8)
+              {pageCount > 0 && <> · {pageCount} pages</>}
+            </p>
           </div>
-
-          {result && (
-            <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">✓ Rotation complete!</p>
-              <DownloadButton blob={result} filename={`rotated-${file.name}`} />
-            </div>
-          )}
-
-          {!result && (
-            <button
-              onClick={handleRotate}
-              disabled={processing}
-              className="btn-primary w-full py-3"
-            >
-              {processing ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />
-                  Rotating...
-                </span>
-              ) : (
-                `Rotate ${angle}°`
-              )}
-            </button>
-          )}
         </div>
       )}
-    </div>
+    />
   );
 }
