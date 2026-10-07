@@ -152,8 +152,6 @@ export interface RichTextEditorProps {
   onKeepFormattingChange: (value: boolean) => void;
   /** Report the editor element (export engines read its live DOM). */
   onEditorReady: (el: HTMLDivElement | null) => void;
-  /** Optional page-setup UI rendered under the editor (parent-owned). */
-  onPageSetup?: React.ReactNode;
 }
 
 /**
@@ -167,7 +165,6 @@ export default function RichTextEditor({
   keepFormatting,
   onKeepFormattingChange,
   onEditorReady,
-  onPageSetup,
 }: RichTextEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -512,7 +509,6 @@ export default function RichTextEditor({
         </div>
       </div>
 
-      {onPageSetup && <div>{onPageSetup}</div>}
     </div>
   );
 }
