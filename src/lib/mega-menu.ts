@@ -47,16 +47,6 @@ const GROUPS: Array<{
     href: "/word-tools",
     slugs: ["merge-word", "split-word", "word-page-numbers", "word-page-setup", "remove-watermark-word", "word-to-text"],
   },
-  {
-    title: "Image Tools",
-    href: "/image-tools",
-    slugs: ["compress-image", "resize-image", "rotate-image", "jpg-to-pdf", "images-to-pdf", "background-remove-image"],
-  },
-  {
-    title: "Text & Share",
-    href: "/text-tools",
-    slugs: ["text-to-pdf", "text-to-word", "pdf-to-text", "word-to-text", "p2p-text"],
-  },
 ];
 
 function pick(tool: ToolDef): MegaMenuTool {

@@ -273,10 +273,7 @@ export default function AddPageNumbersPdfTool({ onProcessing, onError }: ToolUIP
 
         canvas.width = viewport.width;
         canvas.height = viewport.height;
-        const ctx = canvas.getContext("2d");
-        if (ctx) {
-          await page.render({ canvasContext: ctx, viewport }).promise;
-        }
+        await page.render({ canvas, viewport } as any).promise;
       } catch {
         // Fallback: clear canvas and let HTML skeleton preview display
       } finally {
