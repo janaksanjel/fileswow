@@ -1,10 +1,18 @@
 "use client";
 
+import { useMemo, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { ToolCard } from "@/components/tool-card";
 import { categoryTile } from "@/lib/category-style";
 import { CATEGORY_COUNTS, type ToolDef, type ToolCategory, type SubCategory } from "@/lib/catalog";
 import { AdSlot } from "@/components/ad-unit";
+import {
+  subscribeUsage,
+  getTopToolsSnapshot,
+  getEmptyToolsSnapshot,
+  hasPersonalHistorySnapshot,
+  POPULAR_DEFAULT_SLUGS,
+} from "@/lib/usage";
 
 const CATEGORY_LINKS: Array<{ key: ToolCategory; label: string; href: string }> = [
   { key: "pdf", label: "PDF", href: "/pdf-tools" },
@@ -12,6 +20,14 @@ const CATEGORY_LINKS: Array<{ key: ToolCategory; label: string; href: string }> 
   { key: "image", label: "Image", href: "/image-tools" },
   { key: "text", label: "Text", href: "/text-tools" },
 ];
+
+const CATEGORY_NAMES: Record<ToolCategory, string> = {
+  pdf: "PDF",
+  word: "Word",
+  image: "Image",
+  text: "Text",
+  cross: "Cross-Format",
+};
 
 interface CategoryHubClientProps {
   tools: ToolDef[];
@@ -31,6 +47,57 @@ export function CategoryHubClient({
   const category: ToolCategory = tools[0]?.category ?? "pdf";
   const tile = categoryTile(category);
   const count = CATEGORY_COUNTS[category];
+  const categoryName = CATEGORY_NAMES[category] ?? "Category";
+
+  const topTools = useSyncExternalStore(
+    subscribeUsage,
+    getTopToolsSnapshot,
+    getEmptyToolsSnapshot
+  );
+  const hasPersonalHistory = useSyncExternalStore(
+    subscribeUsage,
+    hasPersonalHistorySnapshot,
+    () => false
+  );
+
+  const popularTools = useMemo(() => {
+    if (!tools || tools.length === 0) return [];
+
+    const toolMap = new Map(tools.map((t) => [t.slug, t]));
+    const result: ToolDef[] = [];
+    const seen = new Set<string>();
+
+    // 1. Personalized top tools in this category
+    for (const t of topTools) {
+      if (toolMap.has(t.slug) && !seen.has(t.slug)) {
+        seen.add(t.slug);
+        result.push(toolMap.get(t.slug)!);
+      }
+    }
+
+    // 2. Curated popular defaults for this category
+    for (const slug of POPULAR_DEFAULT_SLUGS) {
+      if (toolMap.has(slug) && !seen.has(slug)) {
+        seen.add(slug);
+        result.push(toolMap.get(slug)!);
+      }
+    }
+
+    // 3. Fallback: pad with tier 1 tools of this category
+    const targetCount = Math.min(tools.length, 8);
+    if (result.length < targetCount) {
+      const sorted = [...tools].sort((a, b) => a.tier - b.tier);
+      for (const t of sorted) {
+        if (!seen.has(t.slug)) {
+          seen.add(t.slug);
+          result.push(t);
+          if (result.length >= targetCount) break;
+        }
+      }
+    }
+
+    return result.slice(0, targetCount);
+  }, [tools, topTools]);
 
   return (
     <div>
@@ -102,6 +169,31 @@ export function CategoryHubClient({
             {count} tools · free forever · no account needed
           </p>
         </div>
+
+        {/* Popular Category Tools Section */}
+        {popularTools.length > 0 && (
+          <section className="mb-12 sm:mb-14" aria-labelledby="popular-category-tools">
+            <div className="flex items-center gap-3 mb-5">
+              <h2 id="popular-category-tools" className="text-[13px] font-bold uppercase tracking-widest text-text-secondary whitespace-nowrap flex items-center gap-2">
+                <span className="w-5 h-5 rounded-md bg-warning/15 text-warning flex items-center justify-center">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.2-6.3-4.5-6.3 4.5L8 14l-6-4.6h7.6z" />
+                  </svg>
+                </span>
+                {hasPersonalHistory ? `Top ${categoryName} Tools For You` : `Popular ${categoryName} Tools`}
+              </h2>
+              <div className="flex-1 h-px bg-border-base" />
+              <span className="text-[11px] font-bold text-text-tertiary bg-bg-elevated ring-1 ring-inset ring-border-base px-2 py-0.5 rounded-full whitespace-nowrap">
+                {popularTools.length}
+              </span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {popularTools.map((tool, i) => (
+                <ToolCard key={tool.slug} tool={tool} index={i} />
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Ad — top of the tool listing. Renders nothing when not configured. */}
         <AdSlot slot="category" label="billboard (category top)" className="mb-12 sm:mb-14" />

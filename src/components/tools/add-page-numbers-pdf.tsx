@@ -148,8 +148,11 @@ export default function AddPageNumbersPdfTool({ onProcessing, onError }: ToolUIP
   const [result, setResult] = useState<Blob | null>(null);
   const [processing, setProcessing] = useState<boolean>(false);
 
-  // Tab view on side controls: 'layout' | 'typography' | 'pages-table'
-  const [activeTab, setActiveTab] = useState<"layout" | "style" | "table">("layout");
+  // Studio view mode: 'preview' for real-time visual page, 'table' for full page-by-page mapping
+  const [studioView, setStudioView] = useState<"preview" | "table">("preview");
+
+  // Tab view on side controls: 'layout' | 'style'
+  const [activeTab, setActiveTab] = useState<"layout" | "style">("layout");
 
   // Load and inspect PDF file
   const handleFile = useCallback(async (files: File[]) => {
@@ -443,22 +446,18 @@ export default function AddPageNumbersPdfTool({ onProcessing, onError }: ToolUIP
       ) : (
         <div className="space-y-6 animate-fade-in">
           {/* Top Document Summary Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl bg-bg-surface border border-border-base shadow-xs">
-            <div className="flex items-center gap-3.5 min-w-0">
-              <span className="w-11 h-11 rounded-xl bg-accent/10 border border-accent/20 text-accent flex items-center justify-center font-extrabold text-xs shrink-0">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 px-4 rounded-2xl bg-bg-surface border border-border-base shadow-xs">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="w-9 h-9 rounded-xl bg-accent/10 text-accent font-extrabold text-xs flex items-center justify-center shrink-0">
                 PDF
               </span>
               <div className="min-w-0">
                 <p className="text-sm font-bold text-text-primary truncate" title={file.name}>
                   {file.name}
                 </p>
-                <div className="flex items-center gap-2 text-xs text-text-tertiary font-medium">
-                  <span>{formatBytes(file.size)}</span>
-                  <span>•</span>
-                  <span>{totalPages} {totalPages === 1 ? "page" : "pages"}</span>
-                  <span>•</span>
-                  <span className="text-success font-semibold">{totalNumberedCount} to be numbered</span>
-                </div>
+                <p className="text-xs text-text-tertiary">
+                  {formatBytes(file.size)} • {totalPages} {totalPages === 1 ? "page" : "pages"} • <span className="text-success font-semibold">{totalNumberedCount} numbered</span>
+                </p>
               </div>
             </div>
 
@@ -469,53 +468,85 @@ export default function AddPageNumbersPdfTool({ onProcessing, onError }: ToolUIP
                 setResult(null);
                 setTotalPages(0);
               }}
-              className="btn-secondary px-3.5 py-1.5 rounded-xl text-xs font-bold text-text-secondary hover:text-danger self-start sm:self-auto cursor-pointer transition-colors"
+              className="px-3 py-1.5 rounded-xl text-xs font-semibold text-text-secondary hover:text-danger hover:bg-danger/10 transition-colors self-start sm:self-auto cursor-pointer"
             >
-              Replace Document
+              Change file
             </button>
           </div>
 
           {/* 2-Column Studio: Left Preview & Table, Right Controls */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* ─── LEFT COLUMN: REAL-TIME LIVE PREVIEW & PAGE TABLE ─── */}
-            <div className="lg:col-span-7 space-y-5">
-              {/* Live Preview Card */}
-              <div className="rounded-3xl bg-bg-surface border border-border-base shadow-sm p-5 space-y-4">
-                <div className="flex items-center justify-between border-b border-border-base pb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-accent bg-accent/10 px-2.5 py-0.5 rounded-full border border-accent/20">
-                      Live Real-Time Preview
-                    </span>
-                    <span className="text-xs text-text-tertiary">
-                      Page {previewPage} of {totalPages}
-                    </span>
+            <div className="lg:col-span-7 space-y-4">
+              {/* Studio Canvas / Table Card */}
+              <div className="rounded-3xl bg-bg-surface border border-border-base shadow-sm p-4 sm:p-5 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border-base pb-3">
+                  <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-bg-elevated border border-border-base">
+                    <button
+                      type="button"
+                      onClick={() => setStudioView("preview")}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                        studioView === "preview"
+                          ? "bg-bg-surface text-text-primary shadow-xs ring-1 ring-border-base"
+                          : "text-text-tertiary hover:text-text-primary"
+                      }`}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                      <span>Live Preview</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setStudioView("table")}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                        studioView === "table"
+                          ? "bg-bg-surface text-text-primary shadow-xs ring-1 ring-border-base"
+                          : "text-text-tertiary hover:text-text-primary"
+                      }`}
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <rect width="18" height="18" x="3" y="3" rx="2" />
+                        <path d="M3 9h18M3 15h18M9 3v18" />
+                      </svg>
+                      <span>Pages Table</span>
+                      <span className="text-[10px] font-bold text-accent bg-accent/10 px-1.5 py-0.5 rounded-full">
+                        {totalNumberedCount}/{totalPages}
+                      </span>
+                    </button>
                   </div>
 
-                  {/* Page Switcher */}
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      type="button"
-                      disabled={previewPage <= 1}
-                      onClick={() => setPreviewPage((p) => Math.max(1, p - 1))}
-                      className="w-8 h-8 rounded-lg bg-bg-elevated border border-border-base flex items-center justify-center text-xs font-bold text-text-secondary hover:text-text-primary disabled:opacity-40 cursor-pointer"
-                      title="Previous page"
-                    >
-                      ←
-                    </button>
-                    <span className="text-xs font-mono font-bold px-2 text-text-primary">
-                      {previewPage} / {totalPages}
-                    </span>
-                    <button
-                      type="button"
-                      disabled={previewPage >= totalPages}
-                      onClick={() => setPreviewPage((p) => Math.min(totalPages, p + 1))}
-                      className="w-8 h-8 rounded-lg bg-bg-elevated border border-border-base flex items-center justify-center text-xs font-bold text-text-secondary hover:text-text-primary disabled:opacity-40 cursor-pointer"
-                      title="Next page"
-                    >
-                      →
-                    </button>
-                  </div>
+                  {studioView === "preview" && (
+                    <div className="flex items-center gap-1.5 self-end sm:self-auto">
+                      <button
+                        type="button"
+                        disabled={previewPage <= 1}
+                        onClick={() => setPreviewPage((p) => Math.max(1, p - 1))}
+                        className="w-7 h-7 rounded-lg bg-bg-elevated border border-border-base flex items-center justify-center text-xs font-bold text-text-secondary hover:text-text-primary disabled:opacity-30 cursor-pointer"
+                        title="Previous page"
+                      >
+                        ←
+                      </button>
+                      <span className="text-xs font-mono font-bold px-2 text-text-primary">
+                        {previewPage} / {totalPages}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={previewPage >= totalPages}
+                        onClick={() => setPreviewPage((p) => Math.min(totalPages, p + 1))}
+                        className="w-7 h-7 rounded-lg bg-bg-elevated border border-border-base flex items-center justify-center text-xs font-bold text-text-secondary hover:text-text-primary disabled:opacity-30 cursor-pointer"
+                        title="Next page"
+                      >
+                        →
+                      </button>
+                    </div>
+                  )}
                 </div>
+
+                {/* ── VIEW 1: LIVE REAL-TIME PREVIEW SHEET ── */}
+                {studioView === "preview" && (
+                  <div className="space-y-3 animate-fade-in">
 
                 {/* Status indicator on the active preview page */}
                 <div className="flex items-center justify-between text-xs px-1">
@@ -667,130 +698,135 @@ export default function AddPageNumbersPdfTool({ onProcessing, onError }: ToolUIP
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-text-tertiary pt-1">
-                  <span>💡 Tip: Click directly on any corner or center of the preview to reposition.</span>
-                  <span>Dimensions: {Math.round(pageSize.width)} × {Math.round(pageSize.height)} pt</span>
-                </div>
-              </div>
-
-              {/* ─── ALL PAGES INTERACTIVE TABLE ("all table") ─── */}
-              <div className="rounded-3xl bg-bg-surface border border-border-base shadow-sm p-5 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border-base pb-3">
-                  <div>
-                    <h3 className="heading-sm text-text-primary flex items-center gap-2">
-                      <span>Pages Mapping Table</span>
-                      <span className="text-[11px] font-bold text-accent bg-accent/10 px-2 py-0.5 rounded-full">
-                        {totalNumberedCount} of {totalPages} Selected
-                      </span>
-                    </h3>
-                    <p className="text-xs text-text-secondary mt-0.5">
-                      Review and toggle individual page numbers across the entire document.
-                    </p>
+                    <div className="flex items-center justify-between pt-1 text-xs text-text-tertiary">
+                      <span>Click any corner or edge on the sheet to reposition</span>
+                      <button
+                        type="button"
+                        onClick={() => setStudioView("table")}
+                        className="font-bold text-accent hover:underline cursor-pointer"
+                      >
+                        Customize page by page ({totalNumberedCount} active) →
+                      </button>
+                    </div>
                   </div>
+                )}
 
-                  {/* Batch Selection Buttons */}
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <button
-                      type="button"
-                      onClick={handleSelectAllPages}
-                      className="px-2.5 py-1 rounded-lg text-xs font-bold bg-bg-elevated hover:bg-bg-hover text-text-secondary hover:text-text-primary border border-border-base cursor-pointer"
-                    >
-                      All Pages
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleToggleSkipCover(true)}
-                      className="px-2.5 py-1 rounded-lg text-xs font-bold bg-bg-elevated hover:bg-bg-hover text-text-secondary hover:text-text-primary border border-border-base cursor-pointer"
-                    >
-                      Skip Cover (Page 1)
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleSelectSkipFirstAndLast}
-                      className="px-2.5 py-1 rounded-lg text-xs font-bold bg-bg-elevated hover:bg-bg-hover text-text-secondary hover:text-text-primary border border-border-base cursor-pointer"
-                    >
-                      Skip 1 & Last
-                    </button>
-                  </div>
-                </div>
+                {/* ── VIEW 2: ALL PAGES TABLE ── */}
+                {studioView === "table" && (
+                  <div className="space-y-4 animate-fade-in">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                      <div className="text-xs text-text-secondary">
+                        Toggle checkboxes to include or exclude specific pages.
+                      </div>
 
-                {/* Table Content with scrollbar */}
-                <div className="max-h-64 overflow-y-auto border border-border-base rounded-2xl">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-bg-elevated border-b border-border-base text-text-tertiary uppercase text-[10px] font-bold sticky top-0 z-10">
-                      <tr>
-                        <th className="py-2.5 px-3 w-16 text-center">Include</th>
-                        <th className="py-2.5 px-3">Page #</th>
-                        <th className="py-2.5 px-3">Applied Number</th>
-                        <th className="py-2.5 px-3 text-center">Position</th>
-                        <th className="py-2.5 px-3 text-right">Preview</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border-base">
-                      {Array.from({ length: totalPages }, (_, idx) => {
-                        const pageNum = idx + 1;
-                        const isIncluded = includedPages.has(idx);
-                        const label = getPageLabel(idx);
-                        const isCurrentActivePreview = previewPage === pageNum;
+                      {/* Batch Selection Buttons */}
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={handleSelectAllPages}
+                          className="px-2.5 py-1 rounded-lg text-xs font-bold bg-bg-elevated hover:bg-bg-hover text-text-secondary hover:text-text-primary border border-border-base cursor-pointer"
+                        >
+                          All Pages
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleToggleSkipCover(true)}
+                          className="px-2.5 py-1 rounded-lg text-xs font-bold bg-bg-elevated hover:bg-bg-hover text-text-secondary hover:text-text-primary border border-border-base cursor-pointer"
+                        >
+                          Skip Cover (Page 1)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleSelectSkipFirstAndLast}
+                          className="px-2.5 py-1 rounded-lg text-xs font-bold bg-bg-elevated hover:bg-bg-hover text-text-secondary hover:text-text-primary border border-border-base cursor-pointer"
+                        >
+                          Skip 1 & Last
+                        </button>
+                      </div>
+                    </div>
 
-                        return (
-                          <tr
-                            key={pageNum}
-                            className={`transition-colors ${
-                              isCurrentActivePreview
-                                ? "bg-accent/10 font-medium"
-                                : "hover:bg-bg-hover/60"
-                            }`}
-                          >
-                            <td className="py-2 px-3 text-center">
-                              <input
-                                type="checkbox"
-                                checked={isIncluded}
-                                onChange={() => handleToggleSinglePage(idx)}
-                                className="w-4 h-4 rounded text-accent accent-accent cursor-pointer"
-                              />
-                            </td>
-                            <td className="py-2 px-3 font-semibold text-text-primary">
-                              Page {pageNum}
-                              {pageNum === 1 && (
-                                <span className="ml-1.5 text-[9px] uppercase font-bold text-text-tertiary bg-bg-elevated px-1.5 py-0.5 rounded">
-                                  Cover
-                                </span>
-                              )}
-                            </td>
-                            <td className="py-2 px-3">
-                              {isIncluded && label ? (
-                                <span className="font-mono font-bold text-text-primary">
-                                  {label}
-                                </span>
-                              ) : (
-                                <span className="text-text-tertiary italic">
-                                  — Skipped
-                                </span>
-                              )}
-                            </td>
-                            <td className="py-2 px-3 text-center text-text-secondary capitalize">
-                              {position.replace("-", " ")}
-                            </td>
-                            <td className="py-2 px-3 text-right">
-                              <button
-                                type="button"
-                                onClick={() => setPreviewPage(pageNum)}
-                                className={`px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer ${
+                    {/* Table Content with scrollbar */}
+                    <div className="max-h-96 overflow-y-auto border border-border-base rounded-2xl">
+                      <table className="w-full text-left text-xs">
+                        <thead className="bg-bg-elevated border-b border-border-base text-text-tertiary uppercase text-[10px] font-bold sticky top-0 z-10">
+                          <tr>
+                            <th className="py-2.5 px-3 w-16 text-center">Include</th>
+                            <th className="py-2.5 px-3">Page #</th>
+                            <th className="py-2.5 px-3">Applied Number</th>
+                            <th className="py-2.5 px-3 text-center">Position</th>
+                            <th className="py-2.5 px-3 text-right">Preview</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border-base">
+                          {Array.from({ length: totalPages }, (_, idx) => {
+                            const pageNum = idx + 1;
+                            const isIncluded = includedPages.has(idx);
+                            const label = getPageLabel(idx);
+                            const isCurrentActivePreview = previewPage === pageNum;
+
+                            return (
+                              <tr
+                                key={pageNum}
+                                className={`transition-colors ${
                                   isCurrentActivePreview
-                                    ? "bg-accent text-white"
-                                    : "text-accent hover:underline"
+                                    ? "bg-accent/10 font-medium"
+                                    : "hover:bg-bg-hover/60"
                                 }`}
                               >
-                                {isCurrentActivePreview ? "Viewing" : "View"}
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
+                                <td className="py-2 px-3 text-center">
+                                  <input
+                                    type="checkbox"
+                                    checked={isIncluded}
+                                    onChange={() => handleToggleSinglePage(idx)}
+                                    className="w-4 h-4 rounded text-accent accent-accent cursor-pointer"
+                                  />
+                                </td>
+                                <td className="py-2 px-3 font-semibold text-text-primary">
+                                  Page {pageNum}
+                                  {pageNum === 1 && (
+                                    <span className="ml-1.5 text-[9px] uppercase font-bold text-text-tertiary bg-bg-elevated px-1.5 py-0.5 rounded">
+                                      Cover
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="py-2 px-3">
+                                  {isIncluded && label ? (
+                                    <span className="font-mono font-bold text-text-primary">
+                                      {label}
+                                    </span>
+                                  ) : (
+                                    <span className="text-text-tertiary italic">
+                                      — Skipped
+                                    </span>
+                                  )}
+                                </td>
+                                <td className="py-2 px-3 text-center text-text-secondary capitalize">
+                                  {position.replace("-", " ")}
+                                </td>
+                                <td className="py-2 px-3 text-right">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setPreviewPage(pageNum);
+                                      setStudioView("preview");
+                                    }}
+                                    className={`px-2 py-0.5 rounded text-[11px] font-bold cursor-pointer ${
+                                      isCurrentActivePreview
+                                        ? "bg-accent text-white"
+                                        : "text-accent hover:underline"
+                                    }`}
+                                  >
+                                    View
+                                  </button>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -826,11 +862,11 @@ export default function AddPageNumbersPdfTool({ onProcessing, onError }: ToolUIP
 
                 {/* ── TAB 1: POSITION & FORMAT ── */}
                 {activeTab === "layout" && (
-                  <div className="space-y-5 animate-fade-in">
-                    {/* Position: 3x2 Grid */}
+                  <div className="space-y-4 animate-fade-in">
+                    {/* Position: Compact 3x2 Matrix */}
                     <div>
-                      <div className="flex items-center justify-between mb-2.5">
-                        <label className="text-xs font-extrabold uppercase tracking-wider text-text-secondary">
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-xs font-bold text-text-secondary">
                           Page Number Position
                         </label>
                         <span className="text-[11px] font-semibold text-accent capitalize">
@@ -846,20 +882,17 @@ export default function AddPageNumbersPdfTool({ onProcessing, onError }: ToolUIP
                               key={pos.id}
                               type="button"
                               onClick={() => setPosition(pos.id)}
-                              className={`p-2.5 rounded-xl border text-left transition-all duration-150 flex flex-col justify-between h-16 cursor-pointer ${
+                              className={`py-2 px-2 rounded-xl border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 ${
                                 isSelected
-                                  ? "border-accent bg-accent/10 ring-2 ring-accent/20"
-                                  : "border-border-base bg-bg-surface hover:border-accent/40 hover:bg-bg-hover"
+                                  ? "border-accent bg-accent/10 text-accent font-bold ring-1 ring-accent/30 shadow-xs"
+                                  : "border-border-base bg-bg-surface text-text-secondary hover:text-text-primary hover:border-accent/40"
                               }`}
                             >
-                              <div className="flex items-center justify-between">
-                                <span className={`w-2 h-2 rounded-full ${isSelected ? "bg-accent" : "bg-border-strong"}`} />
-                                <span className="text-[9px] font-bold text-text-tertiary uppercase">
-                                  {pos.id.startsWith("top") ? "Header" : "Footer"}
-                                </span>
-                              </div>
-                              <span className={`text-[11.5px] font-bold leading-tight ${isSelected ? "text-accent" : "text-text-primary"}`}>
+                              <span className="text-[11px] leading-tight font-semibold">
                                 {pos.label}
+                              </span>
+                              <span className="text-[9px] text-text-tertiary">
+                                {pos.id.startsWith("top") ? "Header" : "Footer"}
                               </span>
                             </button>
                           );
@@ -867,42 +900,50 @@ export default function AddPageNumbersPdfTool({ onProcessing, onError }: ToolUIP
                       </div>
                     </div>
 
-                    {/* Numbering Format Selector */}
+                    {/* Numbering Format Template Selector */}
                     <div>
-                      <label className="block text-xs font-extrabold uppercase tracking-wider text-text-secondary mb-2">
-                        Numbering Format
+                      <label className="block text-xs font-bold text-text-secondary mb-2">
+                        Numbering Format Template
                       </label>
                       <div className="grid grid-cols-2 gap-2">
                         {[
-                          { id: "page-x-of-y", label: "Page 1 of 10" },
-                          { id: "x-of-y", label: "1 of 10" },
-                          { id: "simple", label: "1 (Number only)" },
-                          { id: "page-x", label: "Page 1" },
-                          { id: "dashes", label: "- 1 -" },
-                          { id: "brackets", label: "[ 1 ]" },
-                          { id: "roman-upper", label: "I, II, III (Roman)" },
-                          { id: "custom", label: "Custom Format..." },
-                        ].map((fmt) => (
-                          <button
-                            key={fmt.id}
-                            type="button"
-                            onClick={() => setFormat(fmt.id as NumberFormat)}
-                            className={`p-2.5 rounded-xl border text-left text-xs font-semibold transition-all cursor-pointer ${
-                              format === fmt.id
-                                ? "border-accent bg-accent/10 text-accent ring-1 ring-accent/25"
-                                : "border-border-base bg-bg-surface text-text-secondary hover:text-text-primary hover:border-accent/40"
-                            }`}
-                          >
-                            {fmt.label}
-                          </button>
-                        ))}
+                          { id: "page-x-of-y", sample: `Page 1 of ${totalPages || 10}`, name: "Page X of Y" },
+                          { id: "x-of-y", sample: `1 of ${totalPages || 10}`, name: "X of Y" },
+                          { id: "simple", sample: "1", name: "Number Only" },
+                          { id: "page-x", sample: "Page 1", name: "Page X" },
+                          { id: "dashes", sample: "- 1 -", name: "Dashes" },
+                          { id: "brackets", sample: "[ 1 ]", name: "Brackets" },
+                          { id: "roman-upper", sample: "I, II, III", name: "Roman Numeral" },
+                          { id: "custom", sample: "{n} / {total}", name: "Custom Template" },
+                        ].map((fmt) => {
+                          const isSelected = format === fmt.id;
+                          return (
+                            <button
+                              key={fmt.id}
+                              type="button"
+                              onClick={() => setFormat(fmt.id as NumberFormat)}
+                              className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
+                                isSelected
+                                  ? "border-accent bg-accent/10 text-accent ring-1 ring-accent/25 shadow-xs"
+                                  : "border-border-base bg-bg-surface text-text-secondary hover:text-text-primary hover:border-accent/40"
+                              }`}
+                            >
+                              <p className="text-xs font-bold truncate text-text-primary">
+                                {fmt.sample}
+                              </p>
+                              <p className="text-[10px] text-text-tertiary mt-0.5 truncate">
+                                {fmt.name}
+                              </p>
+                            </button>
+                          );
+                        })}
                       </div>
 
-                      {/* Custom Format Input if selected */}
+                      {/* Custom Format Input */}
                       {format === "custom" && (
-                        <div className="mt-3 p-3 rounded-xl bg-bg-elevated border border-border-base space-y-1.5 animate-fade-in">
+                        <div className="mt-2.5 p-3 rounded-xl bg-bg-elevated border border-border-base space-y-1 animate-fade-in">
                           <label className="text-[11px] font-bold text-text-secondary">
-                            Custom Template String
+                            Custom Template Pattern
                           </label>
                           <input
                             type="text"
@@ -918,38 +959,41 @@ export default function AddPageNumbersPdfTool({ onProcessing, onError }: ToolUIP
                       )}
                     </div>
 
-                    {/* Start Number & Cover Page */}
-                    <div className="grid grid-cols-2 gap-3 pt-1">
-                      <div>
-                        <label className="block text-xs font-extrabold uppercase tracking-wider text-text-secondary mb-1.5">
-                          Start Counting At
-                        </label>
+                    {/* Quick Options: Skip Cover & Start At */}
+                    <div className="grid grid-cols-2 gap-2.5 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleSkipCover(!skipCoverPage)}
+                        className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex items-center justify-between ${
+                          skipCoverPage
+                            ? "border-accent bg-accent/10 text-accent ring-1 ring-accent/20"
+                            : "border-border-base bg-bg-surface text-text-secondary hover:border-accent/40"
+                        }`}
+                      >
+                        <div>
+                          <p className="text-xs font-bold">Skip Cover Page</p>
+                          <p className="text-[10px] text-text-tertiary">Starts at Page 2</p>
+                        </div>
+                        <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                          skipCoverPage ? "bg-accent text-white" : "border border-border-strong text-transparent"
+                        }`}>
+                          ✓
+                        </span>
+                      </button>
+
+                      <div className="p-2 rounded-xl border border-border-base bg-bg-surface">
+                        <div className="flex items-center justify-between text-[11px] font-bold text-text-secondary mb-1">
+                          <span>Start Count At</span>
+                          <span className="text-[10px] text-text-tertiary">Page #</span>
+                        </div>
                         <input
                           type="number"
                           min="1"
                           max="9999"
                           value={startNumber}
                           onChange={(e) => setStartNumber(Math.max(1, Number(e.target.value)))}
-                          className="w-full px-3 py-2 rounded-xl bg-bg-elevated border border-border-base text-sm font-mono text-text-primary focus:border-accent outline-none"
+                          className="w-full px-2 py-1 rounded-lg bg-bg-elevated border border-border-base text-xs font-bold font-mono text-text-primary focus:border-accent outline-none"
                         />
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-extrabold uppercase tracking-wider text-text-secondary mb-1.5">
-                          Cover Page
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => handleToggleSkipCover(!skipCoverPage)}
-                          className={`w-full py-2 px-3 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-between ${
-                            skipCoverPage
-                              ? "border-accent bg-accent/10 text-accent"
-                              : "border-border-base bg-bg-elevated text-text-secondary"
-                          }`}
-                        >
-                          <span>Skip Cover (Page 1)</span>
-                          <span>{skipCoverPage ? "✓" : "—"}</span>
-                        </button>
                       </div>
                     </div>
                   </div>
@@ -957,10 +1001,10 @@ export default function AddPageNumbersPdfTool({ onProcessing, onError }: ToolUIP
 
                 {/* ── TAB 2: PRO STYLES & TYPOGRAPHY ── */}
                 {activeTab === "style" && (
-                  <div className="space-y-5 animate-fade-in">
+                  <div className="space-y-4 animate-fade-in">
                     {/* Pro Decoration Styles */}
                     <div>
-                      <label className="block text-xs font-extrabold uppercase tracking-wider text-text-secondary mb-2">
+                      <label className="block text-xs font-bold text-text-secondary mb-2">
                         Decoration Style
                       </label>
                       <div className="grid grid-cols-3 gap-2">
@@ -973,7 +1017,7 @@ export default function AddPageNumbersPdfTool({ onProcessing, onError }: ToolUIP
                             key={st.id}
                             type="button"
                             onClick={() => setProStyle(st.id as ProStyleType)}
-                            className={`p-2.5 rounded-xl border text-center text-xs font-bold transition-all cursor-pointer ${
+                            className={`p-2 rounded-xl border text-center text-xs font-bold transition-all cursor-pointer ${
                               proStyle === st.id
                                 ? "border-accent bg-accent/10 text-accent ring-1 ring-accent/20"
                                 : "border-border-base bg-bg-surface text-text-secondary hover:text-text-primary"
@@ -985,31 +1029,31 @@ export default function AddPageNumbersPdfTool({ onProcessing, onError }: ToolUIP
                       </div>
                     </div>
 
-                    {/* Font Family & Style */}
-                    <div className="grid grid-cols-2 gap-3">
+                    {/* Font Family & Weight */}
+                    <div className="grid grid-cols-2 gap-2.5">
                       <div>
-                        <label className="block text-xs font-extrabold uppercase tracking-wider text-text-secondary mb-1.5">
+                        <label className="block text-xs font-bold text-text-secondary mb-1.5">
                           Font Family
                         </label>
                         <select
                           value={fontFamily}
                           onChange={(e) => setFontFamily(e.target.value as FontFamily)}
-                          className="w-full px-3 py-2 rounded-xl bg-bg-elevated border border-border-base text-xs font-semibold text-text-primary outline-none focus:border-accent cursor-pointer"
+                          className="w-full px-2.5 py-1.5 rounded-xl bg-bg-elevated border border-border-base text-xs font-semibold text-text-primary outline-none focus:border-accent cursor-pointer"
                         >
-                          <option value="helvetica">Helvetica (Sans)</option>
-                          <option value="times">Times Roman (Serif)</option>
-                          <option value="courier">Courier (Mono)</option>
+                          <option value="helvetica">Helvetica</option>
+                          <option value="times">Times Roman</option>
+                          <option value="courier">Courier</option>
                         </select>
                       </div>
 
                       <div>
-                        <label className="block text-xs font-extrabold uppercase tracking-wider text-text-secondary mb-1.5">
+                        <label className="block text-xs font-bold text-text-secondary mb-1.5">
                           Font Weight
                         </label>
                         <select
                           value={fontStyle}
                           onChange={(e) => setFontStyle(e.target.value as FontStyle)}
-                          className="w-full px-3 py-2 rounded-xl bg-bg-elevated border border-border-base text-xs font-semibold text-text-primary outline-none focus:border-accent cursor-pointer"
+                          className="w-full px-2.5 py-1.5 rounded-xl bg-bg-elevated border border-border-base text-xs font-semibold text-text-primary outline-none focus:border-accent cursor-pointer"
                         >
                           <option value="normal">Regular</option>
                           <option value="bold">Bold</option>
@@ -1018,10 +1062,10 @@ export default function AddPageNumbersPdfTool({ onProcessing, onError }: ToolUIP
                       </div>
                     </div>
 
-                    {/* Font Size with presets */}
+                    {/* Font Size */}
                     <div>
                       <div className="flex items-center justify-between mb-1.5">
-                        <label className="text-xs font-extrabold uppercase tracking-wider text-text-secondary">
+                        <label className="text-xs font-bold text-text-secondary">
                           Font Size
                         </label>
                         <span className="font-mono text-xs font-bold text-accent">{fontSize} pt</span>
@@ -1034,13 +1078,13 @@ export default function AddPageNumbersPdfTool({ onProcessing, onError }: ToolUIP
                         onChange={(e) => setFontSize(Number(e.target.value))}
                         className="w-full accent-accent cursor-pointer"
                       />
-                      <div className="flex items-center gap-1.5 mt-2">
+                      <div className="flex items-center gap-1 mt-1.5">
                         {[9, 10, 11, 12, 14, 16].map((sz) => (
                           <button
                             key={sz}
                             type="button"
                             onClick={() => setFontSize(sz)}
-                            className={`flex-1 py-1 rounded-lg text-[11px] font-bold border transition-colors cursor-pointer ${
+                            className={`flex-1 py-0.5 rounded-lg text-[10.5px] font-bold border transition-colors cursor-pointer ${
                               fontSize === sz
                                 ? "bg-accent text-white border-accent"
                                 : "bg-bg-elevated border-border-base text-text-secondary hover:text-text-primary"
@@ -1052,9 +1096,9 @@ export default function AddPageNumbersPdfTool({ onProcessing, onError }: ToolUIP
                       </div>
                     </div>
 
-                    {/* Text Color Picker & Swatches */}
+                    {/* Text Color */}
                     <div>
-                      <label className="block text-xs font-extrabold uppercase tracking-wider text-text-secondary mb-2">
+                      <label className="block text-xs font-bold text-text-secondary mb-2">
                         Text Color
                       </label>
                       <div className="flex items-center gap-2">
@@ -1063,7 +1107,7 @@ export default function AddPageNumbersPdfTool({ onProcessing, onError }: ToolUIP
                             key={c.hex}
                             type="button"
                             onClick={() => setColor(c.hex)}
-                            className={`w-7 h-7 rounded-full border-2 transition-transform cursor-pointer ${
+                            className={`w-6 h-6 rounded-full border-2 transition-transform cursor-pointer ${
                               color.toLowerCase() === c.hex.toLowerCase()
                                 ? "scale-110 ring-2 ring-accent border-white"
                                 : "border-border-strong hover:scale-105"
@@ -1076,14 +1120,14 @@ export default function AddPageNumbersPdfTool({ onProcessing, onError }: ToolUIP
                           type="color"
                           value={color}
                           onChange={(e) => setColor(e.target.value)}
-                          className="w-8 h-8 rounded-lg cursor-pointer bg-transparent border-0 p-0 ml-auto"
+                          className="w-7 h-7 rounded-lg cursor-pointer bg-transparent border-0 p-0 ml-auto"
                           title="Custom Color"
                         />
                       </div>
                     </div>
 
                     {/* Margins */}
-                    <div className="grid grid-cols-2 gap-3 pt-1">
+                    <div className="grid grid-cols-2 gap-2.5 pt-1">
                       <div>
                         <div className="flex items-center justify-between text-[11px] font-bold text-text-secondary mb-1">
                           <span>Edge Margin (V)</span>
@@ -1128,7 +1172,7 @@ export default function AddPageNumbersPdfTool({ onProcessing, onError }: ToolUIP
                     {processing ? (
                       <>
                         <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        <span>Applying Page Numbers to {totalNumberedCount} Pages...</span>
+                        <span>Applying Numbers to {totalNumberedCount} Pages...</span>
                       </>
                     ) : (
                       <>
@@ -1142,6 +1186,9 @@ export default function AddPageNumbersPdfTool({ onProcessing, onError }: ToolUIP
                       </>
                     )}
                   </button>
+                  <p className="text-center text-[10.5px] text-text-tertiary mt-2">
+                    Processed 100% locally in your browser • Never uploaded
+                  </p>
                 </div>
               </div>
 

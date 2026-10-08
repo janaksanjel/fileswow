@@ -180,73 +180,75 @@ export function FileUpload({
         aria-hidden="true"
       />
 
-      {/* ── Drop zone ───────────────────────────────────────── */}
-      <div
-        role="button"
-        tabIndex={0}
-        aria-label="Add files"
-        onClick={() => inputRef.current?.click()}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            inputRef.current?.click();
-          }
-        }}
-        onDragEnter={handleDragEnter}
-        onDragLeave={handleDragLeave}
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
-        className={`flow-dropzone w-full flex flex-col items-center justify-center gap-3
-          px-6 rounded-2xl border border-dashed cursor-pointer select-none
-          transition-[padding,background-color,border-color] duration-200
-          ${dragging ? "flow-dropzone-dragging border-transparent py-14" : "border-border-strong py-10 hover:border-accent/60 hover:bg-accent/[0.02]"}`}
-      >
-        <span
-          className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-200
-            ${dragging ? "bg-accent text-text-on-accent scale-110 shadow-md" : "bg-accent-subtle text-accent"}`}
+      {/* ── Drop zone (shown when no files loaded) ─────────── */}
+      {files.length === 0 && (
+        <div
+          role="button"
+          tabIndex={0}
+          aria-label="Add files"
+          onClick={() => inputRef.current?.click()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              inputRef.current?.click();
+            }
+          }}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          className={`flow-dropzone w-full flex flex-col items-center justify-center gap-3
+            px-6 rounded-2xl border border-dashed cursor-pointer select-none
+            transition-[padding,background-color,border-color] duration-200
+            ${dragging ? "flow-dropzone-dragging border-transparent py-14" : "border-border-strong py-10 hover:border-accent/60 hover:bg-accent/[0.02]"}`}
         >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className={dragging ? "flow-upload-icon" : ""}
-            aria-hidden="true"
+          <span
+            className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-200
+              ${dragging ? "bg-accent text-text-on-accent scale-110 shadow-md" : "bg-accent-subtle text-accent"}`}
           >
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="17 8 12 3 7 8" />
-            <line x1="12" y1="3" x2="12" y2="15" />
-          </svg>
-        </span>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className={dragging ? "flow-upload-icon" : ""}
+              aria-hidden="true"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+          </span>
 
-        <div className="text-center">
-          <p className="text-[14.5px] font-bold text-text-primary">
-            {dragging ? "Drop your files here" : `Add your ${CATEGORY_HINTS[category] ?? "files"}`}
-          </p>
-          <p className="text-[12.5px] text-text-tertiary mt-1">
-            {dragging ? (
-              "Release to add them"
-            ) : (
-              <>
-                Drag &amp; drop files here or{" "}
-                <span className="text-accent font-semibold underline decoration-accent/40 decoration-2 underline-offset-4">
-                  Choose files
-                </span>
-              </>
-            )}
-          </p>
+          <div className="text-center">
+            <p className="text-[14.5px] font-bold text-text-primary">
+              {dragging ? "Drop your files here" : `Add your ${CATEGORY_HINTS[category] ?? "files"}`}
+            </p>
+            <p className="text-[12.5px] text-text-tertiary mt-1">
+              {dragging ? (
+                "Release to add them"
+              ) : (
+                <>
+                  Drag &amp; drop files here or{" "}
+                  <span className="text-accent font-semibold underline decoration-accent/40 decoration-2 underline-offset-4">
+                    Choose files
+                  </span>
+                </>
+              )}
+            </p>
+          </div>
+
+          {!dragging && acceptLabel && (
+            <p className="text-[10px] font-bold text-text-tertiary px-2.5 py-1 bg-bg-elevated rounded-full uppercase tracking-wider">
+              {acceptLabel} · up to {maxFileSizeMB} MB
+            </p>
+          )}
         </div>
-
-        {!dragging && acceptLabel && (
-          <p className="text-[10px] font-bold text-text-tertiary px-2.5 py-1 bg-bg-elevated rounded-full uppercase tracking-wider">
-            {acceptLabel} · up to {maxFileSizeMB} MB
-          </p>
-        )}
-      </div>
+      )}
 
       {/* ── Validation error ────────────────────────────────── */}
       {validationError && (
