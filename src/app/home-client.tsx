@@ -399,7 +399,7 @@ export function HomeClient() {
             FAQ
           </p>
           <h2 id="faq-heading" className="heading-lg text-text-primary mb-8">
-            Questions, answered plainly
+            {t("home.faqTitle")}
           </h2>
           <Accordion items={FAQ_ITEMS} defaultOpen={null} />
         </div>
