@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface DropZoneProps {
   accept?: string;
@@ -11,11 +11,18 @@ interface DropZoneProps {
   maxFiles?: number;
 }
 
+/**
+ * State 1 (empty) for every tool: a large dashed dropzone.
+ * Click to browse, drop files, or paste from the clipboard (⌘V / Ctrl+V).
+ * Drag-over = accent hairline + tint + a subtle scale (see .dropzone-active).
+ * Below the fold of the zone, one quiet line makes the privacy promise:
+ * processed on this device, never uploaded.
+ */
 export function DropZone({
   accept = ".pdf",
   multiple = false,
   onFilesSelected,
-  label = "Drop your file here",
+  label = "Drop files here or choose a file",
   description,
   maxFiles,
 }: DropZoneProps) {
@@ -53,11 +60,34 @@ export function DropZone({
       const filtered = maxFiles
         ? droppedFiles.slice(0, maxFiles)
         : droppedFiles;
-
-      onFilesSelected(filtered);
+      onFilesSelected(multiple ? filtered : filtered.slice(0, 1));
     },
-    [onFilesSelected, maxFiles]
+    [onFilesSelected, maxFiles, multiple]
   );
+
+  /* Paste support: forwarded only when the user isn't typing somewhere
+     else on the page (inputs, textareas and rich-text editors keep their
+     own paste behaviour). */
+  useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      const files = Array.from(e.clipboardData?.files ?? []);
+      if (files.length === 0) return;
+      e.preventDefault();
+      const accepted = multiple ? files : files.slice(0, 1);
+      onFilesSelected(maxFiles ? accepted.slice(0, maxFiles) : accepted);
+    };
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  }, [onFilesSelected, maxFiles, multiple]);
 
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,10 +101,11 @@ export function DropZone({
     [onFilesSelected, maxFiles]
   );
 
-  const acceptLabel = accept
+  /* Accepted formats as individual mono chips — precise, not wordy */
+  const formats = accept
     .split(",")
-    .map((s) => s.trim().replace(".", "").toUpperCase())
-    .join(" / ");
+    .map((s) => s.trim().replace(".", "").replace("/*", "").replace("*", "ANY").toUpperCase())
+    .filter(Boolean);
 
   return (
     <div
@@ -93,15 +124,13 @@ export function DropZone({
       tabIndex={0}
       aria-label={label}
       className={`
-        group relative flex flex-col items-center justify-center gap-4
-        px-6 py-12 sm:py-16
-        rounded-2xl bg-bg-surface
-        border border-dashed cursor-pointer
-        transition-all duration-200
+        group relative w-full flex flex-col rounded-xl bg-bg-surface
+        border border-dashed cursor-pointer select-none
+        transition-[border-color,background-color,transform] duration-150 ease-out
         ${
           isDragging
             ? "dropzone-active border-solid"
-            : "border-border-strong hover:border-accent/60 hover:bg-accent/[0.02]"
+            : "border-border-strong hover:border-accent/70 hover:bg-accent/[0.03]"
         }
       `}
     >
@@ -116,47 +145,68 @@ export function DropZone({
         tabIndex={-1}
       />
 
-      {/* Upload icon */}
-      <span
-        className={`
-          w-14 h-14 rounded-2xl flex items-center justify-center transition-colors duration-200
-          ${
+      {/* Zone proper */}
+      <div className="flex flex-col items-center gap-4 px-6 pt-10 sm:pt-12 pb-8">
+        {/* Document tile — a sheet with an up-arrow, not a generic blob */}
+        <span
+          className={`w-14 h-14 rounded-xl flex items-center justify-center ring-1 ring-inset transition-colors duration-150 ${
             isDragging
-              ? "bg-accent text-text-on-accent shadow-md"
-              : "bg-accent-subtle text-accent group-hover:scale-105 transition-transform"
-          }
-        `}
-      >
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-          <polyline points="17 8 12 3 7 8" />
-          <line x1="12" y1="3" x2="12" y2="15" />
-        </svg>
-      </span>
+              ? "bg-accent text-text-on-accent ring-accent"
+              : "bg-accent-subtle text-accent ring-transparent"
+          }`}
+        >
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 3 14 8 19 8" />
+            <line x1="12" y1="17.5" x2="12" y2="11.5" />
+            <polyline points="9.3 14 12 11.3 14.7 14" />
+          </svg>
+        </span>
 
-      <div className="text-center">
-        <p className="text-[15px] font-semibold text-text-primary mb-1">
-          {isDragging ? "Drop it — you're all set!" : label}
-        </p>
-        <p className="text-[12.5px] text-text-tertiary">
-          {description || (
-            <>
-              <span className="hidden sm:inline">Drag &amp; drop or </span>
-              <span className="text-accent font-semibold underline decoration-accent/40 decoration-2 underline-offset-4 hover:decoration-accent transition-colors">
-                browse
-              </span>
-              <span className="hidden sm:inline"> from your computer</span>
-            </>
-          )}
-        </p>
+        <div className="text-center">
+          <p className="text-base font-semibold text-text-primary mb-1.5">
+            {isDragging ? "Release to add your file" : label}
+          </p>
+          <p className="text-[13px] text-text-tertiary">
+            {description || (
+              <>
+                Drag &amp; drop,{" "}
+                <span className="text-accent font-semibold underline decoration-accent/40 decoration-2 underline-offset-4 hover:decoration-accent transition-colors">
+                  choose a file
+                </span>
+                , or paste with <kbd className="kbd mx-0.5">⌘V</kbd>
+              </>
+            )}
+          </p>
+        </div>
+
+        {formats.length > 0 && !isDragging && (
+          <ul className="flex flex-wrap items-center justify-center gap-1.5" aria-label="Accepted file formats">
+            {formats.slice(0, 8).map((f) => (
+              <li
+                key={f}
+                className="font-mono text-[10.5px] font-semibold text-text-secondary bg-bg-elevated border border-border-base rounded-md px-2 py-0.5 uppercase tracking-[0.06em]"
+              >
+                {f}
+              </li>
+            ))}
+            {multiple && (
+              <li className="font-mono text-[10.5px] font-semibold text-text-tertiary px-1 uppercase tracking-[0.06em]">
+                + multiple
+              </li>
+            )}
+          </ul>
+        )}
       </div>
 
-      {acceptLabel && (
-        <p className="text-[10px] font-bold text-text-tertiary px-2.5 py-1 bg-bg-elevated rounded-full uppercase tracking-wider">
-          {acceptLabel}
-          {multiple ? " · MULTIPLE" : ""}
-        </p>
-      )}
+      {/* Trust strip — the one line every tool carries */}
+      <p className="flex items-center justify-center gap-1.5 border-t border-dashed border-border-base px-6 py-3 text-[11.5px] text-text-tertiary">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="text-success" aria-hidden="true">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          <path d="M9 12l2 2 4-4" />
+        </svg>
+        Processed on your device — nothing is uploaded
+      </p>
     </div>
   );
 }

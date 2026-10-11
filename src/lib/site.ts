@@ -1,3 +1,5 @@
+import { ALL_TOOLS } from "./catalog";
+
 /**
  * Central site configuration — the single source of truth for SEO URLs.
  *
@@ -9,8 +11,12 @@ export const SITE_URL = "https://www.fileswow.com";
 
 export const SITE_NAME = "FilesWow.com";
 
+// Tool count comes from the catalog — never hardcode it, so copy and
+// structured data can't disagree with the real number of tools again.
+export const TOOL_COUNT = ALL_TOOLS.length;
+
 export const SITE_DESCRIPTION =
-  "100+ free PDF, Word, and image tools. Merge, split, compress, convert, edit, and transform documents — entirely in your browser. No upload required. 100% private.";
+  `${TOOL_COUNT} free PDF, Word, and image tools. Merge, split, compress, convert, edit, and transform documents — entirely in your browser. No upload required. 100% private.`;
 
 /** Build an absolute URL from a path starting with "/" */
 export function absoluteUrl(path: string): string {

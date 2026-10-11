@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BLOG_POSTS, blogReadingMinutes, blogIndexUrl, type BlogPost } from "@/lib/blog";
-import { absoluteUrl, jsonLdProps } from "@/lib/site";
+import { absoluteUrl, jsonLdProps, TOOL_COUNT } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Blog — File Tips, Tutorials & Tools (PDF, Word, Image)",
@@ -113,7 +113,7 @@ export default function BlogIndexPage() {
         {/* Heading */}
         <header className="mb-10">
           <h1 className="heading-xl text-text-primary mb-3 [text-wrap:balance]">
-            The FilesWow <span className="text-gradient">blog</span>
+            The FilesWow blog
           </h1>
           <p className="body-lg text-text-secondary max-w-xl">
             Step-by-step tutorials for real file work — merging, compressing,
@@ -136,7 +136,7 @@ export default function BlogIndexPage() {
         <p className="mt-10 text-[13px] text-text-secondary">
           Looking for the tools themselves?{" "}
           <Link href="/" className="text-accent font-semibold hover:underline">
-            Browse all 100+ free tools
+            Browse all {TOOL_COUNT} free tools
           </Link>{" "}
           — every tutorial links to the tool that does the job.
         </p>

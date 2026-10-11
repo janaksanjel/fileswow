@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { absoluteUrl, jsonLdProps } from "@/lib/site";
+import { absoluteUrl, jsonLdProps, TOOL_COUNT } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "About — Free Private Document Tools",
   description:
-    "Learn about FilesWow.com — 100+ free PDF, Word, and image tools that run entirely in your browser. Your files never leave your device.",
+    `Learn about FilesWow.com — ${TOOL_COUNT} free PDF, Word, and image tools that run entirely in your browser. Your files never leave your device.`,
   alternates: {
     canonical: absoluteUrl("/about"),
     languages: {
@@ -26,7 +26,7 @@ export default function AboutPage() {
     "@type": "AboutPage",
     name: "About FilesWow.com",
     description:
-      "FilesWow.com provides 100+ free PDF, Word, and image processing tools that run entirely in the browser.",
+      `FilesWow.com provides ${TOOL_COUNT} free PDF, Word, and image processing tools that run entirely in the browser.`,
     url: absoluteUrl("/about"),
   };
 
@@ -53,7 +53,7 @@ export default function AboutPage() {
         <div className="space-y-6 body-md text-text-secondary leading-relaxed">
           <p>
             <strong className="text-text-primary">FilesWow.com</strong> is a
-            free suite of 100+ document and image processing tools designed to
+            free suite of {TOOL_COUNT} document and image processing tools designed to
             work entirely in your web browser. We built FilesWow with one core
             principle: <strong className="text-text-primary">your files should
             never leave your device</strong>.

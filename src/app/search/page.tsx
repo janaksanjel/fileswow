@@ -5,9 +5,9 @@ import { absoluteUrl, jsonLdProps } from "@/lib/site";
 import { SearchClient } from "./search-client";
 
 export const metadata: Metadata = {
-  title: "Search All Tools — A to Z Index of 200+ Free File Tools",
+  title: `Search All Tools — A to Z Index of ${ALL_TOOLS.length} Tools`,
   description:
-    "Search every FilesWow.com tool: PDF merge, split, compress, convert; Word to PDF; image converters and 200+ more. Full A–Z tool index — free, no upload, 100% private.",
+    `Search every FilesWow.com tool: PDF merge, split, compress, convert; Word to PDF; image converters — ${ALL_TOOLS.length} in total. Full A–Z tool index — free, no upload, 100% private.`,
   keywords: [
     "file tools search",
     "all file tools",
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Search All FilesWow.com Tools",
     description:
-      "Search or browse the full A–Z index of 200+ free PDF, Word, image, and text tools — all in-browser, no upload.",
+      `Search or browse the full A–Z index of ${ALL_TOOLS.length} free PDF, Word, image, and text tools — all in-browser, no upload.`,
     url: absoluteUrl("/search"),
     type: "website",
   },
@@ -93,7 +93,7 @@ export default function SearchPage() {
             <span className="text-text-secondary">Search</span>
           </nav>
           <h1 className="heading-xl text-text-primary mb-3 [text-wrap:balance]">
-            Search <span className="text-gradient">all tools</span>
+            Search all tools
           </h1>
           <p className="body-lg text-text-secondary max-w-2xl">
             Type what you need — &ldquo;merge pdf&rdquo;, &ldquo;word to

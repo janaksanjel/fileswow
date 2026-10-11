@@ -51,7 +51,7 @@ export function CookieConsentBanner() {
           className="fixed bottom-4 left-4 right-4 sm:right-auto sm:max-w-md z-50 rounded-2xl border border-border-base bg-bg-surface shadow-2xl p-5"
         >
           <div className="flex items-start gap-3.5">
-            <span className="shrink-0 w-9 h-9 rounded-xl bg-gradient-to-b from-accent-light to-accent flex items-center justify-center text-white shadow-sm">
+            <span className="shrink-0 w-9 h-9 rounded-xl bg-accent flex items-center justify-center text-text-on-accent shadow-sm">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5" />
                 <path d="M8.5 8.5h.01M7 12.5h.01M11 15.5h.01M15 13h.01" />
@@ -74,7 +74,7 @@ export function CookieConsentBanner() {
           <div className="mt-4 flex items-center gap-2.5">
             <button
               onClick={() => choose("accepted")}
-              className="flex-1 px-4 py-2 rounded-xl bg-accent text-white text-[13px] font-semibold shadow-sm hover:opacity-90 active:scale-[0.98] transition-all"
+              className="flex-1 px-4 py-2 rounded-xl bg-accent text-text-on-accent text-[13px] font-semibold shadow-sm hover:opacity-90 active:scale-[0.98] transition-all"
             >
               Accept all
             </button>

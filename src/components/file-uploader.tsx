@@ -213,6 +213,28 @@ export function FileUploader({
     [addFiles]
   );
 
+  /* Paste support — forwarded unless the user is typing in a field or a
+     rich-text editor (those keep their own paste behaviour). */
+  useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      const files = Array.from(e.clipboardData?.files ?? []);
+      if (files.length === 0) return;
+      e.preventDefault();
+      addFiles(files);
+    };
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  }, [addFiles]);
+
   const hasFiles = items.length > 0;
   const allDone = items.every((it) => it.status === "done");
   const acceptLabel = accept
@@ -256,47 +278,48 @@ export function FileUploader({
         onDragLeave={handleDragLeave}
         onDragOver={handleDragOver}
         onDrop={handleDrop}
-        className={`flow-dropzone w-full flex flex-col items-center justify-center gap-3
-          px-6 rounded-2xl border border-dashed cursor-pointer select-none
-          transition-[padding,background-color,border-color] duration-200
-          ${dragging ? "flow-dropzone-dragging border-transparent py-14" : "border-border-strong py-10 hover:border-accent/60 hover:bg-accent/[0.02]"}`}
+        className={`flow-dropzone w-full flex flex-col rounded-xl border-2 border-dashed cursor-pointer select-none
+          transition-[background-color,border-color,transform] duration-150 ease-out
+          ${dragging ? "flow-dropzone-dragging border-accent" : "border-border-strong hover:border-accent/70 hover:bg-accent/[0.03]"}`}
       >
-        {/* Icon */}
+      <div className={`flex flex-col items-center justify-center gap-3 px-6 ${dragging ? "py-14" : "py-10 sm:py-12"}`}>
+
+        {/* Document tile — a sheet with an up-arrow */}
         <span
-          className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-200
-            ${dragging ? "bg-accent text-text-on-accent scale-110 shadow-md" : "bg-accent-subtle text-accent"}`}
+          className={`w-14 h-14 rounded-xl flex items-center justify-center ring-1 ring-inset transition-colors duration-150
+            ${dragging ? "bg-accent text-text-on-accent ring-accent" : "bg-accent-subtle text-accent ring-transparent"}`}
         >
           <svg
-            width="20"
-            height="20"
+            width="26"
+            height="26"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth="2"
+            strokeWidth="1.75"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className={dragging ? "flow-upload-icon" : ""}
             aria-hidden="true"
           >
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="17 8 12 3 7 8" />
-            <line x1="12" y1="3" x2="12" y2="15" />
+            <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 3 14 8 19 8" />
+            <line x1="12" y1="17.5" x2="12" y2="11.5" />
+            <polyline points="9.3 14 12 11.3 14.7 14" />
           </svg>
         </span>
 
         {/* Text */}
         <div className="text-center">
-          <p className="text-[14.5px] font-bold text-text-primary">
-            {dragging ? "Drop your files here" : "Add your files"}
+          <p className="text-[15px] font-semibold text-text-primary">
+            {dragging ? "Release to add your files" : "Drop files here or choose a file"}
           </p>
-          <p className="text-[12.5px] text-text-tertiary mt-1">
+          <p className="text-[13px] text-text-tertiary mt-1">
             {dragging ? (
-              "Release to add them"
+              "They’ll be read right in this browser"
             ) : (
               <>
-                Drag &amp; drop files here or{" "}
+                Drag &amp; drop, choose files, or paste with{" "}
                 <span className="text-accent font-semibold underline decoration-accent/40 decoration-2 underline-offset-4">
-                  Choose files
+                  ⌘V
                 </span>
               </>
             )}
@@ -304,10 +327,22 @@ export function FileUploader({
         </div>
 
         {!dragging && (acceptLabel || hint) && (
-          <p className="text-[10px] font-bold text-text-tertiary px-2.5 py-1 bg-bg-elevated rounded-full uppercase tracking-wider">
+          <p className="font-mono text-[10.5px] font-semibold text-text-secondary px-2.5 py-1 bg-bg-elevated border border-border-base rounded-md uppercase tracking-[0.06em]">
             {acceptLabel || hint}
           </p>
         )}
+      </div>
+
+      {/* Trust strip — the one line every tool carries */}
+      {!dragging && (
+        <p className="flex items-center justify-center gap-1.5 border-t border-dashed border-border-base px-6 py-3 text-[11.5px] text-text-tertiary">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="text-success" aria-hidden="true">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M9 12l2 2 4-4" />
+          </svg>
+          Processed on your device — nothing is uploaded
+        </p>
+      )}
       </div>
 
       {/* ── File list ───────────────────────────────────────── */}

@@ -1,4 +1,5 @@
 import { ImageResponse } from "next/og";
+import { TOOL_COUNT } from "@/lib/site";
 
 // Required for `output: export` (static HTML export) builds.
 export const dynamic = "force-static";
@@ -32,7 +33,7 @@ export default function OpenGraphImage() {
             left: 0,
             right: 0,
             height: 10,
-            background: "linear-gradient(90deg, #16a34a, #22c55e)",
+            background: "linear-gradient(90deg, #ff6a00, #ff9a24)",
             display: "flex",
           }}
         />
@@ -43,7 +44,7 @@ export default function OpenGraphImage() {
             left: 0,
             right: 0,
             height: 10,
-            background: "linear-gradient(90deg, #22c55e, #16a34a)",
+            background: "linear-gradient(90deg, #ff9a24, #ff6a00)",
             display: "flex",
           }}
         />
@@ -55,7 +56,7 @@ export default function OpenGraphImage() {
               width: 72,
               height: 72,
               borderRadius: 16,
-              background: "linear-gradient(180deg, #22c55e, #16a34a)",
+              background: "linear-gradient(180deg, #ff9a24, #ff6a00)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -64,7 +65,7 @@ export default function OpenGraphImage() {
           >
             <svg width="40" height="40" viewBox="0 0 24 24">
               <path d="M5.5 2.5h7.2L19 8.3V21.5H5.5z" fill="#fff" />
-              <path d="M12.7 2.5v5.8H19z" fill="#0e7a3d" opacity="0.6" />
+              <path d="M12.7 2.5v5.8H19z" fill="#e85d00" opacity="0.6" />
             </svg>
           </div>
           <div style={{ fontSize: 44, fontWeight: 800, letterSpacing: -1 }}>FilesWow.com</div>
@@ -83,7 +84,7 @@ export default function OpenGraphImage() {
             textAlign: "center",
           }}
         >
-          100+ tools · No upload · No sign-up · 100% private
+          {`${TOOL_COUNT} tools · No upload · No sign-up · 100% private`}
         </div>
 
         {/* Stat chips */}

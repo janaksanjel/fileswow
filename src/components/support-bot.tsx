@@ -125,7 +125,7 @@ function searchTools(query: string, max: number = 4): ToolDef[] {
 }
 
 function toolsToLinks(tools: ToolDef[]): BotLink[] {
-  return tools.map((t) => ({ label: `${t.icon} ${t.name}`, href: `/tools/${t.slug}` }));
+  return tools.map((t) => ({ label: t.name, href: `/tools/${t.slug}` }));
 }
 
 // ─── Intent knowledge base ────────────────────────────────────────
@@ -428,20 +428,20 @@ export function SupportBot() {
           className="fixed bottom-[4.75rem] left-3 right-3 sm:left-auto sm:right-5 sm:w-[380px] z-50 flex flex-col rounded-2xl border border-border-base bg-bg-surface shadow-2xl overflow-hidden sm:h-[560px] h-[min(70vh,560px)]"
         >
           {/* Header */}
-          <div className="flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-accent to-accent-hover text-white shrink-0">
-            <span className="relative w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-[17px]">
+          <div className="flex items-center gap-3 px-4 py-3 bg-accent text-text-on-accent shrink-0">
+            <span className="relative w-9 h-9 rounded-full bg-black/10 flex items-center justify-center text-[17px]">
               🙂
               <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-accent" />
             </span>
             <div className="min-w-0 flex-1">
               <p className="text-[14px] font-bold leading-tight">{BOT_NAME}</p>
-              <p className="text-[11px] text-white/80 leading-tight">FilesWow Assistant · always online</p>
+              <p className="text-[11px] text-text-on-accent/80 leading-tight">FilesWow Assistant · always online</p>
             </div>
             {/* Clear chat — starts a new session */}
             {messages.length > 1 && (
               <button
                 onClick={clearChat}
-                className="w-8 h-8 rounded-lg hover:bg-white/15 flex items-center justify-center transition-colors"
+                className="w-8 h-8 rounded-lg hover:bg-black/10 flex items-center justify-center transition-colors"
                 aria-label="Clear chat and start a new session"
                 title="Clear chat — start new session"
               >
@@ -452,7 +452,7 @@ export function SupportBot() {
             )}
             <button
               onClick={() => setOpen(false)}
-              className="w-8 h-8 rounded-lg hover:bg-white/15 flex items-center justify-center transition-colors"
+              className="w-8 h-8 rounded-lg hover:bg-black/10 flex items-center justify-center transition-colors"
               aria-label="Close chat"
             >
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
@@ -468,7 +468,7 @@ export function SupportBot() {
                 <div
                   className={
                     m.from === "user"
-                      ? "max-w-[85%] rounded-2xl rounded-br-md px-3.5 py-2.5 bg-accent text-white text-[13px] leading-relaxed shadow-sm"
+                      ? "max-w-[85%] rounded-2xl rounded-br-md px-3.5 py-2.5 bg-accent text-text-on-accent text-[13px] leading-relaxed shadow-sm"
                       : "max-w-[88%] rounded-2xl rounded-bl-md px-3.5 py-2.5 bg-bg-surface border border-border-base text-text-primary text-[13px] leading-relaxed shadow-sm"
                   }
                 >
@@ -476,7 +476,7 @@ export function SupportBot() {
                   {m.links && m.links.length > 0 && (
                     <div className="mt-2 flex flex-col gap-1.5">
                       {m.links.map((l) => {
-                        const cls = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-bg-elevated border border-border-base text-[12.5px] font-semibold text-accent hover:bg-accent hover:text-white hover:border-accent transition-all";
+                        const cls = "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-bg-elevated border border-border-base text-[12.5px] font-semibold text-accent hover:bg-accent hover:text-text-on-accent hover:border-accent transition-all";
                         const arrow = (
                           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                             <path d="M5 12h14M12 5l7 7-7 7" />
@@ -561,7 +561,7 @@ export function SupportBot() {
       {/* Floating button — bottom-right, dragged down low */}
       <button
         onClick={() => setOpen((v) => !v)}
-        className="fixed bottom-4 right-4 sm:right-5 z-50 w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-gradient-to-b from-accent-light to-accent text-white shadow-xl border border-accent-hover/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+        className="fixed bottom-4 right-4 sm:right-5 z-50 w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-accent text-text-on-accent shadow-xl border border-accent-hover/40 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
         aria-label={open ? "Close support chat" : "Open support chat"}
         title={`Need help? Chat with ${BOT_NAME}`}
       >

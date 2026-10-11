@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { searchTools, type SearchResult } from "@/lib/search";
+import { ALL_TOOLS } from "@/lib/catalog";
 
 export function SearchClient() {
   const router = useRouter();
@@ -85,7 +86,7 @@ export function SearchClient() {
                 setSelectedIdx((prev) => Math.max(prev - 1, 0));
               }
             }}
-            placeholder="Search 200+ tools — try “merge pdf” or “word to pdf”"
+            placeholder={`Search ${ALL_TOOLS.length} tools — try “merge pdf” or “word to pdf”`}
             className="flex-1 bg-transparent outline-none body-md text-text-primary placeholder:text-text-tertiary"
             aria-label="Search tools"
             autoComplete="off"

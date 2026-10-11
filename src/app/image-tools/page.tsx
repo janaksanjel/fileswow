@@ -6,7 +6,7 @@ import { CategoryHubClient } from "../pdf-tools/category-hub-client";
 export const metadata: Metadata = {
   title: "Image Tools — Convert, Resize, Crop & Edit",
   description:
-    "60+ free image tools. Convert, resize, crop, filter, compress, watermark, and edit images — all in your browser. No upload required. 100% private.",
+    `${IMAGE_TOOLS.length} free image tools. Convert, resize, crop, filter, compress, watermark, and edit images — all in your browser. No upload required. 100% private.`,
   keywords: [
     "free image editor online",
     "compress image free",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Image Tools — Convert, Resize, Crop, Filter & Edit",
     description:
-      "60+ free image tools. Convert, resize, crop, filter, and edit images.",
+      `${IMAGE_TOOLS.length} free image tools. Convert, resize, crop, filter, and edit images.`,
     url: categoryUrl("image"),
     type: "website",
   },
@@ -42,7 +42,7 @@ export default function ImageToolsPage() {
     "@type": "CollectionPage",
     name: "Free Image Tools Online",
     description:
-      "60+ free image tools processed entirely in your browser. No upload required.",
+      `${IMAGE_TOOLS.length} free image tools processed entirely in your browser. No upload required.`,
     url: categoryUrl("image"),
     mainEntity: {
       "@type": "ItemList",

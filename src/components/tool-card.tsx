@@ -1,56 +1,66 @@
 "use client";
 
 import Link from "next/link";
-import type { ToolDef } from "@/lib/catalog";
+import { SUB_CATEGORY_LABELS, type ToolDef } from "@/lib/catalog";
 import { ToolIcon } from "./icon";
-import { categoryText, categoryTile } from "@/lib/category-style";
+import { categoryTile } from "@/lib/category-style";
 
 interface ToolCardProps {
   tool: ToolDef;
   index?: number;
 }
 
+/**
+ * The one tool card used across the site: icon tile + name + a two-line
+ * description, badges only when true (WASM / BETA), a 2px lift and a
+ * revealing arrow on hover, visible focus ring, whole card = one link.
+ */
 export function ToolCard({ tool, index = 0 }: ToolCardProps) {
   const tierLabel = tool.tier === 2 ? "WASM" : tool.tier === 3 ? "BETA" : null;
-  const label = categoryText(tool.category);
 
   return (
     <Link
       href={`/tools/${tool.slug}`}
-      className="card group relative flex flex-col p-4 sm:p-5"
-      style={{ animationDelay: `${index * 25}ms` }}
+      className="card group relative flex flex-col p-4"
+      style={{ animationDelay: `${Math.min(index, 12) * 25}ms` }}
     >
       <div className="flex items-start gap-3">
         {/* Icon tile — tinted per category */}
-        <span className={`w-11 h-11 rounded-xl ring-1 ring-inset flex items-center justify-center shrink-0 transition-all duration-200 group-hover:shadow-sm ${categoryTile(tool.category)}`}>
-          <ToolIcon name={tool.slug} size={21} />
+        <span
+          className={`w-10 h-10 rounded-lg ring-1 ring-inset flex items-center justify-center shrink-0 transition-transform duration-150 ease-out group-hover:-translate-y-0.5 ${categoryTile(
+            tool.category
+          )}`}
+        >
+          <ToolIcon name={tool.slug} size={19} />
         </span>
 
         <div className="flex-1 min-w-0 pt-0.5">
           <div className="flex items-center gap-2 mb-1">
-            <h3 className="text-[13.5px] font-semibold text-text-primary truncate group-hover:text-accent transition-colors">
+            <h3 className="text-[14px] font-semibold text-text-primary truncate group-hover:text-accent transition-colors duration-150">
               {tool.name}
             </h3>
+            {tierLabel && (
+              <span
+                className={`badge badge-mono shrink-0 ${
+                  tool.tier === 2 ? "badge-accent" : ""
+                }`}
+              >
+                {tierLabel}
+              </span>
+            )}
           </div>
-          <p className="text-[12px] text-text-secondary leading-relaxed line-clamp-2">
+          <p className="text-[12.5px] text-text-secondary leading-snug line-clamp-2">
             {tool.description}
           </p>
         </div>
       </div>
 
-      {/* Footer row */}
-      <div className="mt-4 pt-3 flex items-center justify-between border-t border-border-base">
-        <div className="flex items-center gap-1.5 min-w-0">
-          {tierLabel && (
-            <span className={`tier-badge shrink-0 ${tool.tier === 2 ? "tier-badge-2" : "tier-badge-3"}`}>
-              {tierLabel}
-            </span>
-          )}
-          <span className={`text-[10px] uppercase tracking-wider font-bold truncate ${label}`}>
-            {tool.subCategory}
-          </span>
-        </div>
-        <span className="w-6 h-6 rounded-full flex items-center justify-center text-text-tertiary opacity-60 group-hover:opacity-100 group-hover:bg-accent group-hover:text-white transition-all duration-200 shrink-0">
+      {/* Footer: sub-category tag + hover arrow */}
+      <div className="mt-3.5 pt-3 flex items-center justify-between border-t border-border-base">
+        <span className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-text-tertiary truncate">
+          {SUB_CATEGORY_LABELS[tool.subCategory] ?? tool.subCategory}
+        </span>
+        <span className="w-6 h-6 rounded-full flex items-center justify-center text-text-tertiary opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 group-focus-visible:opacity-100 group-focus-visible:translate-x-0 transition-all duration-150 ease-out shrink-0">
           <svg
             width="11"
             height="11"
@@ -60,7 +70,7 @@ export function ToolCard({ tool, index = 0 }: ToolCardProps) {
             strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="transition-transform duration-200 group-hover:translate-x-px"
+            aria-hidden="true"
           >
             <line x1="5" y1="12" x2="19" y2="12" />
             <polyline points="12 5 19 12 12 19" />

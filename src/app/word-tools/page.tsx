@@ -6,7 +6,7 @@ import { CategoryHubClient } from "../pdf-tools/category-hub-client";
 export const metadata: Metadata = {
   title: "Word/DOCX Tools — Convert, Merge & Edit",
   description:
-    "30+ free Word/DOCX tools. Merge, split, convert, edit, and protect Word documents — all in your browser. No upload required. 100% private.",
+    `${WORD_TOOLS.length} free Word/DOCX tools. Merge, split, convert, edit, and protect Word documents — all in your browser. No upload required. 100% private.`,
   keywords: [
     "Word to PDF free",
     "PDF to Word converter",
@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Word/DOCX Tools — Merge, Split, Convert & Edit",
     description:
-      "30+ free Word/DOCX tools. Merge, split, convert, edit, and protect documents.",
+      `${WORD_TOOLS.length} free Word/DOCX tools. Merge, split, convert, edit, and protect documents.`,
     url: categoryUrl("word"),
     type: "website",
   },
@@ -40,7 +40,7 @@ export default function WordToolsPage() {
     "@type": "CollectionPage",
     name: "Free Word/DOCX Tools Online",
     description:
-      "30+ free Word tools processed entirely in your browser. No upload required.",
+      `${WORD_TOOLS.length} free Word tools processed entirely in your browser. No upload required.`,
     url: categoryUrl("word"),
     mainEntity: {
       "@type": "ItemList",

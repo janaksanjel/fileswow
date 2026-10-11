@@ -1,22 +1,23 @@
 {
   "name": "FilesWow.com — Free PDF, Word & Image Tools",
   "short_name": "FilesWow",
-  "description": "100+ free PDF, Word, and image tools. Processed entirely in your browser. No upload required.",
+  "description": "Free PDF, Word, and image tools. Processed entirely in your browser. No upload required.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f4efe6",
-  "theme_color": "#16a34a",
+  "background_color": "#ffffff",
+  "theme_color": "#ff6a00",
   "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
     {
       "src": "/favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
-    },
-    {
-      "src": "/apple-icon",
-      "sizes": "180x180",
-      "type": "image/png"
     }
   ],
   "categories": ["utilities", "productivity"]

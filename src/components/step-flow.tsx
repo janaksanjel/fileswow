@@ -314,7 +314,13 @@ export function StepFlow({
             >
               {processing ? (
                 <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin-slow" />
+                  <span
+                    className="w-4 h-4 rounded-full border-2 animate-spin-slow"
+                    style={{
+                      borderColor: "color-mix(in srgb, currentColor 35%, transparent)",
+                      borderTopColor: "currentColor",
+                    }}
+                  />
                   {processingLabel || `${actionLabel}...`}
                 </span>
               ) : (
@@ -368,7 +374,7 @@ function OutputPanel({
           </svg>
         </span>
         <div className="min-w-0">
-          <p className="text-[13.5px] font-bold text-text-primary leading-tight">Done!</p>
+          <p className="text-[13.5px] font-bold text-text-primary leading-tight">Done — processed on your device</p>
           <p className="text-[11.5px] text-text-secondary leading-tight mt-0.5">
             {outputs.length === 1
               ? `${outputs[0].name} · ${(outputs[0].blob.size / 1024).toFixed(0)} KB`
@@ -403,7 +409,7 @@ function OutputPanel({
       </ul>
 
       {outputs.length > 1 && onDownloadAll && (
-        <button onClick={onDownloadAll} className="btn-secondary w-full mt-3 py-2.5">
+        <button onClick={onDownloadAll} className="btn-primary w-full mt-3 py-2.5">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <rect x="2" y="4" width="20" height="16" rx="2" />
             <path d="M8 4v16" />
@@ -412,12 +418,12 @@ function OutputPanel({
         </button>
       )}
 
-      {/* Next actions */}
+      {/* Next actions — download stays the primary verb */}
       <div className="flex items-center gap-2 mt-5">
         <button onClick={onBack} className="btn-secondary flex-1 py-2.5">
           New files
         </button>
-        <button onClick={onReset} className="btn-primary flex-1 py-2.5">
+        <button onClick={onReset} className="btn-secondary flex-1 py-2.5">
           Start over
         </button>
       </div>

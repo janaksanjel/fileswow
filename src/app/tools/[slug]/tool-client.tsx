@@ -5,6 +5,7 @@ import { ToolShell } from "@/components/tool-shell";
 import { recordToolVisit } from "@/lib/usage";
 import { ProgressBar } from "@/components/progress-bar";
 import { getToolComponent } from "@/components/tool-registry";
+import { ToolIcon } from "@/components/icon";
 import { pingIndexNow } from "@/lib/indexnow-ping";
 import type { ToolDef } from "@/lib/catalog";
 import type { ToolGuide } from "@/lib/content";
@@ -21,6 +22,8 @@ interface ToolClientProps {
 export function ToolClient({ tool, relatedTools, guide, faq }: ToolClientProps) {
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Bumped by "Try again" — remounts the tool UI so it restarts clean.
+  const [attempt, setAttempt] = useState(0);
   const startRef = useRef(0);
   const pendingStop = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -44,6 +47,22 @@ export function ToolClient({ tool, relatedTools, guide, faq }: ToolClientProps) 
     }
   }, []);
 
+  const handleRetry = useCallback(() => {
+    if (pendingStop.current) {
+      clearTimeout(pendingStop.current);
+      pendingStop.current = null;
+    }
+    setProcessing(false);
+    setError(null);
+    setAttempt((a) => a + 1);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (pendingStop.current) clearTimeout(pendingStop.current);
+    };
+  }, []);
+
   const ToolComponent = getToolComponent(tool.slug);
 
   // Track usage for "Recently Used" and "Popular" sections
@@ -59,33 +78,61 @@ export function ToolClient({ tool, relatedTools, guide, faq }: ToolClientProps) 
 
   return (
     <ToolShell tool={tool} relatedTools={relatedTools} guide={guide} faq={faq}>
-      {/* Processing indicator */}
+      {/* Processing indicator (state 3) */}
       <ProgressBar active={processing} />
 
-      {/* Error display */}
+      {/* Error (state 5) — plain language first, detail second, retry third */}
       {error && (
-        <div className="mb-5 px-4 py-3 rounded-xl bg-danger/[0.05] border border-danger/25 flex items-start gap-3">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-danger mt-0.5 shrink-0" aria-hidden="true">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="15" y1="9" x2="9" y2="15" />
-            <line x1="9" y1="9" x2="15" y2="15" />
-          </svg>
-          <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-semibold text-danger">Something went wrong</p>
-            <p className="text-xs text-text-secondary mt-0.5 break-words">{error}</p>
+        <div
+          role="alert"
+          className="mb-5 rounded-xl border border-danger/30 bg-danger/[0.04] p-4"
+        >
+          <div className="flex items-start gap-3">
+            <span className="w-7 h-7 rounded-lg bg-danger/10 text-danger flex items-center justify-center shrink-0">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+              </svg>
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-[14px] font-semibold text-text-primary">
+                That didn&apos;t work
+              </p>
+              <p className="text-[13px] text-text-secondary leading-relaxed mt-0.5">
+                The file couldn&apos;t be processed this time. It usually means the
+                file is password-protected, damaged, or too large for this
+                browser. Try another file, or start over.
+              </p>
+              {error && (
+                <p className="mt-2 font-mono text-[11px] text-text-tertiary break-words">
+                  {error}
+                </p>
+              )}
+            </div>
           </div>
-          <button onClick={() => setError(null)} className="text-text-tertiary hover:text-danger transition-colors shrink-0 rounded-md p-1" aria-label="Dismiss">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
+          <div className="flex flex-wrap gap-2 mt-3 pl-10">
+            <button type="button" onClick={handleRetry} className="btn-primary px-4 py-2 text-[13px]">
+              Try again
+            </button>
+            <button
+              type="button"
+              onClick={() => setError(null)}
+              className="btn-secondary px-4 py-2 text-[13px]"
+            >
+              Dismiss
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Dynamic tool UI */}
+      {/* Dynamic tool UI — remounts on retry so the tool starts clean */}
       {ToolComponent ? (
-        <ToolComponent onProcessing={handleProcessing} onError={setError} />
+        <ToolComponent
+          key={attempt}
+          onProcessing={handleProcessing}
+          onError={setError}
+        />
       ) : (
         <FallbackToolUI tool={tool} />
       )}
@@ -96,17 +143,18 @@ export function ToolClient({ tool, relatedTools, guide, faq }: ToolClientProps) 
 function FallbackToolUI({ tool }: { tool: ToolDef }) {
   return (
     <div className="text-center py-12 sm:py-16">
-      <div className="w-14 h-14 rounded-2xl bg-bg-elevated border border-border-strong flex items-center justify-center text-2xl mx-auto mb-4">
-        {tool.icon}
+      <div className="w-14 h-14 rounded-xl bg-bg-elevated border border-border-base flex items-center justify-center mx-auto mb-4">
+        <ToolIcon name={tool.slug} size={26} />
       </div>
-      <h3 className="heading-md text-text-primary mb-2">Coming Soon</h3>
-      <p className="body-sm text-text-secondary max-w-sm mx-auto mb-4">
+      <h3 className="heading-md text-text-primary mb-2">Coming soon</h3>
+      <p className="text-[13.5px] text-text-secondary max-w-sm mx-auto mb-4">
         The <strong>{tool.name}</strong> tool is being built. It uses{" "}
-        <code className="px-2 py-0.5 rounded-md bg-bg-elevated border border-border-strong text-accent text-[11px] font-mono">
+        <code className="px-2 py-0.5 rounded-md bg-bg-elevated border border-border-base text-accent text-[12px] font-mono">
           {tool.engine}
-        </code>.
+        </code>
+        .
       </p>
-      <div className="inline-flex items-center gap-1.5 text-[10px] text-text-tertiary uppercase tracking-wider font-medium">
+      <div className="inline-flex items-center gap-1.5 text-[11px] text-text-tertiary uppercase tracking-wider font-medium">
         <span className="w-1.5 h-1.5 rounded-full bg-warning" />
         In development
       </div>

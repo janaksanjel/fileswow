@@ -1,98 +1,146 @@
 @import "tailwindcss";
 
 /* ════════════════════════════════════════════════════════════════
-   FilesWow — Crisp Modern Utility
-   Neutral cool canvas + white surfaces + hairline borders + soft
-   layered shadows. One refined green accent. All corners are
-   gently rounded; everything keeps 1px borders. Dark mode is a
-   cool graphite re-skin of the same system.
-
-   The old neo-brutalist layer (2px borders, hard offset shadows,
-   sharp corners) is deliberately neutralized: two-sided `border-2`
-   utilities are re-cast as 1px hairlines, arbitrary hard shadows
-   are replaced with soft elevation, and radii are back on.
+   FilesWow — calm utility, one accent
+   Pure white paper, deep-navy ink (#111827), hairline borders and
+   the signature brand orange (#FF6A00) reserved for primary
+   actions and focus — matching the mascot/logo identity. Warm
+   white (#FFF7ED) carries tinted bands (hero, CTA); neutral greys
+   carry everything else; categories are told apart by small muted
+   tints, never by loud colour. Cards rest on 1px lines (no
+   shadows); elevation belongs to floating layers only. Type:
+   Instrument Sans for headings, Geist for body, Geist Mono for
+   micro-labels. Dark mode is a warm graphite re-skin with lifted
+   orange accents, not an inversion.
    ════════════════════════════════════════════════════════════════ */
 
 /* ─── Light theme (default) ─────────────────────────────────── */
 :root {
-  --bg-base: #f5f7fa;          /* cool neutral canvas */
-  --bg-surface: #ffffff;       /* cards / raised */
-  --bg-elevated: #eef1f6;      /* wells, subtle fills */
-  --bg-hover: #f3f6fa;
+  /* ─── Surfaces: pure white paper + brand warm-white band ───── */
+  --bg-base: #ffffff;          /* page */
+  --bg-surface: #ffffff;       /* cards / panels */
+  --bg-warm: #fff7ed;          /* hero / CTA bands — brand warm white */
+  --bg-elevated: #f5f2ec;      /* wells, chips, kbd */
+  --bg-hover: #f7f4ed;
   --bg-input: #ffffff;
 
-  --accent: #16a34a;           /* FilesWow green — brand */
-  --accent-hover: #15803d;
-  --accent-light: #4ade80;
-  --accent-subtle: rgba(22, 163, 74, 0.09);
-  --accent-override: #15803d;
-  --accent-blue: #2563eb;      /* IMAGE category accent */
+  /* ─── Ink ──────────────────────────────────────────────────── */
+  --text-primary: #111827;     /* brand deep navy */
+  --text-secondary: #4b5563;
+  --text-tertiary: #6b7280;    /* 4.8:1 on white — AA at any size */
+  --text-on-accent: #111827;   /* navy ink on #FF6A00 fills — 6.2:1
+                                  (white on the orange is only 2.9:1) */
+  --text-on-success: #ffffff;
+
+  /* ─── Accent — signature brand orange (#FF6A00) ──────────────
+     Brand decision: the FilesWow mascot and logo are orange, so the
+     single accent is #FF6A00 — warm, friendly and ours. AA math
+     shapes its support roles: white text on #FF6A00 only reaches
+     2.9:1, so accent FILLS pair with deep-navy ink
+     (--text-on-accent, 6.2:1); accent used AS TEXT resolves to a
+     deeper burnt orange (--accent-ink, 5.1:1); borders/indicators
+     use --border-accent (#E85D00, 3.5:1). Brighter #FF9A24 stays
+     for gradient accents only. Every other colour is a neutral
+     grey; category identity lives in the muted --cat-* tints.    */
+  --accent: #ff6a00;
+  --accent-hover: #e85d00;
+  --accent-active: #cc4e00;
+  --accent-light: #ff9a24;
+  --accent-subtle: rgba(255, 106, 0, 0.08);
+  --accent-override: #e85d00;
+  --accent-ink: #c24500;       /* accent as small text — 5.1:1 on white */
+  --accent-blue: #3c5a96;      /* semantic info blue — tool notes only */
+
+  /* Category identity: one small muted tint per category */
+  --cat-pdf: #b2452e;
+  --cat-word: #3c5a96;
+  --cat-image: #8b6b22;
+  --cat-text: #4e5462;
+  --cat-cross: #6b7079;
 
   /* Legacy gradient tokens — tools still reference these. */
-  --accent-start: #16a34a;
-  --accent-end: #15803d;
+  --accent-start: #ff6a00;
+  --accent-end: #ff9a24;
 
-  --text-primary: #111827;
-  --text-secondary: #4b5563;
-  --text-tertiary: #94a3b8;
-  --text-on-accent: #ffffff;
+  /* Semantic success stays green — it reports outcomes, not brand */
+  --success: #15803d;
+  --danger: #c93a2b;
+  --warning: #8a5709;
 
-  --success: #128a55;
-  --danger: #d92d20;
-  --warning: #b45309;
+  --border: #e5e7eb;           /* hairline */
+  --border-strong: #d1d5db;    /* visible hairline */
+  --border-accent: #e85d00;    /* 3.5:1 — UI indicator, not text */
+  --border-danger: #c93a2b;
 
-  --border: #e6eaf0;           /* hairline */
-  --border-strong: #d0d7e1;    /* visible hairline */
-  --border-accent: #16a34a;
-  --border-danger: #d92d20;
-
-  /* Elevation used for surfaces & drop-downs */
-  --elevation-sm: 0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.04);
-  --elevation-md: 0 1px 2px rgba(16, 24, 40, 0.05), 0 6px 16px -4px rgba(16, 24, 40, 0.09);
-  --elevation-lg: 0 2px 4px rgba(16, 24, 40, 0.04), 0 16px 32px -8px rgba(16, 24, 40, 0.14);
-  --elevation-xl: 0 4px 8px rgba(16, 24, 40, 0.04), 0 24px 48px -12px rgba(16, 24, 40, 0.18);
+  /* Elevation — floating layers only (menus, dialogs, tooltips).
+     Cards and panels rest on hairlines, never on shadow. */
+  --elevation-sm: 0 1px 2px rgba(20, 22, 26, 0.05);
+  --elevation-md: 0 1px 2px rgba(20, 22, 26, 0.05), 0 6px 16px -4px rgba(20, 22, 26, 0.09);
+  --elevation-lg: 0 2px 4px rgba(20, 22, 26, 0.04), 0 16px 32px -8px rgba(20, 22, 26, 0.14);
+  --elevation-xl: 0 4px 8px rgba(20, 22, 26, 0.05), 0 24px 48px -12px rgba(20, 22, 26, 0.18);
 
   /* Where arbitrary/legacy hard shadows were used, fall back to this */
   --shadow-color: transparent;
   --shadow-soft: var(--elevation-md);
 
-  /* Faint grid lines for the hero backdrop */
-  --grid-line: rgba(16, 24, 40, 0.055);
+  /* Motion — shared tokens (transform/opacity only, 150–250ms) */
+  --dur-fast: 150ms;
+  --dur: 200ms;
+  --dur-slow: 250ms;
+  --ease-out: cubic-bezier(0.2, 0.7, 0.3, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Faint grid lines (used sparingly as section texture) */
+  --grid-line: rgba(20, 22, 26, 0.05);
 
   color-scheme: light;
 }
 
 /* ─── Dark theme ─────────────────────────────────────────────── */
 [data-theme="dark"] {
-  --bg-base: #0b0f15;
-  --bg-surface: #12171f;
-  --bg-elevated: #1b232e;
-  --bg-hover: #212a37;
-  --bg-input: #0f141b;
+  /* Warm graphite — elevated surfaces step *up* a ladder; this is a
+     designed dark mode, not an inversion of the light palette. */
+  --bg-base: #131210;
+  --bg-surface: #1a1815;
+  --bg-warm: #201810;          /* warm band on dark */
+  --bg-elevated: #221f1b;
+  --bg-hover: #282420;
+  --bg-input: #161412;
 
-  --accent: #3fb950;
-  --accent-hover: #4cc76a;
-  --accent-light: #56d364;
-  --accent-subtle: rgba(63, 185, 80, 0.15);
-  --accent-override: #56d364;
-  --accent-blue: #7ea6f7;
+  --text-primary: #f2eee7;
+  --text-secondary: #a8a49c;
+  --text-tertiary: #7d7973;
+  --text-on-accent: #17110a;   /* near-black ink on lifted orange */
+  --text-on-success: #0e1512;
 
-  --accent-start: #16a34a;
-  --accent-end: #3fb950;
+  /* Accent lifted for dark surfaces — #FF8A3D stays unmistakably
+     brand-orange and clears 7:1 against this warm graphite */
+  --accent: #ff8a3d;
+  --accent-hover: #ff9b57;
+  --accent-active: #ffa766;
+  --accent-light: #ffa157;
+  --accent-subtle: rgba(255, 138, 61, 0.16);
+  --accent-override: #ff9b57;
+  --accent-ink: #ff9b57;       /* accent as text on dark — 8.9:1 */
+  --accent-blue: #8fb0e8;
 
-  --text-primary: #e6edf3;
-  --text-secondary: #a6b3c0;
-  --text-tertiary: #74818f;
-  --text-on-accent: #05210d;
+  --cat-pdf: #e0917b;
+  --cat-word: #93aede;
+  --cat-image: #d3b169;
+  --cat-text: #a8adb8;
+  --cat-cross: #7e8079;
 
-  --success: #3fb950;
-  --danger: #f0524d;
-  --warning: #e3a94a;
+  --accent-start: #ff8a3d;
+  --accent-end: #ffa157;
 
-  --border: #212a35;           /* quiet hairline */
-  --border-strong: #313d4d;
-  --border-accent: #3fb950;
-  --border-danger: #f0524d;
+  --success: #34a881;
+  --danger: #e4635a;
+  --warning: #d9a441;
+
+  --border: #2a2724;           /* quiet hairline */
+  --border-strong: #3a3631;
+  --border-accent: #ff8a3d;
+  --border-danger: #e4635a;
 
   --elevation-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
   --elevation-md: 0 2px 6px rgba(0, 0, 0, 0.45), 0 8px 20px -6px rgba(0, 0, 0, 0.55);
@@ -102,8 +150,7 @@
   --shadow-color: transparent;
   --shadow-soft: var(--elevation-md);
 
-  /* Faint grid lines for the hero backdrop */
-  --grid-line: rgba(148, 180, 220, 0.07);
+  --grid-line: rgba(237, 236, 230, 0.05);
 
   color-scheme: dark;
 }
@@ -154,18 +201,26 @@ html.theme-fade body::after {
   --color-bg-elevated: var(--bg-elevated);
   --color-bg-hover: var(--bg-hover);
   --color-bg-input: var(--bg-input);
+  --color-bg-warm: var(--bg-warm);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-light: var(--accent-light);
   --color-accent-subtle: var(--accent-subtle);
   --color-accent-override: var(--accent-override);
+  --color-accent-ink: var(--accent-ink);
   --color-accent-start: var(--accent-start);
   --color-accent-end: var(--accent-end);
   --color-accent-blue: var(--accent-blue);
+  --color-cat-pdf: var(--cat-pdf);
+  --color-cat-word: var(--cat-word);
+  --color-cat-image: var(--cat-image);
+  --color-cat-text: var(--cat-text);
+  --color-cat-cross: var(--cat-cross);
   --color-text-primary: var(--text-primary);
   --color-text-secondary: var(--text-secondary);
   --color-text-tertiary: var(--text-tertiary);
   --color-text-on-accent: var(--text-on-accent);
+  --color-text-on-success: var(--text-on-success);
   --color-success: var(--success);
   --color-danger: var(--danger);
   --color-warning: var(--warning);
@@ -176,16 +231,18 @@ html.theme-fade body::after {
   --color-shadow-color: var(--shadow-color);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  /* Headings — Instrument Sans (variable set on <html> by next/font) */
+  --font-heading: var(--font-heading-sans);
 
-  /* Radius scale — crisp, slightly generous */
+  /* Radius scale — 8–12px only (pills use rounded-full) */
   --radius-xs: 0.25rem;
   --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.625rem;
-  --radius-xl: 0.75rem;
-  --radius-2xl: 1rem;
-  --radius-3xl: 1.25rem;
-  --radius-4xl: 1.5rem;
+  --radius-md: 0.5rem;      /* 8 — cards, buttons */
+  --radius-lg: 0.625rem;    /* 10 — inputs, chips */
+  --radius-xl: 0.75rem;     /* 12 — panels, dialogs */
+  --radius-2xl: 0.75rem;    /* legacy alias → 12 */
+  --radius-3xl: 0.75rem;
+  --radius-4xl: 0.75rem;
 }
 
 /* ─── Base ───────────────────────────────────────────────────── */
@@ -211,10 +268,35 @@ body {
   overflow-x: clip;
 }
 
-/* Keep the legacy "white text on accent-start" combo legible */
+/* Keep "text on a solid fill" legible in both themes: accent fills pair
+   with deep-navy ink (--text-on-accent) in light mode and near-black in
+   dark; success fills keep white (dark ink on dark-mode green). Matches
+   any element that stacks a solid fill with Tailwind's text-white
+   utility (unlayered rules beat layered utilities). */
 .bg-accent-start.text-white,
-.bg-accent-start .text-white {
+.bg-accent-start .text-white,
+.bg-accent.text-white,
+.bg-accent .text-white {
   color: var(--text-on-accent);
+}
+.bg-success.text-white,
+.bg-success .text-white {
+  color: var(--text-on-success);
+}
+
+/* Accent used *as text* deepens to --accent-ink so small labels stay
+   WCAG-AA on light surfaces (#FF6A00 itself is only 2.9:1 on white).
+   Unlayered, so it wins over the generated .text-accent utility. */
+.text-accent {
+  color: var(--accent-ink);
+}
+
+/* Brand logo plate — the wordmark artwork is dark, so dark mode sits it
+   on a light chip instead of inverting the art. No-op in light mode. */
+[data-theme="dark"] .logo-plate {
+  background: rgba(255, 255, 255, 0.94);
+  border-radius: 10px;
+  padding: 5px 10px;
 }
 
 /* ─── Scrollbar ──────────────────────────────────────────────── */
@@ -235,7 +317,7 @@ body {
 
 /* ─── Focus ──────────────────────────────────────────────────── */
 *:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--accent) 70%, transparent);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
@@ -264,31 +346,44 @@ select:focus-visible {
 }
 
 /* ─── Typography ─────────────────────────────────────────────── */
-.heading-xl {
-  font-size: clamp(2rem, 5vw, 3.25rem);
-  font-weight: 800;
-  letter-spacing: -0.035em;
-  line-height: 1.08;
-}
-
-.heading-lg {
-  font-size: clamp(1.375rem, 2.5vw, 1.875rem);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.18;
-}
-
-.heading-md {
-  font-size: clamp(1rem, 1.5vw, 1.125rem);
+/* Type scale — 12 / 14 / 16 / 20 / 28 / 44 (tight, deliberate).
+   Headings: Instrument Sans. Body: Geist. Mono: micro-labels only. */
+.heading-xl { /* 44 — hero display */
+  font-family: var(--font-heading-sans), var(--font-geist-sans), system-ui, sans-serif;
+  font-size: clamp(2rem, 4.4vw, 2.75rem);
   font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+}
+
+.heading-lg { /* 28 — section heads */
+  font-family: var(--font-heading-sans), var(--font-geist-sans), system-ui, sans-serif;
+  font-size: clamp(1.375rem, 2.4vw, 1.75rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.heading-md { /* 20 — sub-heads */
+  font-family: var(--font-heading-sans), var(--font-geist-sans), system-ui, sans-serif;
+  font-size: clamp(1.125rem, 1.5vw, 1.25rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.heading-sm { /* 16 — card & group titles */
+  font-family: var(--font-heading-sans), var(--font-geist-sans), system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
   letter-spacing: -0.01em;
   line-height: 1.4;
 }
 
-.body-lg { font-size: 1rem; line-height: 1.7; }
-.body-md { font-size: 0.875rem; line-height: 1.6; }
-.body-sm { font-size: 0.8125rem; line-height: 1.55; }
-.caption  { font-size: 0.6875rem; line-height: 1.5; letter-spacing: 0.02em; }
+.body-lg { font-size: 1rem; line-height: 1.6; }        /* 16 */
+.body-md { font-size: 0.875rem; line-height: 1.6; }     /* 14 */
+.body-sm { font-size: 0.75rem; line-height: 1.5; }      /* 12 */
+.caption  { font-size: 0.75rem; line-height: 1.5; letter-spacing: 0.02em; }
 
 /* Elevation helpers — re-cast the old hard-offset `.shadow-*`
    utilities into a soft, modern stack (light + dark aware). */
@@ -305,14 +400,8 @@ select:focus-visible {
   box-shadow: var(--shadow-soft);
 }
 
-/* ─── Hairline migration ───────────────────────────────────────
-   The old system drew everything with 2px borders. Re-cast those
-   as 1px hairlines so white surfaces read crisp and light. */
-[class*="border-2"]  { border-width: 1px; }
-[class*="border-t-2"] { border-top-width: 1px; }
-[class*="border-b-2"] { border-bottom-width: 1px; }
-[class*="border-l-2"] { border-left-width: 1px; }
-[class*="border-r-2"] { border-right-width: 1px; }
+/* Hairline system: cards/panels use 1px; dropzones and spinners may opt
+   into 2px deliberately (dashed zones need weight; spinners need ink). */
 
 /* Keep circular spinners round & legible */
 [class*="animate-spin"] {
@@ -334,18 +423,9 @@ select:focus-visible {
   to { transform: rotate(360deg); }
 }
 
-@keyframes dropzone-pulse {
-  0%, 100% { border-color: color-mix(in srgb, var(--accent) 55%, var(--border-strong)); box-shadow: 0 0 0 0 var(--accent-subtle); }
-  50% { border-color: var(--accent); box-shadow: 0 0 0 6px var(--accent-subtle); }
-}
-
 @keyframes upload-icon-bob {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-3px); }
-}
-
-@keyframes border-rotate {
-  to { --flow-angle: 360deg; }
 }
 
 @keyframes progress-indeterminate {
@@ -374,61 +454,54 @@ select:focus-visible {
   100% { transform: scale(1); }
 }
 
-@property --flow-angle {
-  syntax: "<angle>";
-  inherits: false;
-  initial-value: 0deg;
-}
-
 .animate-fade-in-up { animation: fade-in-up 0.25s ease both; }
 .animate-fade-in { animation: fade-in 0.2s ease both; }
+
+/* ─── Scroll reveal (one-shot, IntersectionObserver) ────────────
+   8px fade-up. transform + opacity only; runs once per element. */
+.reveal {
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out);
+}
+
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
 .animate-spin-slow { animation: spin 1.2s linear infinite; }
+/* Drag-over for dropzones: accent hairline + tint + a subtle scale.
+   No pulsing, no rotating borders — motion stays honest and short. */
 .dropzone-active {
-  animation: dropzone-pulse 0.9s ease-in-out infinite;
-  background: color-mix(in srgb, var(--accent) 4%, var(--bg-surface)) !important;
+  border-color: var(--accent) !important;
+  background: color-mix(in srgb, var(--accent) 5%, var(--bg-surface)) !important;
+  transform: scale(1.005);
 }
 
 /* ══════════════════════════════════════════════════════════════
    StepFlow — shared Upload → Operation → Output flow primitives
    ══════════════════════════════════════════════════════════════ */
 
-/* Animated conic gradient ring shown on the upload area while dragging */
+/* StepFlow dropzone — drag state mirrors .dropzone-active (hairline + tint
+   + subtle scale); the old rotating conic ring is gone on purpose. */
 .flow-dropzone {
   position: relative;
-  isolation: isolate;
-}
-
-.flow-dropzone::before {
-  content: "";
-  position: absolute;
-  inset: -1.5px;
-  border-radius: inherit;
-  padding: 1.5px;
-  background: conic-gradient(
-    from var(--flow-angle),
-    transparent 0deg,
-    color-mix(in srgb, var(--accent) 70%, transparent) 70deg,
-    var(--accent) 110deg,
-    color-mix(in srgb, var(--accent) 70%, transparent) 150deg,
-    transparent 220deg
-  );
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  z-index: 1;
-  pointer-events: none;
-}
-
-.flow-dropzone-dragging::before {
-  opacity: 1;
-  animation: border-rotate 2.4s linear infinite;
 }
 
 .flow-dropzone-dragging {
+  border-color: var(--accent) !important;
   background: color-mix(in srgb, var(--accent) 5%, var(--bg-surface));
+  transform: scale(1.005);
 }
 
 /* Thin indeterminate upload bar */
@@ -481,7 +554,6 @@ select:focus-visible {
 .flow-connector-fill-active { transform: scaleX(1); }
 
 @media (prefers-reduced-motion: reduce) {
-  .flow-dropzone::before { animation: none; }
   .flow-upload-icon { animation: none; }
 }
 
@@ -612,17 +684,20 @@ select:focus-visible {
 }
 
 /* ─── Cards ──────────────────────────────────────────────────── */
+/* Card — hairline at rest, 2px lift + darker border on hover.
+   No resting shadow: elevation belongs to floating layers only. */
 .card {
   background: var(--bg-surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--elevation-sm);
-  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  border-radius: var(--radius-md);
+  box-shadow: none;
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
 }
 
 .card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--elevation-md);
   border-color: var(--border-strong);
 }
 
@@ -631,16 +706,15 @@ select:focus-visible {
 }
 
 .card-interactive:hover {
-  border-color: color-mix(in srgb, var(--accent) 50%, var(--border-strong));
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 12px 24px -8px color-mix(in srgb, var(--accent) 18%, rgba(16, 24, 40, 0.14));
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border-strong));
 }
 
 /* ─── Panel (shared tool/workbench container) ────────────────── */
 .panel {
   background: var(--bg-surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-2xl);
-  box-shadow: var(--elevation-sm);
+  border-radius: var(--radius-xl);
+  box-shadow: none;
 }
 
 /* ─── Inputs ─────────────────────────────────────────────────── */
@@ -753,6 +827,95 @@ kbd,
   background: color-mix(in srgb, var(--danger) 10%, transparent);
 }
 
+/* ─── Chips (filter / quick-action) ──────────────────────────── */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  min-height: 2.25rem;
+  padding: 0.375rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chip:hover {
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+  background: var(--bg-hover);
+}
+
+.chip:active {
+  transform: translateY(1px);
+}
+
+.chip[aria-pressed="true"],
+.chip-active {
+  color: var(--text-primary);
+  background: var(--bg-elevated);
+  border-color: var(--border-strong);
+}
+
+.chip[aria-pressed="true"]::before,
+.chip-active::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+/* Coarse pointers get full 44px tap targets */
+@media (pointer: coarse) {
+  .chip,
+  .hero-chip {
+    min-height: 2.75rem;
+  }
+}
+
+/* ─── Badges (true status only: New / WASM / Offline) ────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.4375rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-secondary);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.badge-accent {
+  color: var(--accent);
+  background: var(--accent-subtle);
+  border-color: color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.badge-mono {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 } /* end @layer components */
 
 /* ─── Legacy translucent semantic panels ───────────────────────
@@ -785,56 +948,29 @@ kbd,
   border-color: color-mix(in srgb, var(--danger) 35%, var(--border-strong));
 }
 
-/* ─── Ambient background glow for marketing hero sections ────── */
-.hero-glow {
-  position: relative;
-  overflow: clip;
-}
-
-/* Faint engineering-grid backdrop for the hero — sits behind the
-   glow, fades out toward the fold. Pure decoration. */
-.hero-grid::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: -2;
-  background-image:
-    linear-gradient(var(--grid-line) 1px, transparent 1px),
-    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: 56px 56px;
-  -webkit-mask-image: radial-gradient(75% 88% at 50% 0%, #000 15%, transparent 78%);
-  mask-image: radial-gradient(75% 88% at 50% 0%, #000 15%, transparent 78%);
-}
-
-/* Brand-gradient text for the hero headline */
-.text-gradient {
-  background: linear-gradient(96deg, var(--accent) 8%, var(--accent-blue) 92%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: currentColor;
-  -webkit-text-fill-color: transparent;
-}
-
-/* Small clickable search-suggestion chip ("Popular:" row) */
+/* Small suggestion chip (hero quick-actions row) */
 .hero-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
-  padding: 0.375rem 0.75rem;
+  padding: 0.4375rem 0.8125rem;
+  min-height: 2rem;
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-secondary);
   background: var(--bg-surface);
   border: 1px solid var(--border);
   border-radius: 999px;
-  box-shadow: var(--elevation-sm);
-  transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
+  box-shadow: none;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    background-color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
 }
 
 .hero-chip:hover {
-  color: var(--accent);
+  color: var(--text-primary);
   border-color: color-mix(in srgb, var(--accent) 45%, var(--border-strong));
   background: color-mix(in srgb, var(--accent) 5%, var(--bg-surface));
   transform: translateY(-1px);
@@ -842,24 +978,11 @@ kbd,
 
 .hero-chip svg {
   color: var(--text-tertiary);
-  transition: color 0.15s ease;
+  transition: color var(--dur-fast) var(--ease-out);
 }
 
 .hero-chip:hover svg {
   color: var(--accent);
-}
-
-.hero-glow::before {
-  content: "";
-  position: absolute;
-  inset: -20% -30% auto;
-  height: 90%;
-  pointer-events: none;
-  z-index: -1;
-  background:
-    radial-gradient(42% 52% at 22% 20%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 70%),
-    radial-gradient(38% 46% at 82% 26%, color-mix(in srgb, var(--accent-blue) 7%, transparent), transparent 72%),
-    radial-gradient(60% 60% at 50% 0%, color-mix(in srgb, var(--accent) 5%, transparent), transparent 75%);
 }
 
 /* ─── Rich text editor (Text to PDF tool) ──────────────────────

@@ -1,5 +1,5 @@
-import { ALL_TOOLS, getToolsByCategory, SUB_CATEGORY_LABELS, type SubCategory } from "@/lib/catalog";
-import { absoluteUrl, categoryUrl, jsonLdProps } from "@/lib/site";
+import { ALL_TOOLS, getToolsByCategory } from "@/lib/catalog";
+import { absoluteUrl, categoryUrl, jsonLdProps, TOOL_COUNT } from "@/lib/site";
 import { HomeClient } from "./home-client";
 
 export default function HomePage() {
@@ -7,14 +7,13 @@ export default function HomePage() {
   const wordTools = getToolsByCategory("word");
   const imageTools = getToolsByCategory("image");
   const textTools = getToolsByCategory("text");
-  const crossTools = getToolsByCategory("cross");
 
   const homeJsonLd = {
     "@context": "https://schema.org",
     "@type": "WebPage",
     name: "FilesWow.com — Free PDF, Word & Image Tools Online",
     description:
-      "100+ free PDF, Word, and image tools. Processed entirely in your browser. No upload required.",
+      `${TOOL_COUNT} free PDF, Word, and image tools. Processed entirely in your browser. No upload required.`,
     url: absoluteUrl("/"),
     mainEntity: {
       "@type": "ItemList",
@@ -87,7 +86,7 @@ export default function HomePage() {
         name: "What file types are supported?",
         acceptedAnswer: {
           "@type": "Answer",
-          text: "FilesWow covers PDF, Word (DOCX), images (JPG, PNG, WebP, SVG), and plain text formats — over 100 tools across these categories.",
+          text: `FilesWow covers PDF, Word (DOCX), images (JPG, PNG, WebP, SVG), and plain text formats — ${TOOL_COUNT} tools across these categories, all running in your browser.`,
         },
       },
       {
@@ -113,7 +112,7 @@ export default function HomePage() {
     <>
       <script {...jsonLdProps(homeJsonLd)} />
       <script {...jsonLdProps(faqJsonLd)} />
-      <HomeClient pdfTools={pdfTools} wordTools={wordTools} imageTools={imageTools} textTools={textTools} crossTools={crossTools} />
+      <HomeClient />
     </>
   );
 }

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { getToolsByCategory } from "@/lib/catalog";
+import { ToolIcon } from "@/components/icon";
 import type { ToolUIProps } from "@/components/tool-registry";
 
 export default function CommandPaletteTool({ onProcessing, onError }: ToolUIProps) {
@@ -28,7 +29,9 @@ export default function CommandPaletteTool({ onProcessing, onError }: ToolUIProp
       <div className="space-y-1 max-h-96 overflow-y-auto">
         {filtered.map(tool => (
           <Link key={tool.slug} href={`/tools/${tool.slug}`} className="flex items-center gap-3 p-3 rounded-lg hover:bg-bg-elevated transition-colors">
-            <span className="text-lg w-8 text-center">{tool.icon}</span>
+            <span className="w-8 h-8 rounded-lg bg-bg-elevated ring-1 ring-inset ring-border-base flex items-center justify-center shrink-0">
+              <ToolIcon name={tool.slug} size={16} />
+            </span>
             <div className="flex-1 min-w-0">
               <p className="text-sm text-text-primary font-medium">{tool.name}</p>
               <p className="text-xs text-text-tertiary truncate">{tool.description}</p>

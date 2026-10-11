@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { GUIDES, guideUrl, readingMinutes } from "@/lib/guides";
-import { absoluteUrl, jsonLdProps } from "@/lib/site";
+import { absoluteUrl, jsonLdProps, TOOL_COUNT } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Guides — In-Depth Tutorials for PDF, Word & Image Work",
@@ -86,7 +86,7 @@ export default function GuidesIndexPage() {
 
         <header className="mb-10">
           <h1 className="heading-xl text-text-primary mb-3 [text-wrap:balance]">
-            Practical <span className="text-gradient">guides</span> for real document work
+            Practical guides for real document work
           </h1>
           <p className="body-lg text-text-secondary max-w-xl">
             In-depth, no-fluff articles on the operations people actually do —
@@ -135,7 +135,7 @@ export default function GuidesIndexPage() {
         <p className="mt-10 text-[13px] text-text-secondary">
           Looking for the tools themselves?{" "}
           <Link href="/" className="text-accent font-semibold hover:underline">
-            Browse all {`100+`} free tools
+            Browse all {TOOL_COUNT} free tools
           </Link>{" "}
           — every guide links to the tools that do the job.
         </p>

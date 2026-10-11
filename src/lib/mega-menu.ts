@@ -1,12 +1,12 @@
 // lib/mega-menu.ts
 //
-// Curated navigation data for the header "All Tools" mega menu.
-// Referenced from premium PDF-suite IA (organize / convert / edit / secure),
-// adapted to FilesWow's own categories and tool names. Every entry must
-// exist in the catalog — the links point at real tool pages so the menu
-// doubles as sitewide internal linking for SEO.
+// Navigation data for the header's per-category mega menus.
+// Every entry must exist in the catalog — links point at real tool pages,
+// so the menu doubles as sitewide internal linking for SEO.
+// Columns are grouped by task (Organize / Convert / Edit / Secure …),
+// 3–4 groups per category, money tools first.
 
-import { ALL_TOOLS, type ToolDef } from "./catalog";
+import { ALL_TOOLS, type ToolDef, type ToolCategory } from "./catalog";
 
 export interface MegaMenuTool {
   slug: string;
@@ -21,43 +21,86 @@ export interface MegaMenuGroup {
   tools: MegaMenuTool[];
 }
 
-/** Curated slug order per group — money tools first, 4–5 per group. */
-const GROUPS: Array<{
-  title: string;
+export interface CategoryMenu {
+  category: ToolCategory;
+  label: string;
   href: string;
+  groups: MegaMenuGroup[];
+}
+
+interface GroupSpec {
+  title: string;
   slugs: string[];
+}
+
+const MENU_SPECS: Array<{
+  category: ToolCategory;
+  label: string;
+  href: string;
+  groups: GroupSpec[];
 }> = [
   {
-    title: "Organize PDF",
+    category: "pdf",
+    label: "PDF Tools",
     href: "/pdf-tools",
-    slugs: ["merge-pdf", "split-pdf", "organize-pdf", "delete-pdf-pages", "rotate-pdf", "add-page-numbers-pdf"],
+    groups: [
+      { title: "Organize", slugs: ["merge-pdf", "split-pdf", "organize-pdf", "delete-pdf-pages", "rotate-pdf", "add-page-numbers-pdf"] },
+      { title: "Convert", slugs: ["pdf-to-word", "pdf-to-jpg", "pdf-to-excel", "html-to-pdf", "word-to-pdf"] },
+      { title: "Edit & Sign", slugs: ["edit-pdf", "sign-pdf", "watermark-pdf", "crop-pdf", "fill-pdf-form"] },
+      { title: "Optimize & Secure", slugs: ["compress-pdf", "protect-pdf", "unlock-pdf", "ocr-pdf", "redact-pdf"] },
+    ],
   },
   {
-    title: "Optimize & Secure",
-    href: "/pdf-tools",
-    slugs: ["compress-pdf", "protect-pdf", "unlock-pdf", "sign-pdf", "watermark-pdf", "ocr-pdf"],
-  },
-  {
-    title: "Convert Documents",
+    category: "word",
+    label: "Word Tools",
     href: "/word-tools",
-    slugs: ["pdf-to-word", "word-to-pdf", "pdf-to-excel", "excel-to-pdf", "powerpoint-to-pdf", "pdf-to-jpg"],
+    groups: [
+      { title: "Organize", slugs: ["merge-word", "split-word", "word-page-numbers", "word-page-setup", "word-toc-generator"] },
+      { title: "Edit", slugs: ["word-find-replace", "word-track-changes", "word-style-cleaner", "remove-watermark-word", "watermark-word"] },
+      { title: "Convert", slugs: ["word-to-text", "text-to-word", "word-to-html", "html-to-word", "word-to-markdown"] },
+      { title: "Secure", slugs: ["protect-word", "unlock-word", "redact-word"] },
+    ],
   },
   {
-    title: "Word Tools",
-    href: "/word-tools",
-    slugs: ["merge-word", "split-word", "word-page-numbers", "word-page-setup", "remove-watermark-word", "word-to-text"],
+    category: "image",
+    label: "Image Tools",
+    href: "/image-tools",
+    groups: [
+      { title: "Convert", slugs: ["jpg-to-png", "png-to-jpg", "jpg-to-webp", "svg-to-png", "heic-to-jpg"] },
+      { title: "Crop & Resize", slugs: ["resize-image", "crop-image", "smart-crop", "rotate-image", "flip-image"] },
+      { title: "Adjust & Filters", slugs: ["brightness-contrast", "blur-image", "grayscale-image", "saturation-adjust", "sharpen-image"] },
+      { title: "Enhance & Clean", slugs: ["background-remove-image", "compress-image", "change-bg-color", "watermark-image", "strip-metadata-image"] },
+    ],
+  },
+  {
+    category: "text",
+    label: "Text Tools",
+    href: "/text-tools",
+    groups: [
+      { title: "Send & Chat", slugs: ["p2p-text"] },
+      { title: "Text to Documents", slugs: ["text-to-pdf", "text-to-word", "pdf-to-text", "word-to-text"] },
+      { title: "Inspect & Compare", slugs: ["side-by-side-diff", "file-info", "universal-converter"] },
+    ],
   },
 ];
 
-function pick(tool: ToolDef): MegaMenuTool {
+function pick(tool: ToolDef | undefined): MegaMenuTool | null {
+  if (!tool) return null;
   return { slug: tool.slug, name: tool.name, description: tool.description };
 }
 
-export const MEGA_MENU: MegaMenuGroup[] = GROUPS.map(({ title, href, slugs }) => ({
-  title,
+export const CATEGORY_MENUS: CategoryMenu[] = MENU_SPECS.map(({ category, label, href, groups }) => ({
+  category,
+  label,
   href,
-  tools: slugs
-    .map((slug) => ALL_TOOLS.find((t) => t.slug === slug))
-    .filter((t): t is ToolDef => Boolean(t))
-    .map(pick),
-})).filter((group) => group.tools.length > 0);
+  groups: groups
+    .map((group) => ({
+      title: group.title,
+      href,
+      tools: group.slugs
+        .map((slug) => ALL_TOOLS.find((t) => t.slug === slug))
+        .map(pick)
+        .filter((t): t is MegaMenuTool => t !== null),
+    }))
+    .filter((group) => group.tools.length > 0),
+}));

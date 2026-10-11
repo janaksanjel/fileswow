@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from "react";
+import { useState, useEffect, useMemo, useCallback, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import { searchTools, getCategoryColor, type SearchResult } from "@/lib/search";
+import { searchTools, getCategoryColor } from "@/lib/search";
+import { ALL_TOOLS } from "@/lib/catalog";
 import { ToolIcon } from "./icon";
+import { Dialog } from "./ui/dialog";
 import {
   subscribeUsage,
   getRecentToolsSnapshot,
@@ -17,13 +19,13 @@ interface SearchModalProps {
   onClose: () => void;
 }
 
+/**
+ * Command palette (⌘K / Ctrl+K) — fuzzy search over the full catalog,
+ * recent tools on top, arrow-key navigation, category tag per row.
+ */
 export function SearchModal({ open, onClose }: SearchModalProps) {
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [selectedIndex, setSelectedIndex] = useState(0);
-  const [isSearching, setIsSearching] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
+  const [selected, setSelected] = useState(0);
   const router = useRouter();
 
   // Recent + popular for the empty state — store-backed so they stay fresh
@@ -39,23 +41,22 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
   );
   const popularQuick = popularTools.slice(0, 6);
 
-  useEffect(() => {
-    if (!query.trim()) {
-      setResults([]);
-      setSelectedIndex(0);
-      return;
+  // Reset the query each time the palette opens — "adjust state during
+  // render" pattern (no setState-in-effect cascade).
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (prevOpen !== open) {
+    setPrevOpen(open);
+    if (open) {
+      setQuery("");
+      setSelected(0);
     }
+  }
 
-    setIsSearching(true);
-    const timer = setTimeout(() => {
-      const found = searchTools(query, 12);
-      setResults(found);
-      setSelectedIndex(0);
-      setIsSearching(false);
-    }, 80);
-
-    return () => clearTimeout(timer);
-  }, [query]);
+  // Fuzzy search is synchronous and fast over the catalog — derive it
+  // during render instead of debouncing through an effect.
+  const trimmed = query.trim();
+  const results = useMemo(() => (trimmed ? searchTools(trimmed, 12) : []), [trimmed]);
+  const selectedIndex = Math.min(selected, Math.max(results.length - 1, 0));
 
   const navigateTo = useCallback(
     (slug: string) => {
@@ -74,11 +75,11 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
       switch (e.key) {
         case "ArrowDown":
           e.preventDefault();
-          setSelectedIndex((prev) => Math.min(prev + 1, results.length - 1));
+          setSelected((prev) => Math.min(prev + 1, results.length - 1));
           break;
         case "ArrowUp":
           e.preventDefault();
-          setSelectedIndex((prev) => Math.max(prev - 1, 0));
+          setSelected((prev) => Math.max(prev - 1, 0));
           break;
         case "Enter":
           e.preventDefault();
@@ -86,42 +87,23 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
             navigateTo(results[selectedIndex].tool.slug);
           }
           break;
-        case "Escape":
-          onClose();
-          break;
       }
     },
-    [results, selectedIndex, navigateTo, onClose]
+    [results, selectedIndex, navigateTo]
   );
 
+  // Keep the highlighted row in view
   useEffect(() => {
-    const list = listRef.current;
-    if (!list) return;
-    const item = list.children[selectedIndex] as HTMLElement;
-    if (item) {
-      item.scrollIntoView({ block: "nearest" });
-    }
-  }, [selectedIndex]);
-
-  if (!open) return null;
+    if (!open || !trimmed) return;
+    const item = document.getElementById(`cmd-option-${selectedIndex}`);
+    item?.scrollIntoView({ block: "nearest" });
+  }, [selectedIndex, trimmed, open]);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-start justify-center px-4 pt-[14vh] animate-fade-in"
-      role="dialog"
-      aria-modal="true"
-      aria-label="Search tools"
-    >
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-slate-950/40 backdrop-blur-[3px]"
-        onClick={onClose}
-      />
-
-      {/* Modal */}
-      <div className="relative w-full max-w-xl bg-bg-surface rounded-2xl shadow-xl ring-1 ring-black/10 overflow-hidden animate-fade-in-up">
-        {/* Search Input */}
-        <div className="flex items-center gap-3 px-4 sm:px-5 h-14">
+    <Dialog open={open} onClose={onClose} label="Search tools" className="w-full max-w-xl">
+      <div className="bg-bg-surface rounded-xl shadow-[var(--elevation-xl)] ring-1 ring-border-base overflow-hidden">
+        {/* Search input */}
+        <div className="flex items-center gap-3 px-4 sm:px-5 h-14 border-b border-border-base">
           <svg
             width="17"
             height="17"
@@ -139,31 +121,31 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
           </svg>
 
           <input
-            ref={inputRef}
+            data-autofocus
             type="text"
+            role="combobox"
+            aria-expanded="true"
+            aria-controls="cmd-listbox"
+            aria-activedescendant={query.trim() && results[selectedIndex] ? `cmd-option-${selectedIndex}` : undefined}
+            aria-label={`Search ${ALL_TOOLS.length} tools`}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Search 120+ tools…"
-            className="flex-1 bg-transparent text-text-primary text-[15px] placeholder:text-text-tertiary outline-none min-w-0"
-            aria-label="Search tools"
+            placeholder={`Search ${ALL_TOOLS.length} tools…`}
+            className="flex-1 bg-transparent text-text-primary text-[15px] placeholder:text-text-tertiary outline-none min-w-0 h-full"
           />
 
-          <span className="kbd shrink-0">ESC</span>
+          <span className="kbd shrink-0">esc</span>
         </div>
 
         {/* Results */}
-        <div ref={listRef} className="max-h-[380px] overflow-y-auto border-t border-border-base">
-          {query.trim() && results.length === 0 && !isSearching && (
+        <div id="cmd-listbox" role="listbox" aria-label="Tools" className="max-h-[380px] overflow-y-auto">
+          {trimmed && results.length === 0 && (
             <div className="px-4 py-12 text-center">
               <p className="text-sm font-medium text-text-primary">No tools found</p>
-              <p className="text-xs text-text-tertiary mt-1">Try “merge”, “compress”, or a different term</p>
-            </div>
-          )}
-
-          {isSearching && query.trim() && (
-            <div className="px-4 py-8 text-center">
-              <div className="w-5 h-5 border-2 border-accent/30 border-t-accent rounded-full animate-spin-slow mx-auto" />
+              <p className="text-xs text-text-tertiary mt-1">
+                Try “merge”, “compress”, or a different term
+              </p>
             </div>
           )}
 
@@ -172,8 +154,10 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
               {results.map((result, i) => (
                 <button
                   key={result.tool.slug}
-                  onClick={() => navigateTo(result.tool.slug)}
-                  onMouseEnter={() => setSelectedIndex(i)}
+                  id={`cmd-option-${i}`}
+                  role="option"
+                  aria-selected={i === selectedIndex}
+                  onClick={() => navigateTo(result.tool.slug)}                        onMouseEnter={() => setSelected(i)}
                   className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
                     i === selectedIndex ? "bg-accent-subtle" : "hover:bg-bg-hover"
                   }`}
@@ -183,17 +167,23 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-[13.5px] font-semibold ${i === selectedIndex ? "text-accent" : "text-text-primary"} truncate`}>
-                        {highlightMatch(result.tool.name, query)}
-                      </span>
-                    </div>
-                    <p className="text-[11.5px] text-text-tertiary truncate mt-px">
+                    <span
+                      className={`block text-[13.5px] font-semibold truncate ${
+                        i === selectedIndex ? "text-accent" : "text-text-primary"
+                      }`}
+                    >
+                      {highlightMatch(result.tool.name, query)}
+                    </span>
+                    <p className="text-[12px] text-text-tertiary truncate mt-px">
                       {result.tool.description}
                     </p>
                   </div>
 
-                  <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase shrink-0 ${getCategoryColor(result.tool.category)}`}>
+                  <span
+                    className={`text-[10px] px-2 py-0.5 rounded-full font-semibold uppercase shrink-0 ${getCategoryColor(
+                      result.tool.category
+                    )}`}
+                  >
                     {result.tool.category}
                   </span>
 
@@ -219,17 +209,17 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
             </div>
           )}
 
-          {!query.trim() && (recentTools.length > 0 || popularQuick.length > 0) && (
+          {!trimmed && (recentTools.length > 0 || popularQuick.length > 0) && (
             <div className="py-2">
               {recentTools.length > 0 && (
                 <>
                   <div className="px-4 pt-2 pb-1.5 flex items-center justify-between">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-text-tertiary">
-                      Recently used
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-text-tertiary">
+                      Recent
                     </p>
                     <button
                       onClick={handleClearHistory}
-                      className="text-[10px] font-bold uppercase tracking-widest text-text-tertiary hover:text-danger transition-colors"
+                      className="text-[11px] font-bold uppercase tracking-widest text-text-tertiary hover:text-danger transition-colors"
                       aria-label="Clear recently used tools history"
                     >
                       Clear
@@ -244,14 +234,16 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
                       <div className="w-7 h-7 rounded-md bg-bg-surface ring-1 ring-inset ring-border-strong flex items-center justify-center shrink-0">
                         <ToolIcon name={tool.slug} size={14} className="text-text-secondary" />
                       </div>
-                      <span className="text-[13px] font-medium text-text-primary truncate">{tool.name}</span>
+                      <span className="text-[13px] font-medium text-text-primary truncate">
+                        {tool.name}
+                      </span>
                     </button>
                   ))}
                 </>
               )}
               {popularQuick.length > 0 && (
                 <>
-                  <p className="px-4 pt-3 pb-1.5 text-[10px] font-bold uppercase tracking-widest text-text-tertiary">
+                  <p className="px-4 pt-3 pb-1.5 text-[11px] font-bold uppercase tracking-widest text-text-tertiary">
                     Popular
                   </p>
                   <div className="flex flex-wrap gap-1.5 px-4 pb-2">
@@ -270,7 +262,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
             </div>
           )}
 
-          {!query.trim() && recentTools.length === 0 && popularQuick.length === 0 && (
+          {!trimmed && recentTools.length === 0 && popularQuick.length === 0 && (
             <div className="px-4 py-10 text-center">
               <p className="text-sm font-medium text-text-primary mb-1">Type to search</p>
               <p className="text-xs text-text-tertiary">
@@ -281,7 +273,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-4 sm:px-5 py-2.5 border-t border-border-base bg-bg-base/40">
+        <div className="flex items-center justify-between px-4 sm:px-5 py-2.5 border-t border-border-base bg-bg-base">
           <div className="flex items-center gap-4 text-[11px] font-medium text-text-tertiary">
             <span className="flex items-center gap-1.5">
               <span className="kbd">↑↓</span>
@@ -296,10 +288,12 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
               close
             </span>
           </div>
-          <span className="text-[10px] font-bold text-text-tertiary uppercase tracking-wider">FilesWow</span>
+          <span className="text-[11px] font-medium text-text-tertiary tabular-nums">
+            {ALL_TOOLS.length} tools
+          </span>
         </div>
       </div>
-    </div>
+    </Dialog>
   );
 }
 

@@ -6,7 +6,7 @@ import { CategoryHubClient } from "./category-hub-client";
 export const metadata: Metadata = {
   title: "PDF Tools — Merge, Split, Convert & Edit",
   description:
-    "60+ free PDF tools. Merge, split, compress, convert, rotate, watermark, protect, and edit PDFs — all in your browser. No upload required. 100% private.",
+    `${PDF_TOOLS.length} free PDF tools. Merge, split, compress, convert, rotate, watermark, protect, and edit PDFs — all in your browser. No upload required. 100% private.`,
   keywords: [
     "free PDF tools online",
     "merge PDF free",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "PDF Tools — Merge, Split, Convert, Edit & More",
     description:
-      "60+ free PDF tools. Merge, split, compress, convert, and edit PDFs — all in your browser.",
+      `${PDF_TOOLS.length} free PDF tools. Merge, split, compress, convert, and edit PDFs — all in your browser.`,
     url: categoryUrl("pdf"),
     type: "website",
   },
@@ -42,7 +42,7 @@ export default function PDFToolsPage() {
     "@type": "CollectionPage",
     name: "Free PDF Tools Online",
     description:
-      "60+ free PDF tools processed entirely in your browser. No upload required.",
+      `${PDF_TOOLS.length} free PDF tools processed entirely in your browser. No upload required.`,
     url: categoryUrl("pdf"),
     mainEntity: {
       "@type": "ItemList",
