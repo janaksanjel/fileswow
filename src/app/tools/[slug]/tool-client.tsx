@@ -17,9 +17,14 @@ interface ToolClientProps {
   relatedTools: ToolDef[];
   guide: ToolGuide | null;
   faq: { q: string; a: string }[];
+  relatedPost?: {
+    slug: string;
+    title: string;
+    description: string;
+  } | null;
 }
 
-export function ToolClient({ tool, relatedTools, guide, faq }: ToolClientProps) {
+export function ToolClient({ tool, relatedTools, guide, faq, relatedPost }: ToolClientProps) {
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Bumped by "Try again" — remounts the tool UI so it restarts clean.
@@ -77,7 +82,13 @@ export function ToolClient({ tool, relatedTools, guide, faq }: ToolClientProps) 
   }, [tool.slug]);
 
   return (
-    <ToolShell tool={tool} relatedTools={relatedTools} guide={guide} faq={faq}>
+    <ToolShell
+      tool={tool}
+      relatedTools={relatedTools}
+      guide={guide}
+      faq={faq}
+      relatedPost={relatedPost}
+    >
       {/* Processing indicator (state 3) */}
       <ProgressBar active={processing} />
 

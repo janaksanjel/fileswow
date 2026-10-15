@@ -7,6 +7,8 @@ import { categoryTile } from "@/lib/category-style";
 import { CATEGORY_COUNTS, type ToolDef, type ToolCategory, type SubCategory } from "@/lib/catalog";
 import { AdSlot } from "@/components/ad-unit";
 import { useReveal } from "@/lib/use-reveal";
+import { Accordion } from "@/components/ui/accordion";
+import { BLOG_POSTS } from "@/lib/blog";
 import {
   subscribeUsage,
   getTopToolsSnapshot,
@@ -64,6 +66,117 @@ const CATEGORY_GLYPHS: Record<ToolCategory, React.ReactNode> = {
       <rect x="14" y="14" width="7" height="7" rx="1.5" />
     </>
   ),
+};
+
+interface CategoryEditorial {
+  title: string;
+  description: string;
+  paragraphs: string[];
+  faq: { q: string; a: string }[];
+}
+
+const CATEGORY_EDITORIAL: Record<ToolCategory, CategoryEditorial> = {
+  pdf: {
+    title: "About FilesWow Free In-Browser PDF Tools",
+    description: "Complete browser-based PDF suite for merging, splitting, converting, annotating, and protecting documents without server uploads.",
+    paragraphs: [
+      "FilesWow provides a complete suite of professional PDF utilities designed to run directly in your web browser. Powered by modern client-side technologies (WebAssembly and pdf-lib), every PDF operation takes place entirely in your local device memory. Your documents never transit through or get stored on any external server, guaranteeing total privacy for sensitive contracts, personal invoices, and legal filings.",
+      "Whether you need to combine multiple PDFs into a single file, compress large scans to meet email attachment limits, convert JPG photos to PDF, or stamp page numbers, FilesWow delivers fast results without daily file quotas, subscription fees, or watermarks.",
+      "Because processing happens on your local hardware, you avoid slow upload times when dealing with large document batches. Once loaded, you can even continue working without an active internet connection.",
+    ],
+    faq: [
+      {
+        q: "Are FilesWow PDF tools really 100% free?",
+        a: "Yes. Every PDF tool on FilesWow is completely free with no hidden fees, no limits on the number of files you can process, and no watermarks added.",
+      },
+      {
+        q: "Are my PDF documents safe when using this site?",
+        a: "Yes. Files are never uploaded to any remote server. All parsing, rendering, and modifications happen locally inside your web browser.",
+      },
+      {
+        q: "How do I merge or split PDF files online?",
+        a: "Simply navigate to Merge PDF or Split PDF from the list above, select your documents, arrange the pages or files, and download your final document instantly.",
+      },
+      {
+        q: "Can I use these PDF tools on mobile phones?",
+        a: "Yes. FilesWow is fully responsive and works on modern mobile browsers including Safari on iOS and Chrome on Android.",
+      },
+    ],
+  },
+  word: {
+    title: "About FilesWow Word & DOCX Tools",
+    description: "In-browser Microsoft Word (DOCX) tools for converting, merging, formatting, and inspecting documents privately.",
+    paragraphs: [
+      "FilesWow provides high-fidelity Word document processing right in your browser. Convert Word documents to PDF, merge multiple DOCX files, extract text and embedded images, or convert DOCX to clean HTML and Markdown.",
+      "Unlike conventional converters that require sending company memos and proprietary reports to third-party cloud servers, FilesWow works with client-side document parsers. Your DOCX structure, text, and styles are analyzed locally without transmitting a single byte over the wire.",
+    ],
+    faq: [
+      {
+        q: "Can I convert Word (DOCX) files to PDF without Microsoft Office?",
+        a: "Yes. You can convert any DOCX document to a clean PDF directly in your browser without needing Microsoft Office installed.",
+      },
+      {
+        q: "Are my Word documents kept confidential?",
+        a: "Yes. Processing runs entirely in your browser. No files are uploaded, saved, or logged anywhere.",
+      },
+      {
+        q: "Does FilesWow support both .doc and .docx?",
+        a: "Modern .docx (Office Open XML) is natively supported. For older binary .doc files, we recommend saving them as .docx first for the highest conversion fidelity.",
+      },
+    ],
+  },
+  image: {
+    title: "About FilesWow Image Tools",
+    description: "Fast, private image editor and converter for JPG, PNG, WebP, SVG, and GIFs.",
+    paragraphs: [
+      "FilesWow image tools let you convert, resize, crop, optimize, and edit photos and graphics without installing photo editing software. Convert JPG to PDF, remove backgrounds, compress photos for the web, or convert between formats (JPG, PNG, WebP, SVG) in seconds.",
+      "All pixel manipulation occurs using the browser's Canvas API and WebAssembly image decoders. Your private photographs, personal ID scans, and creative assets never leave your device.",
+    ],
+    faq: [
+      {
+        q: "How do I convert JPG images to PDF?",
+        a: "Select the JPG to PDF tool, drop your photos into the editor, order them as desired, choose paper size (A4 or Letter), and download your combined PDF.",
+      },
+      {
+        q: "Will compressing images reduce visual quality?",
+        a: "FilesWow uses smart optimization algorithms that strip excess metadata and optimize encoding without noticeable loss of image quality.",
+      },
+      {
+        q: "Is background removal free?",
+        a: "Yes. Our background remover runs locally and produces transparent PNG cutouts for free without limits.",
+      },
+    ],
+  },
+  text: {
+    title: "About FilesWow Text Tools",
+    description: "Handy developer and writer utilities for formatting, diffing, counting, and transforming text.",
+    paragraphs: [
+      "FilesWow text tools include line counters, diff comparators, JSON formatters, text cleaners, case converters, and encoding utilities designed for developers, writers, and students. Everything processes in real-time right inside your browser window.",
+    ],
+    faq: [
+      {
+        q: "Is my text data stored or shared?",
+        a: "No. Any text entered into FilesWow tools stays solely in your browser memory and is never logged or sent to any server.",
+      },
+      {
+        q: "Can I process large code or text files?",
+        a: "Yes. Because computations run on your machine, our text tools handle large logs, code snippets, and essays with zero latency.",
+      },
+    ],
+  },
+  cross: {
+    title: "About FilesWow Cross-Format Tools",
+    description: "Convert and transfer documents across different document and image file types.",
+    paragraphs: [
+      "Our cross-format utilities allow seamless transitions between document types: convert images into PDFs, extract text from documents, or bundle multiple file types into unified archives.",
+    ],
+    faq: [
+      {
+        q: "Are cross-format conversions private?",
+        a: "Yes. Every conversion runs on your device with no cloud server involvement.",
+      },
+    ],
+  },
 };
 
 interface CategoryHubClientProps {
@@ -358,6 +471,60 @@ export function CategoryHubClient({
                 )}
               </div>
             ))}
+
+            {/* Category In-Depth Overview & Editorial Guide (E-E-A-T & AdSense quality) */}
+            {CATEGORY_EDITORIAL[category] && (
+              <section className="mt-16 pt-12 border-t border-border-base max-w-3xl" aria-labelledby="cat-editorial-heading">
+                <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-accent mb-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+                  Guide & Overview
+                </div>
+                <h2 id="cat-editorial-heading" className="heading-lg text-text-primary mb-4">
+                  {CATEGORY_EDITORIAL[category].title}
+                </h2>
+                <div className="space-y-4 body-md text-text-secondary leading-relaxed mb-10">
+                  {CATEGORY_EDITORIAL[category].paragraphs.map((p, idx) => (
+                    <p key={idx}>{p}</p>
+                  ))}
+                </div>
+
+                {/* Category FAQ */}
+                {CATEGORY_EDITORIAL[category].faq.length > 0 && (
+                  <div className="mb-12">
+                    <h3 className="heading-md text-text-primary mb-4">
+                      Frequently Asked Questions
+                    </h3>
+                    <Accordion items={CATEGORY_EDITORIAL[category].faq} defaultOpen={0} />
+                  </div>
+                )}
+
+                {/* Relevant Guides / Blog Posts for this Category */}
+                {(() => {
+                  const categoryPosts = BLOG_POSTS.filter((p) => p.category === category).slice(0, 3);
+                  if (categoryPosts.length === 0) return null;
+                  return (
+                    <div className="rounded-2xl border border-border-base bg-bg-surface/50 p-6">
+                      <h3 className="text-sm font-bold uppercase tracking-wider text-text-secondary mb-4">
+                        Step-by-Step {categoryName} Tutorials & Guides
+                      </h3>
+                      <div className="space-y-3">
+                        {categoryPosts.map((post) => (
+                          <div key={post.slug} className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1 sm:gap-4">
+                            <Link
+                              href={`/blog/${post.slug}`}
+                              className="text-[14.5px] font-medium text-text-primary hover:text-accent transition-colors"
+                            >
+                              {post.title}
+                            </Link>
+                            <span className="text-xs text-text-tertiary shrink-0">Read guide →</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
+              </section>
+            )}
           </>
         )}
       </div>

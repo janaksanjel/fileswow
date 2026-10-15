@@ -107,8 +107,11 @@ const PDF_GUIDES_A: ToolGuideMap = {
       `A neat trick: to insert between two chapters you don't need to extract anything — choose "insert at position", give the page number where the new content belongs, and the existing pages shift right. Nothing is overwritten.`,
     ],
     faq: [
+      { q: "How do I insert pages into a PDF online for free?", a: "Open the Insert Pages into PDF tool, select your target PDF document, pick the second file containing the pages you wish to add, specify the target position (start, end, or after any specific page number), and download the combined file. The entire process takes seconds and runs 100% locally in your browser with no upload." },
+      { q: "Can I add pages to a PDF without Adobe Acrobat?", a: "Yes. FilesWow provides a free, browser-based alternative to Adobe Acrobat. You do not need to install software, pay for a subscription, or create an account to insert pages into any PDF." },
       { q: "Can I insert pages from multiple PDFs at once?", a: "One source at a time keeps the flow simple — run it again for each additional source, inserting at the new positions each round." },
       { q: "What if the two documents have different page sizes?", a: "Each page keeps its own size. Mixed-size documents are valid PDFs; viewers show each page at its native dimensions." },
+      { q: "Will inserting pages alter my original PDF or signatures?", a: "No. Your original file remains untouched on your device, and the new document is generated with intact vectors, text layers, and embedded fonts without lossy re-rendering." },
     ],
   },
   "reorder-pdf-pages": {

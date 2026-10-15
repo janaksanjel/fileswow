@@ -29,6 +29,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1.0,
     },
     {
+      url: absoluteUrl("/en"),
+      lastModified: contentDate,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: absoluteUrl("/es"),
+      lastModified: contentDate,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: absoluteUrl("/pt"),
+      lastModified: contentDate,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
       url: absoluteUrl("/pdf-tools"),
       lastModified: contentDate,
       changeFrequency: "weekly",

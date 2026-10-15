@@ -14,6 +14,11 @@ interface ToolShellProps {
   relatedTools?: ToolDef[];
   guide?: ToolGuide | null;
   faq?: { q: string; a: string }[];
+  relatedPost?: {
+    slug: string;
+    title: string;
+    description: string;
+  } | null;
   children: React.ReactNode;
 }
 
@@ -36,7 +41,14 @@ const RESPONSIBLE_USE_SLUGS = new Set([
  * device" indicator) → tool workbench → how-to / guide / FAQ / related
  * tools at a readable ~68ch measure.
  */
-export function ToolShell({ tool, relatedTools = [], guide = null, faq, children }: ToolShellProps) {
+export function ToolShell({
+  tool,
+  relatedTools = [],
+  guide = null,
+  faq,
+  relatedPost,
+  children,
+}: ToolShellProps) {
   const categoryHref =
     tool.category === "pdf"
       ? "/pdf-tools"
@@ -214,6 +226,36 @@ export function ToolShell({ tool, relatedTools = [], guide = null, faq, children
           </section>
         );
       })()}
+
+      {/* In-depth blog guide / tutorial cross-link */}
+      {relatedPost && (
+        <section
+          className="mb-9 max-w-[68ch] rounded-2xl border border-accent/20 bg-accent/[0.04] p-5 sm:p-6"
+          aria-labelledby="deep-guide-heading"
+        >
+          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-accent mb-2">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+            In-Depth Guide & Tutorial
+          </div>
+          <h3 id="deep-guide-heading" className="text-base sm:text-lg font-bold text-text-primary mb-2">
+            <Link href={`/blog/${relatedPost.slug}`} className="hover:text-accent transition-colors">
+              {relatedPost.title}
+            </Link>
+          </h3>
+          <p className="text-[13.5px] leading-relaxed text-text-secondary mb-4">
+            {relatedPost.description}
+          </p>
+          <Link
+            href={`/blog/${relatedPost.slug}`}
+            className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-accent hover:underline"
+          >
+            Read the complete step-by-step tutorial →
+          </Link>
+        </section>
+      )}
 
       {/* Ad — between tool content and related tools.
           Renders nothing (no gap) when no ad slot is configured. */}

@@ -373,7 +373,20 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   // after hydration to avoid a mismatch.
   const [locale, setLocaleState] = useState<Locale>("en");
 
+  // Initial language detection from URL pathname (/en, /es, /pt) or localStorage or browser
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const path = window.location.pathname;
+      const match = path.match(/^\/(en|es|pt)(?=\/|$)/);
+      if (match && isLocale(match[1])) {
+        setLocaleState(match[1]);
+        try {
+          window.localStorage.setItem(STORAGE_KEY, match[1]);
+        } catch {}
+        return;
+      }
+    }
+
     const saved = window.localStorage.getItem(STORAGE_KEY);
     if (isLocale(saved)) {
       setLocaleState(saved);
@@ -383,13 +396,55 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     if (nav === "es" || nav === "pt") setLocaleState(nav);
   }, []);
 
+  // Update document html lang attribute
   useEffect(() => {
     document.documentElement.lang = locale;
   }, [locale]);
 
+  // Sync with browser back/forward buttons
+  useEffect(() => {
+    const handlePopState = () => {
+      const match = window.location.pathname.match(/^\/(en|es|pt)(?=\/|$)/);
+      if (match && isLocale(match[1])) {
+        setLocaleState(match[1]);
+      } else {
+        const saved = window.localStorage.getItem(STORAGE_KEY);
+        if (isLocale(saved)) setLocaleState(saved);
+        else setLocaleState("en");
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
+
+  // Update locale and update URI (/en, /es, /pt) in the address bar
   const setLocale = useCallback((next: Locale) => {
     setLocaleState(next);
-    window.localStorage.setItem(STORAGE_KEY, next);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, next);
+    } catch {}
+
+    if (typeof window !== "undefined") {
+      const currentPath = window.location.pathname;
+      const search = window.location.search || "";
+      const hash = window.location.hash || "";
+
+      // Remove any existing /en, /es, /pt prefix
+      const cleanPath = currentPath.replace(/^\/(en|es|pt)(?=\/|$)/, "") || "/";
+
+      // Build target localized URL
+      let targetPath: string;
+      if (next === "en") {
+        targetPath = cleanPath === "/" ? "/en" : `/en${cleanPath}`;
+      } else {
+        targetPath = cleanPath === "/" ? `/${next}` : `/${next}${cleanPath}`;
+      }
+
+      const newUrl = `${targetPath}${search}${hash}`;
+      if (window.location.pathname !== targetPath) {
+        window.history.pushState({ locale: next }, "", newUrl);
+      }
+    }
   }, []);
 
   const t = useCallback(

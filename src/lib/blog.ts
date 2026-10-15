@@ -1396,3 +1396,12 @@ export function blogReadingMinutes(post: BlogPost): number {
   ].join(" ").split(/\s+/).length;
   return Math.max(3, Math.round(words / 220));
 }
+
+/** Look up a blog post directly matching a tool slug or covering it in related tools. */
+export function getBlogPostForTool(toolSlug: string): BlogPost | null {
+  // 1. Direct slug match or first related tool match
+  const direct = BLOG_POSTS.find((p) => p.slug === toolSlug || p.related[0] === toolSlug);
+  if (direct) return direct;
+  // 2. Included in related array
+  return BLOG_POSTS.find((p) => p.related.includes(toolSlug)) ?? null;
+}

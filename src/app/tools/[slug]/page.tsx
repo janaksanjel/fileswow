@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ALL_TOOLS, getToolBySlug, getRelatedTools, SUB_CATEGORY_LABELS } from "@/lib/catalog";
 import { absoluteUrl, toolUrl, categoryUrl, jsonLdProps } from "@/lib/site";
 import { getToolGuide, getToolFaq } from "@/lib/content";
+import { getBlogPostForTool } from "@/lib/blog";
 import { ToolClient } from "./tool-client";
 
 interface ToolPageProps {
@@ -13,33 +14,101 @@ export function generateStaticParams() {
   return ALL_TOOLS.map((tool) => ({ slug: tool.slug }));
 }
 
+/**
+ * Curated high-converting titles & descriptions for high-impression search queries.
+ * Final titles with brand (" | FilesWow.com", 16 chars) remain strictly ≤ 60 chars.
+ */
+const HIGH_INTENT_METADATA: Record<string, { title: string; desc: string }> = {
+  "add-page-numbers-pdf": {
+    title: "Add Page Numbers to PDF Online Free",
+    desc: "Add page numbers to your PDF online for free. Choose position, numbering style (Page X of Y, starting number), and skip cover pages. 100% private, no upload.",
+  },
+  "jpg-to-pdf": {
+    title: "Convert JPG to PDF Online Free",
+    desc: "Convert JPG images to PDF documents online for free. Combine multiple photos, adjust page orientation, and preserve image quality. 100% private in browser.",
+  },
+  "insert-pdf-pages": {
+    title: "Insert Pages into PDF Online Free",
+    desc: "Insert pages from one PDF into another online for free. Add pages at any position without uploading files. 100% private, client-side processing.",
+  },
+  "add-blank-page-pdf": {
+    title: "Add Blank Page to PDF Online Free",
+    desc: "Insert blank pages into your PDF document at any position online for free. Perfect for duplex printing, chapter breaks, or notes. No upload required.",
+  },
+  "merge-pdf": {
+    title: "Merge PDF Files Online Free (No Upload)",
+    desc: "Combine multiple PDF files into one document online for free. Drag and drop reordering, 100% private, processed in your browser with no file upload.",
+  },
+  "split-pdf": {
+    title: "Split PDF Files Online Free",
+    desc: "Split PDF pages or extract specific page ranges online for free. Fast, client-side, 100% private with no server upload.",
+  },
+  "compress-pdf": {
+    title: "Compress PDF Online Free (Reduce File Size)",
+    desc: "Reduce PDF file size online for free while maintaining sharp text and image quality. Runs entirely in your browser — 100% private.",
+  },
+  "pdf-to-word": {
+    title: "Convert PDF to Word Online Free",
+    desc: "Convert PDF files into editable Word (DOCX) documents online for free. Fast, private browser-based conversion with no upload.",
+  },
+  "word-to-pdf": {
+    title: "Convert Word to PDF Online Free",
+    desc: "Convert Microsoft Word documents (DOCX) to clean, printable PDF files online for free. Runs 100% privately in your browser.",
+  },
+};
+
 export async function generateMetadata({ params }: ToolPageProps): Promise<Metadata> {
   const { slug } = await params;
   const tool = getToolBySlug(slug);
   if (!tool) return {};
 
-  const categoryLabel = tool.category === "pdf" ? "PDF" : tool.category === "word" ? "Word" : tool.category === "image" ? "Image" : tool.category === "text" ? "Text" : "Cross-format";
+  const categoryLabel =
+    tool.category === "pdf"
+      ? "PDF"
+      : tool.category === "word"
+      ? "Word"
+      : tool.category === "image"
+      ? "Image"
+      : tool.category === "text"
+      ? "Text"
+      : "Cross-format";
 
   // SEO: keep final titles ≤ 60 chars. The root layout's title template
-  // ("%s | FilesWow.com") already appends the brand — do NOT add it here.
+  // ("%s | FilesWow.com") appends the brand (16 chars) — keep title ≤ 44 chars.
   const BRAND = " | FilesWow.com";
-  const DESCRIPTOR = " — Free Online Tool";
-  const withDescriptor = `${tool.name}${DESCRIPTOR}`;
-  const title =
-    withDescriptor.length + BRAND.length <= 60
-      ? withDescriptor
-      : tool.name.length + BRAND.length <= 60
-        ? tool.name
-        : { absolute: tool.name };
+  const custom = HIGH_INTENT_METADATA[slug];
+
+  let title: string | { absolute: string };
+  if (custom) {
+    title = custom.title;
+  } else {
+    const hasCategory = tool.name.toLowerCase().includes(categoryLabel.toLowerCase());
+    const baseWithCat = !hasCategory && categoryLabel !== "Cross-format" ? `${tool.name} ${categoryLabel}` : tool.name;
+
+    if (`${baseWithCat} Online Free`.length + BRAND.length <= 60) {
+      title = `${baseWithCat} Online Free`;
+    } else if (`${tool.name} Online Free`.length + BRAND.length <= 60) {
+      title = `${tool.name} Online Free`;
+    } else if (`${tool.name} — Free Online`.length + BRAND.length <= 60) {
+      title = `${tool.name} — Free Online`;
+    } else if (tool.name.length + BRAND.length <= 60) {
+      title = tool.name;
+    } else {
+      title = { absolute: tool.name };
+    }
+  }
+
+  const description = custom?.desc ?? `${tool.description} Processed entirely in your browser. No upload required. 100% private and free.`;
 
   return {
     title,
-    description: `${tool.description} Processed entirely in your browser. No upload required. 100% private and free.`,
+    description,
     keywords: [
       tool.name,
       `${tool.name} free`,
       `${tool.name} online`,
       `${tool.name} no upload`,
+      `how to ${tool.name.toLowerCase()}`,
       `free ${tool.name.toLowerCase()}`,
       `online ${tool.name.toLowerCase()}`,
       `${tool.description}`,
@@ -48,16 +117,16 @@ export async function generateMetadata({ params }: ToolPageProps): Promise<Metad
       "client-side processing",
     ],
     openGraph: {
-      title: `${tool.name} | FilesWow.com`,
-      description: `${tool.description} Free, private, runs in your browser.`,
+      title: `${typeof title === "string" ? title : tool.name} | FilesWow.com`,
+      description,
       url: toolUrl(tool.slug),
       type: "website",
       siteName: "FilesWow.com",
     },
     twitter: {
       card: "summary_large_image",
-      title: `${tool.name} | FilesWow.com`,
-      description: tool.description,
+      title: `${typeof title === "string" ? title : tool.name} | FilesWow.com`,
+      description,
     },
     alternates: {
       canonical: toolUrl(tool.slug),
@@ -198,6 +267,9 @@ export default async function ToolPage({ params }: ToolPageProps) {
     },
   };
 
+  // In-depth tutorial & guide from the blog
+  const relatedPost = getBlogPostForTool(slug);
+
   return (
     <>
       <script {...jsonLdProps(softwareJsonLd)} />
@@ -207,7 +279,22 @@ export default async function ToolPage({ params }: ToolPageProps) {
       {faqJsonLd && <script {...jsonLdProps(faqJsonLd)} />}
       <script {...jsonLdProps(webAppJsonLd)} />
 
-      <ToolClient tool={tool} relatedTools={relatedTools} guide={guide} faq={faq} />
+      <ToolClient
+        tool={tool}
+        relatedTools={relatedTools}
+        guide={guide}
+        faq={faq}
+        relatedPost={
+          relatedPost
+            ? {
+                slug: relatedPost.slug,
+                title: relatedPost.title,
+                description: relatedPost.description,
+              }
+            : null
+        }
+      />
     </>
   );
 }
+

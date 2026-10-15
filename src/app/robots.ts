@@ -65,9 +65,15 @@ export default function robots(): MetadataRoute.Robots {
         disallow: PRIVATE_PATHS,
       },
       {
+        // Google AdSense crawler — guarantee full access for policy and ad verification
+        userAgent: "Mediapartners-Google",
+        allow: "/",
+      },
+      {
         userAgent: ["AhrefsBot", "SemrushBot", "DotBot"],
         disallow: "/",
       },
+
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,
     host: SITE_URL,
