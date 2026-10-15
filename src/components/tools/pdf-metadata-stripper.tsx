@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function PdfMetadataStripperTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<Blob | null>(null);
@@ -77,7 +78,7 @@ export default function PdfMetadataStripperTool({ onProcessing, onError }: ToolU
 
           {hasMeta && (
             <div className="p-3 rounded-lg bg-warning/[0.04] border border-warning/10">
-              <p className="text-xs font-semibold text-warning mb-2">🔒 Metadata found:</p>
+              <p className="text-xs font-semibold text-warning mb-2">{<UiIcon name="lock" size={14} className="inline align-[-3px] mr-1" />} Metadata found:</p>
               <ul className="space-y-1">
                 {originalMeta.title && <li className="text-xs text-text-secondary">Title: {originalMeta.title}</li>}
                 {originalMeta.author && <li className="text-xs text-text-secondary">Author: {originalMeta.author}</li>}
@@ -89,7 +90,7 @@ export default function PdfMetadataStripperTool({ onProcessing, onError }: ToolU
 
           {!hasMeta && (
             <div className="p-3 rounded-lg bg-success/[0.04] border border-success/10">
-              <p className="text-xs text-success">✓ No metadata detected — file is already clean</p>
+              <p className="text-xs text-success">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}No metadata detected — file is already clean</p>
             </div>
           )}
 
@@ -101,7 +102,7 @@ export default function PdfMetadataStripperTool({ onProcessing, onError }: ToolU
 
           {result && (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">✓ Metadata stripped!</p>
+              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Metadata stripped!</p>
               <DownloadButton blob={result} filename={`cleaned-${file.name}`} />
             </div>
           )}

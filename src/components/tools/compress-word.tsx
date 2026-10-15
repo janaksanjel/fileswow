@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function CompressWordTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<Blob | null>(null);
@@ -53,7 +54,7 @@ export default function CompressWordTool({ onProcessing, onError }: ToolUIProps)
               <div className={`p-3 rounded-lg border text-center ${reduction > 0 ? "bg-success/[0.04] border-success/10" : "bg-bg-elevated border-border-base"}`}><p className="text-xs text-text-tertiary">Reduction</p><p className={`text-sm font-semibold ${reduction > 0 ? "text-success" : ""}`}>{reduction}%</p></div>
             </div>
           )}
-          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">✓ Compressed!</p><DownloadButton blob={result} filename={`compressed-${file!.name}`} /></div>}
+          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Compressed!</p><DownloadButton blob={result} filename={`compressed-${file!.name}`} /></div>}
           {!result && <button onClick={handleCompress} disabled={processing} className="btn-primary w-full py-3">{processing ? "Compressing..." : "Compress Document"}</button>}
         </div>
       )}

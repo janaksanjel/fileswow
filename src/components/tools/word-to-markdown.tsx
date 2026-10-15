@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { DropZone } from "@/components/drop-zone";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function WordToMarkdownTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [markdown, setMarkdown] = useState("");
@@ -61,8 +62,8 @@ export default function WordToMarkdownTool({ onProcessing, onError }: ToolUIProp
             <div className="space-y-3">
               <textarea value={markdown} readOnly rows={16} className="w-full px-4 py-3 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm font-mono resize-y" />
               <div className="flex items-center gap-2">
-                <button onClick={() => navigator.clipboard.writeText(markdown)} className="px-4 py-2 rounded-lg text-sm font-medium text-text-primary bg-bg-surface border border-border-base hover:bg-bg-elevated">📋 Copy</button>
-                <button onClick={() => { const blob = new Blob([markdown], { type: "text/markdown" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = file!.name.replace(/\.docx?$/i, ".md"); a.click(); URL.revokeObjectURL(url); }} className="px-4 py-2 rounded-lg text-sm font-medium text-text-primary bg-bg-surface border border-border-base hover:bg-bg-elevated">⬇ Download MD</button>
+                <button onClick={() => navigator.clipboard.writeText(markdown)} className="px-4 py-2 rounded-lg text-sm font-medium text-text-primary bg-bg-surface border border-border-base hover:bg-bg-elevated">{<UiIcon name="copy" size={14} className="inline align-[-3px] mr-1" />} Copy</button>
+                <button onClick={() => { const blob = new Blob([markdown], { type: "text/markdown" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = file!.name.replace(/\.docx?$/i, ".md"); a.click(); URL.revokeObjectURL(url); }} className="px-4 py-2 rounded-lg text-sm font-medium text-text-primary bg-bg-surface border border-border-base hover:bg-bg-elevated">{<UiIcon name="download" size={15} className="inline align-[-3px] mr-1.5" />}Download MD</button>
               </div>
             </div>
           )}

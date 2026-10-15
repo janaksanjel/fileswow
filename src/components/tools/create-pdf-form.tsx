@@ -4,6 +4,7 @@ import { useState } from "react";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 interface FieldDef {
   name: string;
   type: "text" | "checkbox" | "dropdown";
@@ -76,7 +77,7 @@ export default function CreatePdfFormTool({ onProcessing, onError }: ToolUIProps
               <option value="text">Text</option>
               <option value="checkbox">Checkbox</option>
             </select>
-            <button onClick={() => removeField(i)} className="text-text-tertiary hover:text-danger text-xs">✕</button>
+            <button onClick={() => removeField(i)} className="text-text-tertiary hover:text-danger text-xs">{<UiIcon name="close" size={13} />}</button>
           </div>
         ))}
       </div>
@@ -85,7 +86,7 @@ export default function CreatePdfFormTool({ onProcessing, onError }: ToolUIProps
 
       {result && (
         <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-          <p className="text-sm text-success mb-3">✓ Form created!</p>
+          <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Form created!</p>
           <DownloadButton blob={result} filename="form.pdf" />
         </div>
       )}

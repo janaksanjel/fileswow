@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function OcrPdfTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<Blob | null>(null);
@@ -76,7 +77,7 @@ export default function OcrPdfTool({ onProcessing, onError }: ToolUIProps) {
 
           {result && (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">✓ OCR processing complete!</p>
+              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}OCR processing complete!</p>
               <DownloadButton blob={result} filename={`ocr-${file!.name}`} />
             </div>
           )}

@@ -11,6 +11,7 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
 import Peer, { type DataConnection } from "peerjs";
 
+import { UiIcon, type UiIconName } from "@/components/ui-icon";
 type Phase = "home" | "host" | "join" | "chat";
 
 interface ChatMessage {
@@ -251,14 +252,14 @@ const EMOJIS: string[] = [
   "🛹", "🎿", "🏄",
 ];
 
-function fileEmoji(mime: string): string {
-  if (mime.startsWith("image/")) return "🖼️";
-  if (mime.startsWith("video/")) return "🎬";
-  if (mime.startsWith("audio/")) return "🎵";
-  if (mime === "application/pdf") return "📄";
-  if (mime.includes("zip") || mime.includes("rar") || mime.includes("7z") || mime.includes("tar") || mime.includes("gzip")) return "📦";
-  if (mime.startsWith("text/")) return "📝";
-  return "📎";
+function fileIcon(mime: string): UiIconName {
+  if (mime.startsWith("image/")) return "fileImage";
+  if (mime.startsWith("video/")) return "fileVideo";
+  if (mime.startsWith("audio/")) return "fileAudio";
+  if (mime === "application/pdf") return "filePdf";
+  if (mime.includes("zip") || mime.includes("rar") || mime.includes("7z") || mime.includes("tar") || mime.includes("gzip")) return "fileArchive";
+  if (mime.startsWith("text/")) return "fileText";
+  return "fileGeneric";
 }
 
 function fileTileClass(mime: string): string {
@@ -612,9 +613,9 @@ export default function P2PTextTool() {
     }
     if (!systemHelloRef.current) {
       systemHelloRef.current = true;
-      addSystemMessage("🔒 Chat connected — messages & files go directly between your devices.");
+      addSystemMessage(" Chat connected — messages & files go directly between your devices.");
     } else if (wasReconnect) {
-      addSystemMessage("Reconnected 🔗");
+      addSystemMessage("Reconnected");
     }
   }, [addSystemMessage]);
 
@@ -1268,10 +1269,10 @@ export default function P2PTextTool() {
 
           <div className="flex flex-wrap items-center gap-2">
             <button onClick={() => copyToClipboard(roomCode, "code")} className="btn-primary px-4 py-2 text-xs">
-              {copied === "code" ? "✓ Copied" : "Copy code"}
+              {copied === "code" ? <><UiIcon name="check" size={13} className="inline align-[-3px] mr-1" />Copied</> : "Copy code"}
             </button>
             <button onClick={() => copyToClipboard(inviteLink, "link")} className="btn-secondary px-4 py-2 text-xs">
-              {copied === "link" ? "✓ Link copied" : "Copy invite link"}
+              {copied === "link" ? <><UiIcon name="check" size={13} className="inline align-[-3px] mr-1" />Link copied</> : "Copy invite link"}
             </button>
             <p className="text-xs text-text-tertiary">
               The invite link opens the chat with the code filled in — your friend just taps to join.
@@ -1428,7 +1429,7 @@ export default function P2PTextTool() {
         >
           {messages.length === 0 && !peerTyping ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center px-6">
-              <span className="text-4xl mb-3">👋</span>
+              <span className="text-4xl mb-3">{<UiIcon name="chat" size={14} className="inline align-[-3px] mr-1" />}</span>
               <p className="text-base font-bold text-text-primary mb-1">Say hi!</p>
               <p className="text-xs text-text-tertiary max-w-[240px]">
                 Messages and files appear here instantly on both devices. Try sending a photo or a file.
@@ -1505,7 +1506,7 @@ export default function P2PTextTool() {
               }}
               className="flex items-center gap-2 px-3.5 py-2.5 rounded-lg hover:bg-bg-hover transition-colors text-xs font-semibold text-text-primary"
             >
-              <span className="text-base leading-none">📁</span> Send file
+              <span className="text-base leading-none">{<UiIcon name="folder" size={14} className="inline align-[-3px] mr-1" />}</span> Send file
             </button>
             <button
               type="button"
@@ -1515,7 +1516,7 @@ export default function P2PTextTool() {
               }}
               className="flex items-center gap-2 px-3.5 py-2.5 rounded-lg hover:bg-bg-hover transition-colors text-xs font-semibold text-text-primary"
             >
-              <span className="text-base leading-none">😊</span> Emoji
+              <span className="text-base leading-none">{<UiIcon name="smile" size={14} className="inline align-[-3px] mr-1" />}</span> Emoji
             </button>
           </div>
         )}
@@ -1620,7 +1621,7 @@ function TextBubble({ msg }: { msg: ChatMessage }) {
           own ? (msg.read ? "text-accent" : "text-text-tertiary/80") : "text-text-tertiary"
         }`}>
           {formatTime(msg.ts)}
-          {own && <span className="font-bold tracking-tight">{msg.read ? "✓✓" : "✓"}</span>}
+          {own && <span className="font-bold tracking-tight">{msg.read ? <UiIcon name="checkDouble" size={15} /> : <UiIcon name="check" size={15} />}</span>}
         </span>
       </div>
     </div>
@@ -1644,7 +1645,7 @@ function FileBubble({ msg }: { msg: ChatMessage }) {
       >
         <div className="flex items-center gap-2.5 min-w-0">
           <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg shrink-0 ${fileTileClass(file.mime)}`} aria-hidden="true">
-            {fileEmoji(file.mime)}
+            <UiIcon name={fileIcon(file.mime)} size={22} />
           </span>
           <div className="min-w-0 flex-1">
             <p className="text-[13px] font-semibold text-text-primary truncate">{file.name}</p>
@@ -1667,7 +1668,7 @@ function FileBubble({ msg }: { msg: ChatMessage }) {
             ) : !file.done ? (
               <Spinner />
             ) : own ? (
-              <span className="text-[11px] font-bold text-accent">✓ Sent</span>
+              <span className="text-[11px] font-bold text-accent">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Sent</span>
             ) : (
               file.url && (
                 <a

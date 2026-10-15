@@ -8,6 +8,7 @@ import { OperationSelector } from "./operation-selector";
 import { ProcessingState } from "./processing-state";
 import { SuccessState, type WorkflowResultData } from "./success-state";
 
+import { UiIcon } from "@/components/ui-icon";
 interface WorkflowWorkspaceProps {
   config: WorkflowCategoryConfig;
 }
@@ -492,7 +493,7 @@ export function WorkflowWorkspace({ config }: WorkflowWorkspaceProps) {
             onClick={() => setError(null)}
             className="text-danger/80 hover:text-danger text-sm font-bold px-2 py-0.5"
           >
-            ✕
+            {<UiIcon name="close" size={13} />}
           </button>
         </div>
       )}

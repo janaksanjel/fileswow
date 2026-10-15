@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function SplitPdfByBookmarksTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [results, setResults] = useState<{ name: string; blob: Blob }[]>([]);
@@ -95,7 +96,7 @@ export default function SplitPdfByBookmarksTool({ onProcessing, onError }: ToolU
                 <input type="number" min="1" max={pageCount} value={s.start} onChange={(e) => updateSection(i, "start", Number(e.target.value))} className="w-16 px-2 py-1 rounded bg-transparent text-sm text-text-primary font-mono text-center border border-border-base focus:border-accent focus:outline-none" />
                 <span className="text-xs text-text-tertiary">to</span>
                 <input type="number" min="1" max={pageCount} value={s.end} onChange={(e) => updateSection(i, "end", Number(e.target.value))} className="w-16 px-2 py-1 rounded bg-transparent text-sm text-text-primary font-mono text-center border border-border-base focus:border-accent focus:outline-none" />
-                <button onClick={() => removeSection(i)} className="text-text-tertiary hover:text-danger text-xs">✕</button>
+                <button onClick={() => removeSection(i)} className="text-text-tertiary hover:text-danger text-xs">{<UiIcon name="close" size={13} />}</button>
               </div>
             ))}
           </div>
@@ -104,7 +105,7 @@ export default function SplitPdfByBookmarksTool({ onProcessing, onError }: ToolU
 
           {results.length > 0 && (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10">
-              <p className="text-sm text-success mb-3">✓ Split into {results.length} sections</p>
+              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Split into {results.length} sections</p>
               <div className="flex flex-wrap gap-2">
                 {results.map(r => <DownloadButton key={r.name} blob={r.blob} filename={r.name} label={r.name} />)}
               </div>

@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function ProtectWordTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [password, setPassword] = useState("");
@@ -26,7 +27,7 @@ export default function ProtectWordTool({ onProcessing, onError }: ToolUIProps) 
       div.innerHTML = result.value;
       const plainText = div.textContent || "";
       const paragraphs = [
-        new Paragraph({ children: [new TextRun({ text: "🔒 This document is password protected", bold: true, size: 24, color: "dc2626" })] }),
+        new Paragraph({ children: [new TextRun({ text: " This document is password protected", bold: true, size: 24, color: "dc2626" })] }),
         new Paragraph({ children: [new TextRun({ text: "" })] }),
         ...plainText.split("\n").filter(Boolean).map(line => new Paragraph({ children: [new TextRun({ text: line.trim(), size: 22 })] })),
       ];
@@ -53,7 +54,7 @@ export default function ProtectWordTool({ onProcessing, onError }: ToolUIProps) 
             <button onClick={() => { setFile(null); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger">Remove</button>
           </div>
           <div><label className="block text-sm text-text-secondary mb-2">Set password</label><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm focus:border-accent focus:outline-none" placeholder="Enter password..." /></div>
-          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">✓ Protected!</p><DownloadButton blob={result} filename={`protected-${file!.name}`} /></div>}
+          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Protected!</p><DownloadButton blob={result} filename={`protected-${file!.name}`} /></div>}
           {!result && <button onClick={handleProtect} disabled={processing || !password.trim()} className="btn-primary w-full py-3">{processing ? "Protecting..." : "Protect Document"}</button>}
         </div>
       )}

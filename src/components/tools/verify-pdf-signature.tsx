@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { DropZone } from "@/components/drop-zone";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function VerifyPdfSignatureTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [processing, setProcessing] = useState(false);
@@ -74,7 +75,7 @@ export default function VerifyPdfSignatureTool({ onProcessing, onError }: ToolUI
             <div className="space-y-3">
               <div className={`p-4 rounded-xl border ${result.hasSignature ? "bg-success/[0.04] border-success/10" : "bg-bg-elevated border-border-base"}`}>
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">{result.hasSignature ? "✅" : "⚠️"}</span>
+                  <span className="text-2xl">{result.hasSignature ? <UiIcon name="check" size={18} /> : <UiIcon name="warning" size={18} />}</span>
                   <div>
                     <p className={`text-sm font-semibold ${result.hasSignature ? "text-success" : "text-text-primary"}`}>
                       {result.hasSignature ? "Signature Fields Detected" : "No Signatures Found"}

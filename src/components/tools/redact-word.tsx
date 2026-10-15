@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function RedactWordTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [searchText, setSearchText] = useState("");
@@ -55,8 +56,8 @@ export default function RedactWordTool({ onProcessing, onError }: ToolUIProps) {
             <button onClick={() => { setFile(null); setResult(null); setCount(0); }} className="text-xs text-text-tertiary hover:text-danger">Remove</button>
           </div>
           <div><label className="block text-sm text-text-secondary mb-2">Text to redact</label><input type="text" value={searchText} onChange={(e) => setSearchText(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm focus:border-accent focus:outline-none" placeholder="Enter sensitive text..." /></div>
-          {count > 0 && <p className="text-xs text-warning">⚠ {count} occurrence(s) will be redacted</p>}
-          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">✓ {count} occurrence(s) redacted!</p><DownloadButton blob={result} filename={`redacted-${file!.name}`} /></div>}
+          {count > 0 && <p className="text-xs text-warning flex items-center gap-1.5"><UiIcon name="warning" size={13} className="shrink-0" />{count} occurrence(s) will be redacted</p>}
+          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}{count} occurrence(s) redacted!</p><DownloadButton blob={result} filename={`redacted-${file!.name}`} /></div>}
           {!result && <button onClick={handleRedact} disabled={processing || !searchText.trim()} className="btn-primary w-full py-3">{processing ? "Redacting..." : "Redact Text"}</button>}
         </div>
       )}

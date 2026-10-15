@@ -5,6 +5,7 @@ import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 import { prepareScriptFonts, waitForFonts } from "@/lib/script-fonts";
 
+import { UiIcon } from "@/components/ui-icon";
 const SAMPLE_MD = `# Hello World\n\nThis is a **bold** and *italic* text example.\n\n## Features\n\n- Item 1\n- Item 2\n- Item 3\n\n### Code Example\n\n\`\`\`javascript\nconsole.log("Hello from FilesWow.com");\n\`\`\`\n\n> This is a blockquote\n\n| Name | Type |\n|------|------|\n| PDF | Document |\n| Word | Document |`;
 
 export default function MarkdownToPdfTool({ onProcessing, onError }: ToolUIProps) {
@@ -92,7 +93,7 @@ export default function MarkdownToPdfTool({ onProcessing, onError }: ToolUIProps
 
       {result && (
         <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-          <p className="text-sm text-success mb-3">✓ Conversion complete!</p>
+          <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Conversion complete!</p>
           <DownloadButton blob={result} filename="markdown.pdf" />
         </div>
       )}

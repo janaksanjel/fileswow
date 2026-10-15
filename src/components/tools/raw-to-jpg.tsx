@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function raw_to_jpg_Tool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<Blob | null>(null);
@@ -49,7 +50,7 @@ export default function raw_to_jpg_Tool({ onProcessing, onError }: ToolUIProps) 
           </div>
           {result && (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10">
-              <p className="text-sm text-success mb-1">✓ Converted!</p>
+              <p className="text-sm text-success mb-1">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Converted!</p>
               <DownloadButton blob={result} filename={file.name.replace(/\.[^.]+$/, ".jpg")} />
             </div>
           )}

@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { DropZone } from "@/components/drop-zone";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon, type UiIconName } from "@/components/ui-icon";
 interface PageInfo {
   index: number;
   width: number;
@@ -121,13 +122,13 @@ export default function PdfPageCounterTool({ onProcessing, onError }: ToolUIProp
               {/* Quick Stats */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {[
-                  { label: "Pages", value: String(result.pageCount), icon: "📄" },
-                  { label: "Reading Time", value: result.estimatedReadingTime, icon: "⏱️" },
-                  { label: "Avg Size", value: result.avgPageSize, icon: "📐" },
-                  { label: "Mixed Sizes", value: result.isMixedSize ? "Yes" : "No", icon: result.isMixedSize ? "⚠️" : "✓" },
+                  { label: "Pages", value: String(result.pageCount), icon: "filePdf" as UiIconName },
+                  { label: "Reading Time", value: result.estimatedReadingTime, icon: "clock" as UiIconName },
+                  { label: "Avg Size", value: result.avgPageSize, icon: "ruler" as UiIconName },
+                  { label: "Mixed Sizes", value: result.isMixedSize ? "Yes" : "No", icon: (result.isMixedSize ? "warning" : "check") as UiIconName },
                 ].map(stat => (
                   <div key={stat.label} className="p-3 rounded-lg bg-bg-elevated border border-border-base text-center">
-                    <span className="text-lg">{stat.icon}</span>
+                    <span className="flex justify-center"><UiIcon name={stat.icon} size={22} /></span>
                     <p className="text-sm font-semibold text-text-primary mt-1">{stat.value}</p>
                     <p className="text-[10px] text-text-tertiary uppercase tracking-wider">{stat.label}</p>
                   </div>
@@ -138,8 +139,8 @@ export default function PdfPageCounterTool({ onProcessing, onError }: ToolUIProp
               <div className="p-3 rounded-lg bg-bg-elevated border border-border-base">
                 <p className="text-xs text-text-secondary mb-2">Orientation</p>
                 <div className="flex gap-4">
-                  <span className="text-sm text-text-primary">🖼️ Portrait: {result.orientation.portrait}</span>
-                  <span className="text-sm text-text-primary">🏞️ Landscape: {result.orientation.landscape}</span>
+                  <span className="inline-flex items-center gap-1.5 text-sm text-text-primary"><UiIcon name="portrait" size={16} />Portrait: {result.orientation.portrait}</span>
+                  <span className="inline-flex items-center gap-1.5 text-sm text-text-primary"><UiIcon name="landscape" size={16} />Landscape: {result.orientation.landscape}</span>
                 </div>
               </div>
 

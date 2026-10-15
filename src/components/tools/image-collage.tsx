@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function image_collage_Tool({ onProcessing, onError }: ToolUIProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [result, setResult] = useState<Blob | null>(null);
@@ -58,8 +59,8 @@ export default function image_collage_Tool({ onProcessing, onError }: ToolUIProp
               <button key={l} onClick={() => setLayout(l)} className={`px-3 py-2 rounded-lg text-sm font-medium capitalize transition-all ${layout === l ? "bg-accent-start text-white" : "bg-bg-elevated text-text-secondary border border-border-base"}`}>{l}</button>
             ))}
           </div>
-          <div className="flex flex-wrap gap-2">{files.map((f, i) => <div key={i} className="text-xs text-text-tertiary bg-bg-elevated px-2 py-1 rounded">{f.name} <button onClick={() => setFiles(prev => prev.filter((_, j) => j !== i))} className="ml-1 hover:text-danger">✕</button></div>)}</div>
-          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10"><p className="text-sm text-success mb-1">✓ Collage created!</p><DownloadButton blob={result} filename="collage.png" /></div>}
+          <div className="flex flex-wrap gap-2">{files.map((f, i) => <div key={i} className="text-xs text-text-tertiary bg-bg-elevated px-2 py-1 rounded">{f.name} <button onClick={() => setFiles(prev => prev.filter((_, j) => j !== i))} className="ml-1 hover:text-danger">{<UiIcon name="close" size={13} />}</button></div>)}</div>
+          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10"><p className="text-sm text-success mb-1">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Collage created!</p><DownloadButton blob={result} filename="collage.png" /></div>}
           {!result && <button onClick={process} disabled={processing || files.length < 2} className="btn-primary w-full py-3">{processing ? <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />Creating...</span> : "Create Collage"}</button>}
         </div>
       )}

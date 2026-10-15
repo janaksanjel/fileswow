@@ -6,6 +6,7 @@ import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 import { inpaintRegion, unblendWatermark, type Mask } from "@/lib/engines/inpaint";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function WatermarkRemoverImageTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [imgUrl, setImgUrl] = useState<string | null>(null);
@@ -250,7 +251,7 @@ export default function WatermarkRemoverImageTool({ onProcessing, onError }: Too
       <div className="space-y-6">
         <DropZone accept="image/*" onFilesSelected={handleFile} label="Drop an image to remove its watermark" />
         <div className="p-4 rounded-xl bg-bg-elevated border border-border-base text-xs text-text-tertiary space-y-2">
-          <p className="font-semibold text-text-secondary text-sm">✨ How to get the best result</p>
+          <p className="font-semibold text-text-secondary text-sm flex items-center gap-1.5"><UiIcon name="sparkle" size={15} className="shrink-0" />How to get the best result</p>
           <p>1. <strong>Brush</strong> or <strong>rectangle-select</strong> the watermark area (works for logos, stamps, text).</p>
           <p>2. For <strong>semi-transparent</strong> watermarks, enable &ldquo;Un-blend mode&rdquo; — it mathematically reverses the watermark instead of just filling over it.</p>
           <p>3. Remove several areas one after another — each result becomes the new working image.</p>
@@ -292,7 +293,7 @@ export default function WatermarkRemoverImageTool({ onProcessing, onError }: Too
         <div>
           <label className="block text-sm text-text-secondary mb-2">Selection tool</label>
           <div className="flex gap-2">
-            {([{ v: "brush", l: "🖌 Brush" }, { v: "rect", l: "▭ Rectangle" }] as const).map((m) => (
+            {([{ v: "brush", l: " Brush" }, { v: "rect", l: "▭ Rectangle" }] as const).map((m) => (
               <button key={m.v} onClick={() => setMode(m.v)} disabled={processing}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${mode === m.v ? "bg-accent-start text-white" : "bg-bg-elevated text-text-secondary hover:text-text-primary border border-border-base"}`}>
                 {m.l}
@@ -349,7 +350,7 @@ export default function WatermarkRemoverImageTool({ onProcessing, onError }: Too
 
       {result && resultUrl && (
         <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10">
-          <p className="text-sm text-success mb-1">✓ Watermark removed!</p>
+          <p className="text-sm text-success mb-1">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Watermark removed!</p>
           <p className="text-xs text-text-tertiary mb-3">{fmt(originalSize(file))} → {fmt(result.size)} · PNG</p>
           <div className="flex flex-col sm:flex-row gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}

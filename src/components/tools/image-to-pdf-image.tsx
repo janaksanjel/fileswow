@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function ImageToPdfImageTool({ onProcessing, onError }: ToolUIProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [result, setResult] = useState<Blob | null>(null);
@@ -59,13 +60,13 @@ export default function ImageToPdfImageTool({ onProcessing, onError }: ToolUIPro
             {files.map((f, i) => (
               <div key={i} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-bg-elevated border border-border-base text-xs">
                 <span className="text-text-primary truncate max-w-[120px]">{f.name}</span>
-                <button onClick={() => setFiles(prev => prev.filter((_, j) => j !== i))} className="text-text-tertiary hover:text-danger">✕</button>
+                <button onClick={() => setFiles(prev => prev.filter((_, j) => j !== i))} className="text-text-tertiary hover:text-danger">{<UiIcon name="close" size={13} />}</button>
               </div>
             ))}
           </div>
           {result && (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10">
-              <p className="text-sm text-success mb-1">✓ Converted to PDF!</p>
+              <p className="text-sm text-success mb-1">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Converted to PDF!</p>
               <DownloadButton blob={result} filename="images.pdf" />
             </div>
           )}

@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function WatermarkWordTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [text, setText] = useState("CONFIDENTIAL");
@@ -56,7 +57,7 @@ export default function WatermarkWordTool({ onProcessing, onError }: ToolUIProps
             <label className="block text-sm text-text-secondary mb-2">Watermark text</label>
             <input type="text" value={text} onChange={(e) => setText(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm focus:border-accent focus:outline-none" placeholder="Enter watermark text" />
           </div>
-          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">✓ Watermarked!</p><DownloadButton blob={result} filename={`watermarked-${file!.name}`} /></div>}
+          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Watermarked!</p><DownloadButton blob={result} filename={`watermarked-${file!.name}`} /></div>}
           {!result && <button onClick={handleApply} disabled={processing || !text.trim()} className="btn-primary w-full py-3">{processing ? "Applying..." : "Apply Watermark"}</button>}
         </div>
       )}

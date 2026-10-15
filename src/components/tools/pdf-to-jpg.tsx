@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function PdfToJpgTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [dpi, setDpi] = useState(150);
@@ -123,14 +124,14 @@ export default function PdfToJpgTool({ onProcessing, onError }: ToolUIProps) {
           {results.length > 0 && (
             <div className="space-y-3">
               <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10">
-                <p className="text-sm text-success mb-3">✓ Conversion complete! {results.length} image{results.length !== 1 ? "s" : ""} created</p>
+                <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Conversion complete! {results.length} image{results.length !== 1 ? "s" : ""} created</p>
                 <div className="flex flex-wrap gap-2">
                   {results.map((r) => (
                     <DownloadButton key={r.name} blob={r.blob} filename={r.name} label={r.name} />
                   ))}
                   {results.length > 1 && (
                     <button onClick={downloadAll} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-text-primary bg-bg-surface border border-border-base hover:bg-bg-elevated transition-colors">
-                      📦 Download all (ZIP)
+                      {<UiIcon name="download" size={15} className="inline align-[-3px] mr-1.5" />}Download all (ZIP)
                     </button>
                   )}
                 </div>

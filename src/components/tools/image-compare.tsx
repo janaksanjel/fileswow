@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { DropZone } from "@/components/drop-zone";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function image_compare_Tool({ onError }: ToolUIProps) {
   const [files, setFiles] = useState<File[]>([]);
 
@@ -21,7 +22,7 @@ export default function image_compare_Tool({ onError }: ToolUIProps) {
             {files.map((f, i) => (
               <div key={i} className="flex-1 flex items-center gap-2 p-3 rounded-lg bg-bg-elevated border border-border-base">
                 <div className="flex-1"><p className="text-sm text-text-primary truncate">{f.name}</p></div>
-                <button onClick={() => setFiles(prev => prev.filter((_, j) => j !== i))} className="text-xs text-text-tertiary hover:text-danger">✕</button>
+                <button onClick={() => setFiles(prev => prev.filter((_, j) => j !== i))} className="text-xs text-text-tertiary hover:text-danger">{<UiIcon name="close" size={13} />}</button>
               </div>
             ))}
           </div>

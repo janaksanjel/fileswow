@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function RedactPdfTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [searchText, setSearchText] = useState("");
@@ -66,7 +67,7 @@ export default function RedactPdfTool({ onProcessing, onError }: ToolUIProps) {
           </div>
 
           <div className="p-3 rounded-lg bg-warning/[0.04] border border-warning/10">
-            <p className="text-xs text-warning font-medium">⚠ Redaction permanently removes content. This cannot be undone.</p>
+            <p className="text-xs text-warning font-medium flex items-start gap-1.5"><UiIcon name="warning" size={14} className="shrink-0 mt-px" />Redaction permanently removes content. This cannot be undone.</p>
           </div>
 
           <div>
@@ -86,7 +87,7 @@ export default function RedactPdfTool({ onProcessing, onError }: ToolUIProps) {
 
           {result && (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">✓ Redaction complete!</p>
+              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Redaction complete!</p>
               <DownloadButton blob={result} filename={`redacted-${file.name}`} />
             </div>
           )}

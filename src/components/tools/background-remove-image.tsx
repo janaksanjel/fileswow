@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function background_remove_image_Tool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<Blob | null>(null);
@@ -59,7 +60,7 @@ export default function background_remove_image_Tool({ onProcessing, onError }: 
           </div>
           {result && (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10">
-              <p className="text-sm text-success mb-1">✓ Background removed!</p>
+              <p className="text-sm text-success mb-1">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Background removed!</p>
               <DownloadButton blob={result} filename={"no-bg-" + file.name.replace(/\.[^.]+$/, ".png")} />
             </div>
           )}

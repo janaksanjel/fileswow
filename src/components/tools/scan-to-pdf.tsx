@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function ScanToPdfTool({ onProcessing, onError }: ToolUIProps) {
   const [images, setImages] = useState<File[]>([]);
   const [previews, setPreviews] = useState<string[]>([]);
@@ -115,7 +116,7 @@ export default function ScanToPdfTool({ onProcessing, onError }: ToolUIProps) {
           <DropZone accept="image/*" multiple onFilesSelected={handleFiles} label="Upload document images" description="JPG, PNG images of your documents" />
           <div className="text-center">
             <p className="text-xs text-text-tertiary mb-2">— or —</p>
-            <button onClick={startCamera} className="px-4 py-2 rounded-lg text-sm font-medium text-accent bg-accent/10 hover:bg-accent/20 transition-colors">📸 Open Camera</button>
+            <button onClick={startCamera} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-accent bg-accent/10 hover:bg-accent/20 transition-colors"><UiIcon name="camera" size={16} />Open Camera</button>
           </div>
         </div>
       )}
@@ -124,7 +125,7 @@ export default function ScanToPdfTool({ onProcessing, onError }: ToolUIProps) {
         <div className="space-y-3">
           <video ref={videoRef} className="w-full rounded-lg bg-black" playsInline />
           <div className="flex gap-2">
-            <button onClick={capturePhoto} className="flex-1 py-2 rounded-lg text-sm font-medium text-white bg-accent-start hover:bg-accent-end transition-colors">📸 Capture</button>
+            <button onClick={capturePhoto} className="flex-1 inline-flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium text-white bg-accent-start hover:bg-accent-end transition-colors"><UiIcon name="camera" size={16} />Capture</button>
             <button onClick={stopCamera} className="flex-1 py-2 rounded-lg text-sm font-medium text-text-secondary bg-bg-elevated border border-border-base hover:text-text-primary transition-colors">Stop Camera</button>
           </div>
         </div>
@@ -140,7 +141,7 @@ export default function ScanToPdfTool({ onProcessing, onError }: ToolUIProps) {
             {previews.map((src, i) => (
               <div key={i} className="relative group">
                 <img src={src} alt={`Scan ${i + 1}`} className="w-full h-24 object-cover rounded-lg border border-border-base" />
-                <button onClick={() => removeImage(i)} className="absolute top-1 right-1 w-5 h-5 rounded-full bg-danger text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">✕</button>
+                <button onClick={() => removeImage(i)} className="absolute top-1 right-1 w-5 h-5 rounded-full bg-danger text-white text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">{<UiIcon name="close" size={13} />}</button>
                 <span className="absolute bottom-1 left-1 text-[10px] text-white bg-black/50 px-1 rounded">{i + 1}</span>
               </div>
             ))}
@@ -148,7 +149,7 @@ export default function ScanToPdfTool({ onProcessing, onError }: ToolUIProps) {
 
           {result && (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">✓ PDF created!</p>
+              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}PDF created!</p>
               <DownloadButton blob={result} filename="scanned-document.pdf" />
             </div>
           )}

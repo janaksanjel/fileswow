@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 type OutputFormat = "pdf" | "txt";
 
 export default function BatchConverterTool({ onProcessing, onError }: ToolUIProps) {
@@ -97,7 +98,7 @@ export default function BatchConverterTool({ onProcessing, onError }: ToolUIProp
               <div key={`${file.name}-${i}`} className="flex items-center gap-3 p-2 rounded-lg bg-bg-elevated border border-border-base">
                 <span className="text-sm text-text-primary truncate flex-1">{file.name}</span>
                 <span className="text-xs text-text-tertiary">{(file.size / 1024).toFixed(0)} KB</span>
-                <button onClick={() => removeFile(i)} className="text-text-tertiary hover:text-danger text-xs">✕</button>
+                <button onClick={() => removeFile(i)} className="text-text-tertiary hover:text-danger text-xs">{<UiIcon name="close" size={13} />}</button>
               </div>
             ))}
           </div>
@@ -115,10 +116,10 @@ export default function BatchConverterTool({ onProcessing, onError }: ToolUIProp
 
           {results.length > 0 && (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10">
-              <p className="text-sm text-success mb-3">✓ {results.length} files converted!</p>
+              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}{results.length} files converted!</p>
               <div className="flex flex-wrap gap-2">
                 {results.slice(0, 5).map(r => <DownloadButton key={r.name} blob={r.blob} filename={r.name} label={r.name} />)}
-                {results.length > 1 && <button onClick={downloadAll} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-text-primary bg-bg-surface border border-border-base hover:bg-bg-elevated">📦 Download all (ZIP)</button>}
+                {results.length > 1 && <button onClick={downloadAll} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-text-primary bg-bg-surface border border-border-base hover:bg-bg-elevated">{<UiIcon name="download" size={14} className="inline align-[-3px] mr-1" />} Download all (ZIP)</button>}
               </div>
             </div>
           )}

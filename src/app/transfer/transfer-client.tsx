@@ -24,6 +24,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Peer, { type DataConnection } from "peerjs";
 
+import { UiIcon, type UiIconName } from "@/components/ui-icon";
 // ─── Constants ───────────────────────────────────────────────────────────
 
 const CODE_LENGTH = 6;
@@ -295,19 +296,19 @@ function formatCountdown(ms: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-function fileEmoji(name: string, mime: string): string {
+function fileIcon(name: string, mime: string): UiIconName {
   const lower = name.toLowerCase();
-  if (mime.startsWith("image/")) return "🖼️";
-  if (mime.startsWith("video/")) return "🎬";
-  if (mime.startsWith("audio/")) return "🎵";
-  if (mime === "application/pdf" || lower.endsWith(".pdf")) return "📕";
-  if (/\.(zip|rar|7z|tar|gz|bz2|xz)$/.test(lower) || mime.includes("zip")) return "📦";
-  if (/\.(docx?|odt|rtf)$/.test(lower)) return "📘";
-  if (/\.(pptx?|key)$/.test(lower)) return "📙";
-  if (/\.(xlsx?|csv|ods)$/.test(lower)) return "📗";
-  if (mime.startsWith("text/") || /\.(txt|md|json|xml|html?)$/.test(lower)) return "📄";
-  if (/\.(exe|dmg|apk|msi|appimage)$/.test(lower)) return "⚙️";
-  return "📎";
+  if (mime.startsWith("image/")) return "fileImage";
+  if (mime.startsWith("video/")) return "fileVideo";
+  if (mime.startsWith("audio/")) return "fileAudio";
+  if (mime === "application/pdf" || lower.endsWith(".pdf")) return "filePdf";
+  if (/\.(zip|rar|7z|tar|gz|bz2|xz)$/.test(lower) || mime.includes("zip")) return "fileArchive";
+  if (/\.(docx?|odt|rtf)$/.test(lower)) return "fileDoc";
+  if (/\.(pptx?|key)$/.test(lower)) return "fileSlides";
+  if (/\.(xlsx?|csv|ods)$/.test(lower)) return "fileSheet";
+  if (mime.startsWith("text/") || /\.(txt|md|json|xml|html?)$/.test(lower)) return "fileText";
+  if (/\.(exe|dmg|apk|msi|appimage)$/.test(lower)) return "gear";
+  return "fileGeneric";
 }
 
 function guessDevice(): string {
@@ -655,7 +656,7 @@ export function TransferClient() {
         setSendFinishedAt(Date.now());
         setPhase("done");
         transferActiveRef.current = false;
-        addLog("All files sent — transfer complete. ✅", "success");
+        addLog("All files sent — transfer complete.", "success");
       } catch (err) {
         transferActiveRef.current = false;
         if (cancelRef.current) {
@@ -832,7 +833,7 @@ export function TransferClient() {
         if (all.length === 0 || !all.every(f => f.done)) return;
         setJoinPhase("done");
         setReceivedBytes(receivedBytesRef.current);
-        addLog("All files received — transfer complete. ✅", "success");
+        addLog("All files received — transfer complete.", "success");
       };
 
       // Where ordered bytes go: disk stream, or offset-tagged memory buffer.
@@ -1515,7 +1516,7 @@ export function TransferClient() {
                 <ul className="divide-y divide-border-base max-h-56 overflow-y-auto -mx-1 px-1">
                   {files.map((f, i) => (
                     <li key={`${f.name}:${f.size}:${f.lastModified}:${i}`} className="flex items-center gap-3 py-2">
-                      <span aria-hidden="true" className="text-base shrink-0">{fileEmoji(f.name, f.type)}</span>
+                      <UiIcon name={fileIcon(f.name, f.type)} size={20} className="shrink-0" />
                       <span className="min-w-0 flex-1">
                         <span className="block text-[13px] font-medium text-text-primary truncate">{f.name}</span>
                         <span className="block text-[11px] text-text-tertiary">{formatBytes(f.size)}</span>
@@ -1769,7 +1770,7 @@ export function TransferClient() {
               )}
               <div className="flex flex-wrap items-center justify-center gap-2 mt-4">
                 <button onClick={() => copyToClipboard(code, "code")} className="btn-primary px-4 py-2 text-xs">
-                  {copied === "code" ? "✓ Code copied" : "Copy code"}
+                  {copied === "code" ? <><UiIcon name="check" size={13} className="inline align-[-3px] mr-1" />Code copied</> : "Copy code"}
                 </button>
                 <button onClick={() => setShowQr(v => !v)} className="btn-secondary px-4 py-2 text-xs">
                   {showQr ? "Hide QR" : "Show QR"}
@@ -1799,7 +1800,7 @@ export function TransferClient() {
               <div className="flex items-center gap-2">
                 <input readOnly value={inviteLink} className="input flex-1 text-xs font-mono truncate" aria-label="Invite link" onFocus={(e) => e.currentTarget.select()} />
                 <button onClick={() => copyToClipboard(inviteLink, "link")} className="btn-secondary px-4 py-2 text-xs shrink-0">
-                  {copied === "link" ? "✓ Copied" : "Copy"}
+                  {copied === "link" ? <><UiIcon name="check" size={13} className="inline align-[-3px] mr-1" />Copied</> : "Copy"}
                 </button>
               </div>
             </div>
@@ -1865,13 +1866,13 @@ export function TransferClient() {
               const fileActive = phase === "transferring" && activeName === f.name;
               return (
                 <li key={`${f.name}:${f.size}:${i}`} className="flex items-center gap-3 py-2.5">
-                  <span aria-hidden="true">{fileEmoji(f.name, f.type)}</span>
+                  <UiIcon name={fileIcon(f.name, f.type)} size={20} className="shrink-0" />
                   <span className="min-w-0 flex-1">
                     <span className="block text-[13px] font-medium text-text-primary truncate">{f.name}</span>
                     <span className="block text-[11px] text-text-tertiary">{formatBytes(f.size)}</span>
                   </span>
                   <span className={`text-[11px] font-semibold shrink-0 ${fileDone ? "text-success" : fileActive ? "text-accent" : "text-text-tertiary"}`}>
-                    {fileDone ? "✓ Sent" : fileActive ? `${Math.round(activeProgress * 100)}%` : "Queued"}
+                    {fileDone ? <><UiIcon name="check" size={13} className="inline align-[-3px] mr-1" />Sent</> : fileActive ? `${Math.round(activeProgress * 100)}%` : "Queued"}
                   </span>
                 </li>
               );
@@ -1990,7 +1991,7 @@ export function TransferClient() {
               return (
                 <li key={f.id} className="py-2.5">
                   <div className="flex items-center gap-3">
-                    <span aria-hidden="true">{fileEmoji(f.name, f.mime)}</span>
+                    <UiIcon name={fileIcon(f.name, f.mime)} size={20} className="shrink-0" />
                     <span className="min-w-0 flex-1">
                       <span className="block text-[13px] font-medium text-text-primary truncate">{f.name}</span>
                       <span className="block text-[11px] text-text-tertiary">
@@ -2004,7 +2005,7 @@ export function TransferClient() {
                       </a>
                     )}
                     {f.done && f.savedToDisk && !f.url && (
-                      <span className="text-[11px] font-bold text-success shrink-0">✓ Saved to disk</span>
+                      <span className="text-[11px] font-bold text-success shrink-0">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Saved to disk</span>
                     )}
                     {f.failed && <span className="text-[11px] font-bold text-danger shrink-0">Failed</span>}
                     {!f.done && !f.failed && (

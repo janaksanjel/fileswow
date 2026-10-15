@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function InsertPdfPagesTool({ onProcessing, onError }: ToolUIProps) {
   const [targetFile, setTargetFile] = useState<File | null>(null);
   const [sourceFile, setSourceFile] = useState<File | null>(null);
@@ -45,7 +46,7 @@ export default function InsertPdfPagesTool({ onProcessing, onError }: ToolUIProp
           <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
             <span className="text-xs text-text-tertiary font-medium w-16">Target</span>
             <span className="text-sm text-text-primary truncate flex-1">{targetFile.name}</span>
-            <button onClick={() => { setTargetFile(null); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">✕</button>
+            <button onClick={() => { setTargetFile(null); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">{<UiIcon name="close" size={13} />}</button>
           </div>
 
           {!sourceFile ? (
@@ -54,7 +55,7 @@ export default function InsertPdfPagesTool({ onProcessing, onError }: ToolUIProp
             <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
               <span className="text-xs text-text-tertiary font-medium w-16">Source</span>
               <span className="text-sm text-text-primary truncate flex-1">{sourceFile.name}</span>
-              <button onClick={() => setSourceFile(null)} className="text-xs text-text-tertiary hover:text-danger transition-colors">✕</button>
+              <button onClick={() => setSourceFile(null)} className="text-xs text-text-tertiary hover:text-danger transition-colors">{<UiIcon name="close" size={13} />}</button>
             </div>
           )}
 
@@ -65,7 +66,7 @@ export default function InsertPdfPagesTool({ onProcessing, onError }: ToolUIProp
 
           {result && (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">✓ Pages inserted!</p>
+              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Pages inserted!</p>
               <DownloadButton blob={result} filename={`inserted-${targetFile.name}`} />
             </div>
           )}

@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function WordTrackChangesTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [changes, setChanges] = useState<{ type: string; text: string }[]>([]);
@@ -86,7 +87,7 @@ export default function WordTrackChangesTool({ onProcessing, onError }: ToolUIPr
             </div>
           )}
           {changes.length === 0 && !processing && <p className="text-sm text-text-secondary text-center py-4">No tracked changes detected</p>}
-          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">✓ Changes accepted!</p><DownloadButton blob={result} filename={`accepted-${file!.name}`} /></div>}
+          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Changes accepted!</p><DownloadButton blob={result} filename={`accepted-${file!.name}`} /></div>}
           {!result && changes.length > 0 && <button onClick={handleAcceptAll} disabled={processing} className="btn-primary w-full py-3">{processing ? "Processing..." : "Accept All Changes"}</button>}
         </div>
       )}

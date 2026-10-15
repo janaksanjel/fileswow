@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function BatchRenameExportTool({ onProcessing, onError }: ToolUIProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [pattern, setPattern] = useState("document_{{n}}");
@@ -52,7 +53,7 @@ export default function BatchRenameExportTool({ onProcessing, onError }: ToolUIP
               <span className="text-accent truncate flex-1">{pattern.replace("{{n}}", String(i + 1).padStart(3, "0")).replace("{{name}}", f.name.replace(/\.[^.]+$/, ""))}.{f.name.split(".").pop()}</span>
             </div>
           ))}{files.length > 10 && <p className="text-xs text-text-tertiary text-center">+{files.length - 10} more</p>}</div>
-          {renamed.length > 0 && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10"><p className="text-sm text-success mb-3">✓ {renamed.length} files renamed!</p><button onClick={downloadAll} className="px-4 py-2 rounded-lg text-sm font-medium text-text-primary bg-bg-surface border border-border-base hover:bg-bg-elevated">📦 Download all (ZIP)</button></div>}
+          {renamed.length > 0 && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10"><p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}{renamed.length} files renamed!</p><button onClick={downloadAll} className="px-4 py-2 rounded-lg text-sm font-medium text-text-primary bg-bg-surface border border-border-base hover:bg-bg-elevated">{<UiIcon name="download" size={14} className="inline align-[-3px] mr-1" />} Download all (ZIP)</button></div>}
           {renamed.length === 0 && <button onClick={handleRename} disabled={files.length === 0} className="btn-primary w-full py-3">Rename {files.length} files</button>}
         </div>
       )}

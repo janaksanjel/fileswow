@@ -6,6 +6,7 @@ import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 import { prepareScriptFonts, waitForFonts, waitForImages } from "@/lib/script-fonts";
 
+import { UiIcon } from "@/components/ui-icon";
 /**
  * Word to Images — converts a Word document to one PNG per page with real
  * pagination. The DOCX is rendered to HTML (mammoth), laid out into A4 pages
@@ -208,7 +209,7 @@ export default function WordToImagesTool({ onProcessing, onError }: ToolUIProps)
           {/* Results */}
           {results.length > 0 && (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10">
-              <p className="text-sm font-medium text-success mb-3">✓ {results.length} page image{results.length > 1 ? "s" : ""} created</p>
+              <p className="text-sm font-medium text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}{results.length} page image{results.length > 1 ? "s" : ""} created</p>
 
               {/* Page previews */}
               <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-4 max-h-64 overflow-y-auto">

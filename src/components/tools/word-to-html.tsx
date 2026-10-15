@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { DropZone } from "@/components/drop-zone";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function WordToHtmlTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [html, setHtml] = useState("");
@@ -44,8 +45,8 @@ export default function WordToHtmlTool({ onProcessing, onError }: ToolUIProps) {
             <div className="space-y-3">
               <textarea value={html} readOnly rows={16} className="w-full px-4 py-3 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm font-mono resize-y" />
               <div className="flex items-center gap-2">
-                <button onClick={() => navigator.clipboard.writeText(html)} className="px-4 py-2 rounded-lg text-sm font-medium text-text-primary bg-bg-surface border border-border-base hover:bg-bg-elevated">📋 Copy HTML</button>
-                <button onClick={() => { const blob = new Blob([html], { type: "text/html" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = file!.name.replace(/\.docx?$/i, ".html"); a.click(); URL.revokeObjectURL(url); }} className="px-4 py-2 rounded-lg text-sm font-medium text-text-primary bg-bg-surface border border-border-base hover:bg-bg-elevated">⬇ Download HTML</button>
+                <button onClick={() => navigator.clipboard.writeText(html)} className="px-4 py-2 rounded-lg text-sm font-medium text-text-primary bg-bg-surface border border-border-base hover:bg-bg-elevated">{<UiIcon name="copy" size={14} className="inline align-[-3px] mr-1" />} Copy HTML</button>
+                <button onClick={() => { const blob = new Blob([html], { type: "text/html" }); const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = file!.name.replace(/\.docx?$/i, ".html"); a.click(); URL.revokeObjectURL(url); }} className="px-4 py-2 rounded-lg text-sm font-medium text-text-primary bg-bg-surface border border-border-base hover:bg-bg-elevated">{<UiIcon name="download" size={15} className="inline align-[-3px] mr-1.5" />}Download HTML</button>
               </div>
               <div>
                 <label className="block text-xs text-text-tertiary mb-1">Preview</label>

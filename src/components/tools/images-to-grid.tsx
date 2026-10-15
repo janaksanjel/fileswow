@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function images_to_grid_Tool({ onProcessing, onError }: ToolUIProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [result, setResult] = useState<Blob | null>(null);
@@ -45,7 +46,7 @@ export default function images_to_grid_Tool({ onProcessing, onError }: ToolUIPro
         <div className="space-y-4">
           <div><label className="block text-xs text-text-tertiary mb-1">Grid: {gridSize}×{gridSize}</label>
             <input type="range" min={2} max={5} value={gridSize} onChange={(e) => setGridSize(parseInt(e.target.value))} className="w-full accent-accent" /></div>
-          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10"><p className="text-sm text-success mb-1">✓ Grid created!</p><DownloadButton blob={result} filename="grid.png" /></div>}
+          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10"><p className="text-sm text-success mb-1">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Grid created!</p><DownloadButton blob={result} filename="grid.png" /></div>}
           {!result && <button onClick={process} disabled={processing || files.length < 2} className="btn-primary w-full py-3">{processing ? "Creating..." : "Create Grid"}</button>}
         </div>
       )}

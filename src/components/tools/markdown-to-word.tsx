@@ -4,6 +4,7 @@ import { useState } from "react";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function MarkdownToWordTool({ onProcessing, onError }: ToolUIProps) {
   const [md, setMd] = useState("# Hello World\n\nThis is a **bold** and *italic* text.\n\n## Section 1\n\n- Item 1\n- Item 2\n- Item 3\n\n## Section 2\n\nSome paragraph text here.");
   const [result, setResult] = useState<Blob | null>(null);
@@ -45,7 +46,7 @@ export default function MarkdownToWordTool({ onProcessing, onError }: ToolUIProp
       </div>
       {result && (
         <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-          <p className="text-sm text-success mb-3">✓ Word document created!</p>
+          <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Word document created!</p>
           <DownloadButton blob={result} filename="document.docx" />
         </div>
       )}

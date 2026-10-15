@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function PdfInterleaveTool({ onProcessing, onError }: ToolUIProps) {
   const [fileA, setFileA] = useState<File | null>(null);
   const [fileB, setFileB] = useState<File | null>(null);
@@ -90,7 +91,7 @@ export default function PdfInterleaveTool({ onProcessing, onError }: ToolUIProps
                 <p className="text-sm text-text-primary truncate">{fileA.name}</p>
                 <p className="text-xs text-text-tertiary">{pagesA} pages</p>
               </div>
-              <button onClick={() => { setFileA(null); setPagesA(0); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">✕</button>
+              <button onClick={() => { setFileA(null); setPagesA(0); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">{<UiIcon name="close" size={13} />}</button>
             </div>
           )}
         </div>
@@ -105,7 +106,7 @@ export default function PdfInterleaveTool({ onProcessing, onError }: ToolUIProps
                 <p className="text-sm text-text-primary truncate">{fileB.name}</p>
                 <p className="text-xs text-text-tertiary">{pagesB} pages</p>
               </div>
-              <button onClick={() => { setFileB(null); setPagesB(0); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">✕</button>
+              <button onClick={() => { setFileB(null); setPagesB(0); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">{<UiIcon name="close" size={13} />}</button>
             </div>
           )}
         </div>
@@ -119,7 +120,7 @@ export default function PdfInterleaveTool({ onProcessing, onError }: ToolUIProps
 
       {result && (
         <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-          <p className="text-sm text-success mb-3">✓ Interleaved successfully!</p>
+          <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Interleaved successfully!</p>
           <DownloadButton blob={result} filename="interleaved.pdf" />
         </div>
       )}

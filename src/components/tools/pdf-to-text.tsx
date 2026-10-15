@@ -3,6 +3,7 @@
 import { useState, useCallback } from "react";
 import { DropZone } from "@/components/drop-zone";
 import type { ToolUIProps } from "@/components/tool-registry";
+import { UiIcon } from "@/components/ui-icon";
 
 export default function PdfToTextTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
@@ -62,7 +63,7 @@ export default function PdfToTextTool({ onProcessing, onError }: ToolUIProps) {
               />
               <div className="flex items-center gap-2">
                 <button onClick={handleCopy} className="px-4 py-2 rounded-lg text-sm font-medium text-text-primary bg-bg-surface border border-border-base hover:bg-bg-elevated transition-colors">
-                  📋 Copy to clipboard
+                  {<UiIcon name="copy" size={15} className="inline align-[-3px] mr-1.5" />}Copy to clipboard
                 </button>
                 <button onClick={() => {
                   const blob = new Blob([text], { type: "text/plain" });
@@ -73,7 +74,7 @@ export default function PdfToTextTool({ onProcessing, onError }: ToolUIProps) {
                   a.click();
                   URL.revokeObjectURL(url);
                 }} className="px-4 py-2 rounded-lg text-sm font-medium text-text-primary bg-bg-surface border border-border-base hover:bg-bg-elevated transition-colors">
-                  ⬇ Download as TXT
+                  {<UiIcon name="download" size={15} className="inline align-[-3px] mr-1.5" />}Download as TXT
                 </button>
               </div>
             </div>

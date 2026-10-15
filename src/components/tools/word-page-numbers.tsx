@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 /**
  * Add Page Numbers to Word — real DOCX page-number fields via XML surgery.
  *
@@ -329,7 +330,7 @@ export default function WordPageNumbersTool({ onProcessing, onError }: ToolUIPro
 
           {result ? (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm font-medium text-success mb-3">✓ Page-number fields added — formatting preserved</p>
+              <p className="text-sm font-medium text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Page-number fields added — formatting preserved</p>
               <DownloadButton blob={result} filename={`numbered-${file.name}`} />
             </div>
           ) : (

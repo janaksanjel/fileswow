@@ -6,6 +6,7 @@ import { DownloadButton } from "@/components/download-button";
 import { PdfPreview } from "@/components/pdf-preview";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function PdfBookmarksEditorTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [bookmarks, setBookmarks] = useState<Array<{ title: string; page: number }>>([]);
@@ -92,10 +93,10 @@ export default function PdfBookmarksEditorTool({ onProcessing, onError }: ToolUI
             <div className="space-y-1">
               {bookmarks.map((b, i) => (
                 <div key={i} className="flex items-center gap-3 p-2 rounded-lg bg-bg-elevated border border-border-base">
-                  <span className="text-accent text-sm">🔖</span>
+                  <span className="flex"><UiIcon name="bookmark" size={16} /></span>
                   <span className="text-sm text-text-primary flex-1">{b.title}</span>
                   <span className="text-xs text-text-tertiary font-mono">p.{b.page}</span>
-                  <button onClick={() => removeBookmark(i)} className="text-xs text-text-tertiary hover:text-danger">✕</button>
+                  <button onClick={() => removeBookmark(i)} className="text-xs text-text-tertiary hover:text-danger">{<UiIcon name="close" size={13} />}</button>
                 </div>
               ))}
             </div>
@@ -103,7 +104,7 @@ export default function PdfBookmarksEditorTool({ onProcessing, onError }: ToolUI
 
           {result && (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">✓ Bookmarks saved!</p>
+              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Bookmarks saved!</p>
               <DownloadButton blob={result} filename={`bookmarked-${file.name}`} />
             </div>
           )}

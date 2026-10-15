@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function PdfPageCropMarksTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [markLength, setMarkLength] = useState(20);
@@ -97,7 +98,7 @@ export default function PdfPageCropMarksTool({ onProcessing, onError }: ToolUIPr
 
           {result && (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">✓ Crop marks added!</p>
+              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Crop marks added!</p>
               <DownloadButton blob={result} filename={`cropmarks-${file.name}`} />
             </div>
           )}

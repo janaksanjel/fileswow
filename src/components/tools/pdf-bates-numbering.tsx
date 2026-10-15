@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function PdfBatesNumberingTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [prefix, setPrefix] = useState("DOC");
@@ -125,7 +126,7 @@ export default function PdfBatesNumberingTool({ onProcessing, onError }: ToolUIP
 
           {result && (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">✓ Bates numbers added!</p>
+              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Bates numbers added!</p>
               <DownloadButton blob={result} filename={`bates-${file.name}`} />
             </div>
           )}

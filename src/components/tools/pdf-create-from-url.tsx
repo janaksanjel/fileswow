@@ -4,6 +4,7 @@ import { useState } from "react";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function PdfCreateFromUrlTool({ onProcessing, onError }: ToolUIProps) {
   const [url, setUrl] = useState("");
   const [result, setResult] = useState<Blob | null>(null);
@@ -90,7 +91,7 @@ export default function PdfCreateFromUrlTool({ onProcessing, onError }: ToolUIPr
 
       {result && (
         <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-          <p className="text-sm text-success mb-3">✓ PDF created from URL!</p>
+          <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}PDF created from URL!</p>
           <DownloadButton blob={result} filename="webpage.pdf" />
         </div>
       )}

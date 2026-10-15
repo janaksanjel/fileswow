@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { LOCALES, useI18n } from "@/lib/i18n";
+import { UiIcon } from "@/components/ui-icon";
 
 /**
  * Language switcher — flag + native language label, dropdown opens upward
@@ -41,8 +42,8 @@ export function LanguageSwitcher() {
         aria-label={t("footer.selectLanguage")}
         className="inline-flex items-center gap-2.5 h-11 px-4 rounded-xl border border-white/15 bg-white/[0.04] hover:border-white/30 hover:bg-white/[0.07] transition-colors"
       >
-        <span className="text-[17px] leading-none" aria-hidden="true">
-          {current.flag}
+        <span className="leading-none" aria-hidden="true">
+          <UiIcon name={current.flag} size={19} />
         </span>
         <span className="text-[12.5px] font-bold uppercase tracking-[0.08em] text-white">
           {current.label}
@@ -85,8 +86,8 @@ export function LanguageSwitcher() {
                     selected ? "bg-white/[0.06] text-white" : "text-[#cbd5e1] hover:bg-white/[0.05] hover:text-white"
                   }`}
                 >
-                  <span className="text-[17px] leading-none" aria-hidden="true">
-                    {l.flag}
+                  <span className="leading-none" aria-hidden="true">
+                    <UiIcon name={l.flag} size={19} />
                   </span>
                   <span className="text-[13px] font-semibold uppercase tracking-[0.06em]">
                     {l.label}

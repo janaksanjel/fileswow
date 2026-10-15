@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { DropZone } from "@/components/drop-zone";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function CompareWordTool({ onProcessing, onError }: ToolUIProps) {
   const [fileA, setFileA] = useState<File | null>(null);
   const [fileB, setFileB] = useState<File | null>(null);
@@ -48,13 +49,13 @@ export default function CompareWordTool({ onProcessing, onError }: ToolUIProps) 
         <div>
           <label className="block text-sm text-text-secondary mb-2">First document</label>
           {!fileA ? <DropZone accept=".docx,.doc" onFilesSelected={handleFileA} label="Drop DOCX A" description="First document" /> : (
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base"><span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-accent-start/10 text-accent-end">A</span><div className="flex-1 min-w-0"><p className="text-sm text-text-primary truncate">{fileA.name}</p></div><button onClick={() => { setFileA(null); setTextA(""); }} className="text-xs text-text-tertiary hover:text-danger">✕</button></div>
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base"><span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-accent-start/10 text-accent-end">A</span><div className="flex-1 min-w-0"><p className="text-sm text-text-primary truncate">{fileA.name}</p></div><button onClick={() => { setFileA(null); setTextA(""); }} className="text-xs text-text-tertiary hover:text-danger">{<UiIcon name="close" size={13} />}</button></div>
           )}
         </div>
         <div>
           <label className="block text-sm text-text-secondary mb-2">Second document</label>
           {!fileB ? <DropZone accept=".docx,.doc" onFilesSelected={handleFileB} label="Drop DOCX B" description="Second document" /> : (
-            <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base"><span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-accent-start/10 text-accent-end">B</span><div className="flex-1 min-w-0"><p className="text-sm text-text-primary truncate">{fileB.name}</p></div><button onClick={() => { setFileB(null); setTextB(""); }} className="text-xs text-text-tertiary hover:text-danger">✕</button></div>
+            <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base"><span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-accent-start/10 text-accent-end">B</span><div className="flex-1 min-w-0"><p className="text-sm text-text-primary truncate">{fileB.name}</p></div><button onClick={() => { setFileB(null); setTextB(""); }} className="text-xs text-text-tertiary hover:text-danger">{<UiIcon name="close" size={13} />}</button></div>
           )}
         </div>
       </div>

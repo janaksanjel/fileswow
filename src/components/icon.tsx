@@ -1535,8 +1535,12 @@ const icons: Record<string, (props: { size: number; className: string }) => JSX.
         <stop offset="0%" stopColor="#3B82F6" /><stop offset="100%" stopColor="#EF4444" />
       </linearGradient></defs>
       <circle cx="24" cy="18" r="4" fill="#F59E0B" />
-      <text x="12" y="42" fontSize="8" fill="#3B82F6" fontFamily="sans-serif">❄</text>
-      <text x="32" y="42" fontSize="8" fill="#EF4444" fontFamily="sans-serif">🔥</text>
+      <g transform="translate(8 34)">
+        <path d="M4 0v8M0.7 2l6.6 4M0.7 6l6.6-4" stroke="#3B82F6" strokeWidth="1.4" strokeLinecap="round" />
+      </g>
+      <g transform="translate(30 34)">
+        <path d="M4 0c2.4 2.6 3.4 4.4 3.4 6a3.4 3.4 0 1 1-6.8 0C0.6 4.4 1.6 2.6 4 0z" fill="#EF4444" />
+      </g>
     </svg>
   ),
   "vignette-image": ({ size, className }) => (

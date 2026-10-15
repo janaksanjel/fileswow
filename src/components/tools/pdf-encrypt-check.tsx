@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { DropZone } from "@/components/drop-zone";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 interface SecurityInfo {
   pageCount: number;
   fileSize: string;
@@ -93,7 +94,7 @@ export default function PdfEncryptCheckTool({ onProcessing, onError }: ToolUIPro
               {/* Encryption Status */}
               <div className={`p-4 rounded-xl border ${info.encrypted ? "bg-warning/[0.04] border-warning/10" : "bg-success/[0.04] border-success/10"}`}>
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">{info.encrypted ? "🔒" : "🔓"}</span>
+                  <span className="text-2xl">{info.encrypted ? <UiIcon name="lock" size={18} /> : <UiIcon name="unlock" size={18} />}</span>
                   <div>
                     <p className={`text-sm font-semibold ${info.encrypted ? "text-warning" : "text-success"}`}>
                       {info.encrypted ? "Password Protected" : "Not Encrypted"}

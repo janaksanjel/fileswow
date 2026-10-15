@@ -6,6 +6,7 @@ import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 import { inpaintRegion, unblendWatermark, type Mask } from "@/lib/engines/inpaint";
 
+import { UiIcon } from "@/components/ui-icon";
 interface PagePreview {
   dataUrl: string;
   w: number;
@@ -288,7 +289,7 @@ export default function WatermarkRemoverPdfTool({ onProcessing, onError }: ToolU
       <div className="space-y-6">
         <DropZone accept=".pdf" onFilesSelected={handleFile} label="Drop a PDF to remove its watermark" />
         <div className="p-4 rounded-xl bg-bg-elevated border border-border-base text-xs text-text-tertiary space-y-2">
-          <p className="font-semibold text-text-secondary text-sm">✨ How it works</p>
+          <p className="font-semibold text-text-secondary text-sm flex items-center gap-1.5"><UiIcon name="sparkle" size={15} className="shrink-0" />How it works</p>
           <p>1. Select the watermark area on any page — brush for odd shapes, rectangle for banners/text lines.</p>
           <p>2. The same selection can be applied to every page (great for repeated corner logos).</p>
           <p>3. For <strong>semi-transparent</strong> stamps, enable &ldquo;Un-blend mode&rdquo; under the quality setting.</p>
@@ -350,7 +351,7 @@ export default function WatermarkRemoverPdfTool({ onProcessing, onError }: ToolU
             <div>
               <label className="block text-sm text-text-secondary mb-2">Selection tool</label>
               <div className="flex gap-2">
-                {([{ v: "brush", l: "🖌 Brush" }, { v: "rect", l: "▭ Rectangle" }] as const).map((m) => (
+                {([{ v: "brush", l: " Brush" }, { v: "rect", l: "▭ Rectangle" }] as const).map((m) => (
                   <button key={m.v} onClick={() => setMode(m.v)} disabled={processing}
                     className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${mode === m.v ? "bg-accent-start text-white" : "bg-bg-elevated text-text-secondary hover:text-text-primary border border-border-base"}`}>
                     {m.l}
@@ -402,7 +403,7 @@ export default function WatermarkRemoverPdfTool({ onProcessing, onError }: ToolU
 
           {result && (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10">
-              <p className="text-sm text-success mb-1">✓ Watermark removed!</p>
+              <p className="text-sm text-success mb-1">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Watermark removed!</p>
               <p className="text-xs text-text-tertiary mb-3">{fmt(file.size)} → {fmt(result.size)}</p>
               <DownloadButton blob={result} filename={"no-watermark-" + (file.name.replace(/\.pdf$/i, "") || "document") + ".pdf"} />
               <p className="text-xs text-text-tertiary mt-2">Leftovers on some pages? Select them again and run the tool once more — already-cleaned pages are untouched.</p>

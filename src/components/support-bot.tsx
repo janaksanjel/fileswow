@@ -1,9 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { JSX } from "react";
 import Link from "next/link";
 import { ALL_TOOLS, CATEGORY_COUNTS, type ToolDef } from "@/lib/catalog";
 import { SITE_NAME } from "@/lib/site";
+import { UiIcon, type UiIconName } from "@/components/ui-icon";
+import { ToolIcon } from "@/components/icon";
 
 /**
  * "Wow" — the FilesWow support assistant.
@@ -30,7 +33,7 @@ interface ChatMessage {
 
 const BOT_NAME = "Wow";
 
-const GREETING_TEXT = `Hey there! 👋 I'm ${BOT_NAME} — the friendly helper around ${SITE_NAME}. Looking for a tool, curious how things work, or just browsing? Ask me anything — I don't bite.`;
+const GREETING_TEXT = `Hey there! I'm ${BOT_NAME} — the friendly helper around ${SITE_NAME}. Looking for a tool, curious how things work, or just browsing? Ask me anything — I don't bite.`;
 const GREETING_CHIPS = ["What is FilesWow?", "Find a tool", "Is it really private?", "Transfer files"];
 
 function makeGreeting(id: number): ChatMessage {
@@ -156,10 +159,10 @@ function answer(qRaw: string): Answer {
     )
   ) {
     return {
-      text: "I was built by Janak Sanjel 👨‍💻 — a developer from Nepal who created FilesWow so everyone could have fast, private file tools without paywalls or sign-ups. He's the human behind me; I just do the typing. 😄 Want to see more of his work? His personal site is worth a visit:",
+      text: "I was built by Janak Sanjel‍ — a developer from Nepal who created FilesWow so everyone could have fast, private file tools without paywalls or sign-ups. He's the human behind me; I just do the typing. Want to see more of his work? His personal site is worth a visit:",
       links: [
-        { label: "🌐 janaksanjel.com.np", href: "https://janaksanjel.com.np" },
-        { label: "ℹ️ About FilesWow", href: "/about" },
+        { label: " janaksanjel.com.np", href: "https://janaksanjel.com.np" },
+        { label: "ℹ About FilesWow", href: "/about" },
       ],
       chips: ["What is FilesWow?", "Find a tool", "Is it really private?"],
     };
@@ -175,7 +178,7 @@ function answer(qRaw: string): Answer {
     )
   ) {
     return {
-      text: "I'm Wow 🙂 — the little assistant that lives on FilesWow. Honestly? I'm software, not a person — but I was taught by one, and I really do enjoy helping people find the right tool in seconds instead of hunting through menus. So, what brings you here today?",
+      text: "I'm Wow — the little assistant that lives on FilesWow. Honestly? I'm software, not a person — but I was taught by one, and I really do enjoy helping people find the right tool in seconds instead of hunting through menus. So, what brings you here today?",
       chips: ["Find a tool", "Is it really private?"],
     };
   }
@@ -185,7 +188,7 @@ function answer(qRaw: string): Answer {
   // Greetings
   if (/^(hi|hello|hey|yo|hola|good (morning|afternoon|evening))\b/.test(q) || q === "hi!") {
     return {
-      text: "Hey! 😊 Good to see you. What can I help you find today? You can ask me things like \"how do I merge PDFs?\" or \"which tools are free?\"",
+      text: "Hey! Good to see you. What can I help you find today? You can ask me things like \"how do I merge PDFs?\" or \"which tools are free?\"",
       chips: [ "Find a tool", "PDF tools", "Is it really private?", "What is FilesWow?"],
     };
   }
@@ -195,8 +198,8 @@ function answer(qRaw: string): Answer {
     return {
       text: `${SITE_NAME} is a suite of ${ALL_TOOLS.length} free online tools for PDF, Word and image files — merge, split, compress, convert, edit, sign and more. Everything runs 100% in your browser: no uploads, no accounts, no watermarks, completely private. There's also device-to-device file transfer up to 50 GB.`,
       links: [
-        { label: "🏠 Home", href: "/" },
-        { label: "ℹ️ About us", href: "/about" },
+        { label: " Home", href: "/" },
+        { label: "ℹ About us", href: "/about" },
       ],
       chips: ["Find a tool", "PDF tools", "Transfer files"],
     };
@@ -214,7 +217,7 @@ function answer(qRaw: string): Answer {
   if (has(q, "private", "privacy", "safe", "secure", "upload", "server", "data", "cookie", "tracking", "gdpr")) {
     return {
       text: "Great question — and a fair one! Your files never leave your device. Everything happens locally in your browser, and nothing is uploaded to any server, so we physically can't peek at your files. Only optional, anonymous analytics cookies are used (you can decline them in Cookie settings). The Privacy Policy has every detail.",
-      links: [{ label: "🔒 Privacy Policy", href: "/privacy" }],
+      links: [{ label: " Privacy Policy", href: "/privacy" }],
       chips: ["What is FilesWow?", "Find a tool"],
     };
   }
@@ -223,7 +226,7 @@ function answer(qRaw: string): Answer {
   if (has(q, "transfer", "send file", "share file", "p2p", "peer")) {
     return {
       text: "FilesWow Transfer lets you send files directly from your device to another person — peer-to-peer, encrypted, up to 50 GB, with no cloud storage in between. The recipient just opens the link while you keep the tab open.",
-      links: [{ label: "📤 Open Transfer", href: "/transfer" }],
+      links: [{ label: " Open Transfer", href: "/transfer" }],
       chips: ["Is it really private?", "What is FilesWow?"],
     };
   }
@@ -233,10 +236,10 @@ function answer(qRaw: string): Answer {
     return {
       text: `We have ${CATEGORY_COUNTS.pdf} PDF tools — merge, split, compress, convert to/from Word & JPG, watermark, protect, sign, OCR, and more.`,
       links: [
-        { label: "📄 All PDF Tools", href: "/pdf-tools" },
-        { label: "🔗 Merge PDF", href: "/tools/merge-pdf" },
-        { label: "✂️ Split PDF", href: "/tools/split-pdf" },
-        { label: "🗜️ Compress PDF", href: "/tools/compress-pdf" },
+        { label: " All PDF Tools", href: "/pdf-tools" },
+        { label: " Merge PDF", href: "/tools/merge-pdf" },
+        { label: "Split PDF", href: "/tools/split-pdf" },
+        { label: " Compress PDF", href: "/tools/compress-pdf" },
       ],
       chips: ["Compress a PDF", "PDF to Word", "Find a tool"],
     };
@@ -245,9 +248,9 @@ function answer(qRaw: string): Answer {
     return {
       text: `We have ${CATEGORY_COUNTS.word} Word tools — convert Word to PDF, merge documents, extract text, protect files and more.`,
       links: [
-        { label: "📝 All Word Tools", href: "/word-tools" },
-        { label: "🔄 Word to PDF", href: "/tools/word-to-pdf" },
-        { label: "🔗 Merge Word", href: "/tools/merge-word" },
+        { label: " All Word Tools", href: "/word-tools" },
+        { label: " Word to PDF", href: "/tools/word-to-pdf" },
+        { label: " Merge Word", href: "/tools/merge-word" },
       ],
       chips: ["Word to PDF", "Find a tool"],
     };
@@ -256,9 +259,9 @@ function answer(qRaw: string): Answer {
     return {
       text: `We have ${CATEGORY_COUNTS.image} image tools — compress, resize, crop, convert JPG/PNG/WebP, remove backgrounds, add filters and more.`,
       links: [
-        { label: "🖼️ All Image Tools", href: "/image-tools" },
-        { label: "🗜️ Compress Image", href: "/tools/compress-image" },
-        { label: "✨ Remove Background", href: "/tools/background-remove-image" },
+        { label: " All Image Tools", href: "/image-tools" },
+        { label: " Compress Image", href: "/tools/compress-image" },
+        { label: " Remove Background", href: "/tools/background-remove-image" },
       ],
       chips: ["Compress an image", "Find a tool"],
     };
@@ -266,7 +269,7 @@ function answer(qRaw: string): Answer {
   if (has(q, "text tool", "text tools", "all text")) {
     return {
       text: `We have ${CATEGORY_COUNTS.text} text & data tools — word counters, case converters, JSON/formatter utilities and more.`,
-      links: [{ label: "🔤 All Text Tools", href: "/text-tools" }],
+      links: [{ label: " All Text Tools", href: "/text-tools" }],
       chips: ["Find a tool"],
     };
   }
@@ -283,17 +286,17 @@ function answer(qRaw: string): Answer {
   if (has(q, "contact", "support", "email", "feedback", "bug", "report", "issue")) {
     return {
       text: "Found a bug, or just want to say hi? The About page has all the ways to reach us — real messages get read by a real human (Janak himself). And of course, I'm always here if you need help finding a tool!",
-      links: [{ label: "ℹ️ About & Contact", href: "/about" }],
+      links: [{ label: "ℹ About & Contact", href: "/about" }],
       chips: ["What is FilesWow?", "Find a tool"],
     };
   }
 
   // Thanks / bye
   if (has(q, "thank", "thanks", "thx", "great", "awesome", "perfect")) {
-    return { text: "Anytime! 😊 That's what I'm here for. Anything else I can help with?", chips: ["Find a tool", "What is FilesWow?"] };
+    return { text: "Anytime! That's what I'm here for. Anything else I can help with?", chips: ["Find a tool", "What is FilesWow?"] };
   }
   if (has(q, "bye", "goodbye", "see you", "later")) {
-    return { text: "See you around! 👋 I'll be right here if you ever need me." };
+    return { text: "See you around! I'll be right here if you ever need me." };
   }
 
   // Shortcut: known tool names mentioned directly (compress a pdf, word to pdf, ...)
@@ -312,10 +315,10 @@ function answer(qRaw: string): Answer {
     return {
       text: "I can point you to the right tool — just tell me what you want to do, e.g. \"compress a PDF\", \"convert Word to PDF\" or \"remove image background\". Or browse the full catalog:",
       links: [
-        { label: "📄 PDF Tools", href: "/pdf-tools" },
-        { label: "📝 Word Tools", href: "/word-tools" },
-        { label: "🖼️ Image Tools", href: "/image-tools" },
-        { label: "🔤 Text Tools", href: "/text-tools" },
+        { label: " PDF Tools", href: "/pdf-tools" },
+        { label: " Word Tools", href: "/word-tools" },
+        { label: " Image Tools", href: "/image-tools" },
+        { label: " Text Tools", href: "/text-tools" },
       ],
     };
   }
@@ -331,12 +334,36 @@ function answer(qRaw: string): Answer {
   }
 
   return {
-    text: "Hmm, you got me there 🤔 — I'm just a small helper, best at finding tools and explaining how FilesWow works. Try something like \"how do I merge PDFs?\" or pick a suggestion below.",
+    text: "Hmm, you got me there — I'm just a small helper, best at finding tools and explaining how FilesWow works. Try something like \"how do I merge PDFs?\" or pick a suggestion below.",
     chips: ["What is FilesWow?", "Find a tool", "Transfer files"],
   };
 }
 
 // ─── Component ────────────────────────────────────────────────────
+
+/** Colored SVG icon for a bot link: tool artwork for /tools/*, otherwise a
+ *  generic category/navigation icon. No emoji anywhere in the chat UI. */
+function linkIcon(href: string): JSX.Element | null {
+  if (href.startsWith("/tools/")) {
+    const slug = href.slice("/tools/".length);
+    if (ALL_TOOLS.some((t) => t.slug === slug)) {
+      return <ToolIcon name={slug} size={15} className="shrink-0" />;
+    }
+    return null;
+  }
+  const map: Record<string, UiIconName> = {
+    "/": "home",
+    "/about": "info",
+    "/privacy": "lock",
+    "/transfer": "upload",
+    "/pdf-tools": "filePdf",
+    "/word-tools": "fileDoc",
+    "/image-tools": "fileImage",
+    "/text-tools": "fileText",
+  };
+  const name = map[href] ?? (href.startsWith("http") ? "globe" : null);
+  return name ? <UiIcon name={name} size={15} className="shrink-0" /> : null;
+}
 
 export function SupportBot() {
   const [open, setOpen] = useState(false);
@@ -429,8 +456,8 @@ export function SupportBot() {
         >
           {/* Header */}
           <div className="flex items-center gap-3 px-4 py-3 bg-accent text-text-on-accent shrink-0">
-            <span className="relative w-9 h-9 rounded-full bg-black/10 flex items-center justify-center text-[17px]">
-              🙂
+            <span className="relative w-9 h-9 rounded-full bg-black/10 flex items-center justify-center" aria-hidden="true">
+              <UiIcon name="smile" size={21} />
               <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-400 border-2 border-accent" />
             </span>
             <div className="min-w-0 flex-1">
@@ -484,11 +511,13 @@ export function SupportBot() {
                         );
                         return l.href.startsWith("http") ? (
                           <a key={l.href + l.label} href={l.href} target="_blank" rel="noopener noreferrer" onClick={() => setOpen(false)} className={cls}>
+                            {linkIcon(l.href)}
                             {l.label}
                             {arrow}
                           </a>
                         ) : (
                           <Link key={l.href + l.label} href={l.href} onClick={() => setOpen(false)} className={cls}>
+                            {linkIcon(l.href)}
                             {l.label}
                             {arrow}
                           </Link>

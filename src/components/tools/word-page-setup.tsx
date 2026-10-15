@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 /**
  * Word Page Setup — change page size, orientation, and margins by editing
  * the section properties (w:sectPr) of the DOCX package directly (JSZip).
@@ -281,7 +282,7 @@ export default function WordPageSetupTool({ onProcessing, onError }: ToolUIProps
 
           {result ? (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm font-medium text-success mb-3">✓ Page setup applied — formatting preserved</p>
+              <p className="text-sm font-medium text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Page setup applied — formatting preserved</p>
               <DownloadButton blob={result} filename={`setup-${file.name}`} />
             </div>
           ) : (

@@ -4,6 +4,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function image_strip_Tool({ onProcessing, onError }: ToolUIProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [result, setResult] = useState<Blob | null>(null);
@@ -50,7 +51,7 @@ export default function image_strip_Tool({ onProcessing, onError }: ToolUIProps)
           <div className="flex gap-2">
             {(["horizontal","vertical"] as const).map(d => <button key={d} onClick={() => setDirection(d)} className={`px-3 py-2 rounded-lg text-sm font-medium capitalize transition-all ${direction === d ? "bg-accent-start text-white" : "bg-bg-elevated text-text-secondary border border-border-base"}`}>{d}</button>)}
           </div>
-          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10"><p className="text-sm text-success mb-1">✓ Strip created!</p><DownloadButton blob={result} filename="strip.png" /></div>}
+          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10"><p className="text-sm text-success mb-1">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Strip created!</p><DownloadButton blob={result} filename="strip.png" /></div>}
           {!result && <button onClick={process} disabled={processing || files.length < 2} className="btn-primary w-full py-3">{processing ? "Creating..." : "Create Strip"}</button>}
         </div>
       )}

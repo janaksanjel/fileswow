@@ -4,6 +4,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function photo_grid_Tool({ onProcessing, onError }: ToolUIProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [result, setResult] = useState<Blob | null>(null);
@@ -46,7 +47,7 @@ export default function photo_grid_Tool({ onProcessing, onError }: ToolUIProps) 
       <DropZone accept="image/*" multiple onFilesSelected={handleFile} label="Drop images for photo grid" description={files.length + " images selected"} />
       {files.length > 0 && (
         <div className="space-y-4">
-          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10"><p className="text-sm text-success mb-1">✓ Photo grid created!</p><DownloadButton blob={result} filename="photo-grid.png" /></div>}
+          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10"><p className="text-sm text-success mb-1">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Photo grid created!</p><DownloadButton blob={result} filename="photo-grid.png" /></div>}
           {!result && <button onClick={process} disabled={processing || files.length < 2} className="btn-primary w-full py-3">{processing ? "Creating..." : "Create Photo Grid"}</button>}
         </div>
       )}

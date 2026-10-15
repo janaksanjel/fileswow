@@ -6,6 +6,7 @@ import { DownloadButton } from "@/components/download-button";
 import { PdfPreview } from "@/components/pdf-preview";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function EditPdfTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [texts, setTexts] = useState<Array<{ text: string; x: number; y: number; fontSize: number; color: string }>>([]);
@@ -112,7 +113,7 @@ export default function EditPdfTool({ onProcessing, onError }: ToolUIProps) {
                 <div key={i} className="flex items-center gap-3 p-2 rounded-lg bg-bg-elevated border border-border-base">
                   <span className="text-sm text-text-primary flex-1 truncate">"{t.text}"</span>
                   <span className="text-xs text-text-tertiary">{t.fontSize}px</span>
-                  <button onClick={() => removeText(i)} className="text-xs text-text-tertiary hover:text-danger transition-colors">✕</button>
+                  <button onClick={() => removeText(i)} className="text-xs text-text-tertiary hover:text-danger transition-colors">{<UiIcon name="close" size={13} />}</button>
                 </div>
               ))}
             </div>
@@ -120,7 +121,7 @@ export default function EditPdfTool({ onProcessing, onError }: ToolUIProps) {
 
           {result && (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">✓ Edit complete!</p>
+              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Edit complete!</p>
               <DownloadButton blob={result} filename={`edited-${file.name}`} />
             </div>
           )}

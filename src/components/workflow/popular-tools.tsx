@@ -4,6 +4,7 @@ import React, { useState, useMemo } from "react";
 import type { ToolDef } from "@/lib/catalog";
 import { ToolCard } from "@/components/tool-card";
 
+import { UiIcon } from "@/components/ui-icon";
 export interface PopularToolsSectionProps {
   tools: ToolDef[];
   categories?: readonly string[] | string[];
@@ -90,7 +91,7 @@ export function PopularToolsSection({
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-text-tertiary hover:text-text-primary text-xs"
                 aria-label="Clear search"
               >
-                ✕
+                {<UiIcon name="close" size={13} />}
               </button>
             )}
           </div>

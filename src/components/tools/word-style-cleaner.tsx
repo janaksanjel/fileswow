@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function WordStyleCleanerTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<Blob | null>(null);
@@ -50,7 +51,7 @@ export default function WordStyleCleanerTool({ onProcessing, onError }: ToolUIPr
             <button onClick={() => { setFile(null); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger">Remove</button>
           </div>
           <div className="p-3 rounded-lg bg-bg-elevated border border-border-base"><p className="text-xs text-text-secondary">ℹ Normalizes all text to Arial 11pt, removes custom fonts, colors, and spacing.</p></div>
-          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">✓ Styles cleaned!</p><DownloadButton blob={result} filename={`cleaned-${file!.name}`} /></div>}
+          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Styles cleaned!</p><DownloadButton blob={result} filename={`cleaned-${file!.name}`} /></div>}
           {!result && <button onClick={handleClean} disabled={processing} className="btn-primary w-full py-3">{processing ? "Cleaning..." : "Clean Styles"}</button>}
         </div>
       )}

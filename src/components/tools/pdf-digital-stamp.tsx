@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 type StampType = "received" | "approved" | "draft" | "confidential" | "custom";
 
 const STAMP_PRESETS: Record<StampType, { text: string; color: string }> = {
@@ -129,7 +130,7 @@ export default function PdfDigitalStampTool({ onProcessing, onError }: ToolUIPro
             <div className="grid grid-cols-3 gap-2">
               {(["received", "approved", "draft", "confidential", "custom"] as StampType[]).map(type => (
                 <button key={type} onClick={() => setStampType(type)} className={`py-2 rounded-lg text-sm font-medium capitalize transition-all ${stampType === type ? "bg-accent-start text-white" : "bg-bg-elevated text-text-secondary hover:text-text-primary border border-border-base"}`}>
-                  {type === "custom" ? "✏️ Custom" : type}
+                  {type === "custom" ? <><UiIcon name="pencil" size={14} className="inline align-[-2px] mr-1" />Custom</> : type}
                 </button>
               ))}
             </div>
@@ -169,7 +170,7 @@ export default function PdfDigitalStampTool({ onProcessing, onError }: ToolUIPro
 
           {result && (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">✓ Stamp applied!</p>
+              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Stamp applied!</p>
               <DownloadButton blob={result} filename={`stamped-${file.name}`} />
             </div>
           )}

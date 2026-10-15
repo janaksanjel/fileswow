@@ -4,6 +4,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function draw_on_image_Tool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<Blob | null>(null);
@@ -102,7 +103,7 @@ export default function draw_on_image_Tool({ onProcessing, onError }: ToolUIProp
               <input type="range" min={1} max={20} value={penSize} onChange={(e) => setPenSize(parseInt(e.target.value))} className="w-full accent-accent" /></div>
             <button onClick={handleReset} className="px-3 py-2 text-xs text-text-tertiary hover:text-text-primary bg-bg-elevated rounded-lg border border-border-base">Reset</button>
           </div>
-          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10"><p className="text-sm text-success mb-1">✓ Drawing saved!</p><DownloadButton blob={result} filename={"drawn-" + file.name} /></div>}
+          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10"><p className="text-sm text-success mb-1">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Drawing saved!</p><DownloadButton blob={result} filename={"drawn-" + file.name} /></div>}
           {!result && <button onClick={handleSave} disabled={processing} className="btn-primary w-full py-3">Save Drawing</button>}
         </div>
       )}

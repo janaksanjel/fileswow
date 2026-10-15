@@ -80,6 +80,8 @@ export function FileUploader({
   simulateUpload = true,
 }: FileUploaderProps) {
   const [items, setItems] = useState<UploadedFile[]>([]);
+  const itemsRef = useRef<UploadedFile[]>(items);
+  itemsRef.current = items;
   const [dragging, setDragging] = useState(false);
   const dragDepth = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -113,25 +115,28 @@ export function FileUploader({
     (incoming: File[]) => {
       if (incoming.length === 0) return;
 
-      setItems((prev) => {
-        const capacity = maxFiles ? maxFiles - prev.length : Infinity;
-        if (capacity <= 0) return prev;
-        const accepted = incoming.slice(0, capacity);
-        const fresh: UploadedFile[] = accepted.map((file) => ({
-          id: nextId(),
-          file,
-          status: simulateUpload ? "uploading" : "done",
-          progress: 0,
-        }));
-        if (simulateUpload) {
-          // Kick off simulation outside the reducer
-          setTimeout(() => fresh.forEach((f) => startSimulation(f.id)), 0);
-        }
-        const merged = [...prev, ...fresh];
+      const prev = itemsRef.current;
+      const capacity = maxFiles ? maxFiles - prev.length : Infinity;
+      if (capacity <= 0) return;
+      const accepted = incoming.slice(0, capacity);
+      const fresh: UploadedFile[] = accepted.map((file) => ({
+        id: nextId(),
+        file,
+        status: simulateUpload ? "uploading" : "done",
+        progress: 0,
+      }));
+      if (simulateUpload) {
+        setTimeout(() => fresh.forEach((f) => startSimulation(f.id)), 0);
+      }
+      const merged = [...prev, ...fresh];
+      itemsRef.current = merged;
+      setItems(merged);
+
+      // Notify parent safely outside state updater to avoid setState-in-render errors
+      queueMicrotask(() => {
         onFilesChanged?.(merged.map((m) => m.file));
-        return merged;
+        onInvalidated?.();
       });
-      onInvalidated?.();
     },
     [maxFiles, onFilesChanged, onInvalidated, simulateUpload, startSimulation]
   );
@@ -142,10 +147,11 @@ export function FileUploader({
     (id: string) => {
       setRemoving((prev) => new Set(prev).add(id));
       setTimeout(() => {
-        setItems((prev) => {
-          const merged = prev.filter((it) => it.id !== id);
+        const merged = itemsRef.current.filter((it) => it.id !== id);
+        itemsRef.current = merged;
+        setItems(merged);
+        queueMicrotask(() => {
           onFilesChanged?.(merged.map((m) => m.file));
-          return merged;
         });
         setRemoving((prev) => {
           const next = new Set(prev);
@@ -165,9 +171,12 @@ export function FileUploader({
   const clearAll = useCallback(() => {
     timers.current.forEach((t) => clearInterval(t));
     timers.current.clear();
+    itemsRef.current = [];
     setItems([]);
-    onFilesChanged?.([]);
-    onInvalidated?.();
+    queueMicrotask(() => {
+      onFilesChanged?.([]);
+      onInvalidated?.();
+    });
   }, [onFilesChanged, onInvalidated]);
 
   /* Drag & drop */

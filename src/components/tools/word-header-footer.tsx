@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function WordHeaderFooterTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [header, setHeader] = useState("");
@@ -56,7 +57,7 @@ export default function WordHeaderFooterTool({ onProcessing, onError }: ToolUIPr
           </div>
           <div><label className="block text-sm text-text-secondary mb-2">Header text</label><input type="text" value={header} onChange={(e) => setHeader(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm focus:border-accent focus:outline-none" placeholder="Header text..." /></div>
           <div><label className="block text-sm text-text-secondary mb-2">Footer text</label><input type="text" value={footer} onChange={(e) => setFooter(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm focus:border-accent focus:outline-none" placeholder="Footer text..." /></div>
-          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">✓ Header/footer added!</p><DownloadButton blob={result} filename={`edited-${file!.name}`} /></div>}
+          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Header/footer added!</p><DownloadButton blob={result} filename={`edited-${file!.name}`} /></div>}
           {!result && <button onClick={handleApply} disabled={processing || (!header.trim() && !footer.trim())} className="btn-primary w-full py-3">{processing ? "Applying..." : "Apply Header & Footer"}</button>}
         </div>
       )}

@@ -5,6 +5,7 @@ import type { WorkflowOperation, WorkflowCategory } from "@/lib/workflow-config"
 import { ToolIcon } from "@/components/icon";
 import { categoryTile } from "@/lib/category-style";
 
+import { UiIcon } from "@/components/ui-icon";
 interface OperationCardProps {
   operation: WorkflowOperation;
   category: WorkflowCategory;
@@ -84,7 +85,7 @@ export function OperationCard({
       {/* Subtle selection prompt */}
       <div className="mt-3 pt-2.5 border-t border-border-base/70 flex items-center justify-between text-[11px] font-semibold">
         <span className={isSelected ? "text-accent" : "text-text-tertiary group-hover:text-text-secondary"}>
-          {isSelected ? "Selected ✓" : "Click to choose"}
+          {isSelected ? <>Selected<UiIcon name="check" size={13} className="inline align-[-3px] ml-1" /></> : "Click to choose"}
         </span>
         <span className="text-text-tertiary group-hover:translate-x-0.5 transition-transform">
           →

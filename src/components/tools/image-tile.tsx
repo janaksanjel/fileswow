@@ -4,6 +4,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function image_tile_Tool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<Blob | null>(null);
@@ -46,7 +47,7 @@ export default function image_tile_Tool({ onProcessing, onError }: ToolUIProps) 
             <div><label className="block text-xs text-text-tertiary mb-1">Tile Height: {tileH}px</label>
               <input type="range" min={20} max={400} value={tileH} onChange={(e) => setTileH(parseInt(e.target.value))} className="w-full accent-accent" /></div>
           </div>
-          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10"><p className="text-sm text-success mb-1">✓ Tiled!</p><DownloadButton blob={result} filename={"tiled-" + file.name} /></div>}
+          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10"><p className="text-sm text-success mb-1">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Tiled!</p><DownloadButton blob={result} filename={"tiled-" + file.name} /></div>}
           {!result && <button onClick={process} disabled={processing} className="btn-primary w-full py-3">{processing ? "Tiling..." : "Tile Image"}</button>}
         </div>
       )}

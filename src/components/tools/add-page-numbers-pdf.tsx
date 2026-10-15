@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export type NumberPosition =
   | "top-left"
   | "top-center"
@@ -977,7 +978,7 @@ export default function AddPageNumbersPdfTool({ onProcessing, onError }: ToolUIP
                         <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
                           skipCoverPage ? "bg-accent text-white" : "border border-border-strong text-transparent"
                         }`}>
-                          ✓
+                          {<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}
                         </span>
                       </button>
 

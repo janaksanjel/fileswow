@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 
+import { UiIcon } from "@/components/ui-icon";
 export interface WorkflowResultData {
   fileName: string;
   downloadUrl?: string;
@@ -159,7 +160,7 @@ export function SuccessState({
               onClick={handleCopyText}
               className="text-accent hover:underline font-bold inline-flex items-center gap-1 cursor-pointer"
             >
-              {copied ? "Copied to clipboard! ✓" : "Copy text"}
+              {copied ? <>Copied to clipboard!<UiIcon name="check" size={13} className="inline align-[-3px] ml-1" /></> : "Copy text"}
             </button>
           </div>
           <div className="max-h-40 overflow-y-auto bg-bg-elevated p-3 rounded-xl font-mono text-xs text-text-primary whitespace-pre-wrap select-all">
@@ -182,7 +183,7 @@ export function SuccessState({
             onClick={handleCopyText}
             className="btn-secondary px-6 py-3.5 rounded-2xl text-[14px] font-bold w-full sm:w-auto cursor-pointer"
           >
-            {copied ? "Copied! ✓" : "Copy Text"}
+            {copied ? <>Copied!<UiIcon name="check" size={13} className="inline align-[-3px] ml-1" /></> : "Copy Text"}
           </button>
         )}
 
@@ -197,7 +198,7 @@ export function SuccessState({
 
       {/* Safety assurance */}
       <p className="text-[11px] text-text-tertiary">
-        🔒 All files are deleted from temporary memory upon closing this tab.
+        <span className="inline-flex items-center gap-1.5"><UiIcon name="lock" size={13} className="shrink-0" />All files are deleted from temporary memory upon closing this tab.</span>
       </p>
     </div>
   );

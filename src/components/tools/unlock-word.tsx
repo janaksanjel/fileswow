@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function UnlockWordTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [password, setPassword] = useState("");
@@ -26,7 +27,7 @@ export default function UnlockWordTool({ onProcessing, onError }: ToolUIProps) {
       div.innerHTML = result.value;
       const plainText = div.textContent || "";
       const paragraphs = [
-        new Paragraph({ children: [new TextRun({ text: "🔓 Document unlocked", bold: true, size: 24, color: "16a34a" })] }),
+        new Paragraph({ children: [new TextRun({ text: " Document unlocked", bold: true, size: 24, color: "16a34a" })] }),
         new Paragraph({ children: [new TextRun({ text: "" })] }),
         ...plainText.split("\n").filter(Boolean).map(line => new Paragraph({ children: [new TextRun({ text: line.trim(), size: 22 })] })),
       ];
@@ -53,7 +54,7 @@ export default function UnlockWordTool({ onProcessing, onError }: ToolUIProps) {
             <button onClick={() => { setFile(null); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger">Remove</button>
           </div>
           <div><label className="block text-sm text-text-secondary mb-2">Current password</label><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm focus:border-accent focus:outline-none" placeholder="Enter current password..." /></div>
-          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">✓ Unlocked!</p><DownloadButton blob={result} filename={`unlocked-${file!.name}`} /></div>}
+          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Unlocked!</p><DownloadButton blob={result} filename={`unlocked-${file!.name}`} /></div>}
           {!result && <button onClick={handleUnlock} disabled={processing} className="btn-primary w-full py-3">{processing ? "Unlocking..." : "Unlock Document"}</button>}
         </div>
       )}

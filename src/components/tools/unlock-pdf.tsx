@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function UnlockPdfTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [password, setPassword] = useState("");
@@ -40,7 +41,7 @@ export default function UnlockPdfTool({ onProcessing, onError }: ToolUIProps) {
       ) : (
         <div className="space-y-4">
           <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
-            <span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-warning/10 text-warning">🔒</span>
+            <span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-warning/10 text-warning">{<UiIcon name="lock" size={14} className="inline align-[-3px] mr-1" />}</span>
             <span className="text-sm text-text-primary truncate flex-1">{file.name}</span>
             <button onClick={() => { setFile(null); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">Remove</button>
           </div>
@@ -58,7 +59,7 @@ export default function UnlockPdfTool({ onProcessing, onError }: ToolUIProps) {
 
           {result && (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">✓ PDF unlocked!</p>
+              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}PDF unlocked!</p>
               <DownloadButton blob={result} filename={`unlocked-${file.name}`} />
             </div>
           )}

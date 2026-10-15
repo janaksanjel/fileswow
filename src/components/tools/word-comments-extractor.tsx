@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { DropZone } from "@/components/drop-zone";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function WordCommentsExtractorTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [comments, setComments] = useState<{ author: string; text: string; date: string }[]>([]);
@@ -61,7 +62,7 @@ export default function WordCommentsExtractorTool({ onProcessing, onError }: Too
           )}
           {comments.length === 0 && !processing && <p className="text-sm text-text-secondary text-center py-4">No comments found in this document</p>}
           {comments.length > 0 && (
-            <button onClick={() => { const text = comments.map(c => `[${c.author}]: ${c.text}`).join("\n\n"); navigator.clipboard.writeText(text); }} className="w-full py-2 rounded-lg text-sm font-medium text-text-primary bg-bg-surface border border-border-base hover:bg-bg-elevated">📋 Copy all comments</button>
+            <button onClick={() => { const text = comments.map(c => `[${c.author}]: ${c.text}`).join("\n\n"); navigator.clipboard.writeText(text); }} className="w-full py-2 rounded-lg text-sm font-medium text-text-primary bg-bg-surface border border-border-base hover:bg-bg-elevated">{<UiIcon name="copy" size={14} className="inline align-[-3px] mr-1" />} Copy all comments</button>
           )}
         </div>
       )}

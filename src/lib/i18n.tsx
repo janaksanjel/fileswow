@@ -26,10 +26,15 @@ import {
 
 export type Locale = "en" | "es" | "pt";
 
-export const LOCALES: ReadonlyArray<{ code: Locale; label: string; flag: string }> = [
-  { code: "en", label: "English", flag: "🇺🇸" },
-  { code: "es", label: "Español", flag: "🇪🇸" },
-  { code: "pt", label: "Português", flag: "🇵🇹" },
+export const LOCALES: ReadonlyArray<{
+  code: Locale;
+  label: string;
+  /** SVG icon name rendered by <UiIcon /> (no emoji). */
+  flag: "flagUS" | "flagES" | "flagPT";
+}> = [
+  { code: "en", label: "English", flag: "flagUS" },
+  { code: "es", label: "Español", flag: "flagES" },
+  { code: "pt", label: "Português", flag: "flagPT" },
 ];
 
 /* ─── English base — the source of truth for keys ─────────────── */

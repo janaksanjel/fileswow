@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function WordMetadataEditorTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [meta, setMeta] = useState({ title: "", author: "", subject: "", keywords: "" });
@@ -58,7 +59,7 @@ export default function WordMetadataEditorTool({ onProcessing, onError }: ToolUI
           {Object.entries(meta).map(([key, val]) => (
             <div key={key}><label className="block text-sm text-text-secondary mb-1 capitalize">{key}</label><input type="text" value={val} onChange={(e) => setMeta(prev => ({ ...prev, [key]: e.target.value }))} className="w-full px-4 py-2.5 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm focus:border-accent focus:outline-none" placeholder={`Enter ${key}...`} /></div>
           ))}
-          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">✓ Metadata updated!</p><DownloadButton blob={result} filename={`meta-${file!.name}`} /></div>}
+          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Metadata updated!</p><DownloadButton blob={result} filename={`meta-${file!.name}`} /></div>}
           {!result && <button onClick={handleSave} disabled={processing} className="btn-primary w-full py-3">{processing ? "Saving..." : "Save Metadata"}</button>}
         </div>
       )}

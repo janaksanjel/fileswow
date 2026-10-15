@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function PdfMergeSinglePageTool({ onProcessing, onError }: ToolUIProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [layout, setLayout] = useState<"2x1" | "2x2" | "3x1" | "3x2">("2x1");
@@ -99,7 +100,7 @@ export default function PdfMergeSinglePageTool({ onProcessing, onError }: ToolUI
               <div key={`${file.name}-${i}`} className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
                 <span className="text-xs text-text-tertiary w-6 text-center font-mono">{i + 1}</span>
                 <span className="text-sm text-text-primary truncate flex-1">{file.name}</span>
-                <button onClick={() => removeFile(i)} className="p-1 text-text-tertiary hover:text-danger transition-colors">✕</button>
+                <button onClick={() => removeFile(i)} className="p-1 text-text-tertiary hover:text-danger transition-colors">{<UiIcon name="close" size={13} />}</button>
               </div>
             ))}
           </div>
@@ -117,7 +118,7 @@ export default function PdfMergeSinglePageTool({ onProcessing, onError }: ToolUI
 
           {result && (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">✓ Layout created!</p>
+              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Layout created!</p>
               <DownloadButton blob={result} filename="merged-layout.pdf" />
             </div>
           )}

@@ -11,6 +11,7 @@ import { FAQSection } from "./faq-section";
 import { RelatedCategoriesSection } from "./related-categories";
 import { AdSlot } from "@/components/ad-unit";
 
+import { UiIcon } from "@/components/ui-icon";
 export interface CategoryHubPageProps {
   category: WorkflowCategory;
   tools: ToolDef[];
@@ -60,7 +61,7 @@ export function CategoryHubPage({
             {/* Privacy & Browser Guarantee Badge */}
             <div className="pt-2 flex items-center justify-center">
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-2xl bg-bg-surface border border-border-base shadow-xs text-xs font-semibold text-text-secondary">
-                <span className="text-success font-bold">🔒 Private & Secure</span>
+                <span className="text-success font-bold">{<UiIcon name="lock" size={14} className="inline align-[-3px] mr-1" />} Private & Secure</span>
                 <span className="text-text-tertiary">•</span>
                 <span>Your files are processed in your browser</span>
               </div>

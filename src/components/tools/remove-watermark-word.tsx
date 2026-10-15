@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 interface CleanReport {
   headers: number;   // WordArt / VML watermark shapes removed
   images: number;    // header/footer pictures removed
@@ -152,7 +153,7 @@ export default function WatermarkRemoverWordTool({ onProcessing, onError }: Tool
       <div className="space-y-6">
         <DropZone accept=".docx" onFilesSelected={handleFile} label="Drop a Word document to remove its watermark" description="Works on the real watermark objects inside the DOCX — formatting stays intact" />
         <div className="p-4 rounded-xl bg-bg-elevated border border-border-base text-xs text-text-tertiary space-y-2">
-          <p className="font-semibold text-text-secondary text-sm">✨ What gets removed</p>
+          <p className="font-semibold text-text-secondary text-sm flex items-center gap-1.5"><UiIcon name="sparkle" size={15} className="shrink-0" />What gets removed</p>
           <p>• WordArt watermark shapes (DRAFT, CONFIDENTIAL, custom text) — the real objects Word inserts.</p>
           <p>• Optionally: images placed in headers/footers and behind-text pictures in the body.</p>
           <p>• Everything else — text, tables, styles, page setup — is untouched.</p>
@@ -197,7 +198,7 @@ export default function WatermarkRemoverWordTool({ onProcessing, onError }: Tool
 
       {result && report && (
         <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10">
-          <p className="text-sm text-success mb-1">✓ Watermark removed!</p>
+          <p className="text-sm text-success mb-1">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Watermark removed!</p>
           <ul className="text-xs text-text-secondary space-y-1 mb-3">
             {report.headers > 0 && <li>• {report.headers} watermark shape{report.headers > 1 ? "s" : ""} deleted</li>}
             {report.images > 0 && <li>• {report.images} header/footer picture{report.images > 1 ? "s" : ""} deleted</li>}

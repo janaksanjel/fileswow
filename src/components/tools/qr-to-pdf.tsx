@@ -4,6 +4,7 @@ import { useState } from "react";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function QrToPdfTool({ onProcessing, onError }: ToolUIProps) {
   const [text, setText] = useState("https://example.com");
   const [result, setResult] = useState<Blob | null>(null);
@@ -54,7 +55,7 @@ export default function QrToPdfTool({ onProcessing, onError }: ToolUIProps) {
         <label className="block text-sm text-text-secondary mb-2">URL or text</label>
         <input type="text" value={text} onChange={(e) => { setText(e.target.value); setResult(null); }} className="w-full px-4 py-2.5 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm focus:border-accent focus:outline-none" placeholder="Enter URL or text..." />
       </div>
-      {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">✓ QR code PDF created!</p><DownloadButton blob={result} filename="qrcode.pdf" /></div>}
+      {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}QR code PDF created!</p><DownloadButton blob={result} filename="qrcode.pdf" /></div>}
       {!result && <button onClick={handleGenerate} disabled={processing || !text.trim()} className="btn-primary w-full py-3">{processing ? "Generating..." : "Generate QR Code PDF"}</button>}
     </div>
   );

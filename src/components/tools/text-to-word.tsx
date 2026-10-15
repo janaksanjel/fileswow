@@ -5,6 +5,7 @@ import { DownloadButton } from "@/components/download-button";
 import RichTextEditor from "@/components/rich-text-editor";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function TextToWordTool({ onProcessing, onError }: ToolUIProps) {
   const editorElRef = useRef<HTMLDivElement | null>(null);
   const [keepFormatting, setKeepFormatting] = useState(true);
@@ -54,7 +55,7 @@ export default function TextToWordTool({ onProcessing, onError }: ToolUIProps) {
 
       {result ? (
         <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center space-y-3">
-          <p className="text-sm text-success font-semibold">✓ Word document created — {result.paragraphCount} paragraph{result.paragraphCount === 1 ? "" : "s"}, fully editable</p>
+          <p className="text-sm text-success font-semibold">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Word document created — {result.paragraphCount} paragraph{result.paragraphCount === 1 ? "" : "s"}, fully editable</p>
           <div className="flex items-center justify-center gap-2">
             <DownloadButton blob={result.blob} filename={filename} label="Download DOCX" />
             <button type="button" className="btn-secondary" onClick={() => setResult(null)}>Edit more</button>

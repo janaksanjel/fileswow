@@ -6,6 +6,7 @@ import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 import { prepareScriptFonts, waitForFonts } from "@/lib/script-fonts";
 
+import { UiIcon } from "@/components/ui-icon";
 type OutputFormat = "pdf" | "docx" | "txt";
 
 export default function UniversalConverterTool({ onProcessing, onError }: ToolUIProps) {
@@ -99,7 +100,7 @@ export default function UniversalConverterTool({ onProcessing, onError }: ToolUI
               ))}
             </div>
           </div>
-          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">✓ Converted!</p><DownloadButton blob={result} filename={file!.name.replace(/\.[^.]+$/, `.${format === "docx" ? "docx" : format}`)} /></div>}
+          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Converted!</p><DownloadButton blob={result} filename={file!.name.replace(/\.[^.]+$/, `.${format === "docx" ? "docx" : format}`)} /></div>}
           {!result && <button onClick={handleConvert} disabled={processing} className="btn-primary w-full py-3">{processing ? "Converting..." : `Convert to ${format.toUpperCase()}`}</button>}
         </div>
       )}

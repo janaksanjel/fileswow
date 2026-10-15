@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function PdfImageWatermarkTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -107,7 +108,7 @@ export default function PdfImageWatermarkTool({ onProcessing, onError }: ToolUIP
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-text-primary truncate">{imageFile.name}</p>
                 </div>
-                <button onClick={() => { setImageFile(null); setImagePreview(""); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">✕</button>
+                <button onClick={() => { setImageFile(null); setImagePreview(""); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">{<UiIcon name="close" size={13} />}</button>
               </div>
             )}
           </div>
@@ -124,7 +125,7 @@ export default function PdfImageWatermarkTool({ onProcessing, onError }: ToolUIP
 
           {result && (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">✓ Image watermark applied!</p>
+              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Image watermark applied!</p>
               <DownloadButton blob={result} filename={`watermarked-${file.name}`} />
             </div>
           )}

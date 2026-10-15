@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { DropZone } from "@/components/drop-zone";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function SideBySideDiffTool({ onProcessing, onError }: ToolUIProps) {
   const [fileA, setFileA] = useState<File | null>(null);
   const [fileB, setFileB] = useState<File | null>(null);
@@ -41,7 +42,7 @@ export default function SideBySideDiffTool({ onProcessing, onError }: ToolUIProp
           ) : (
             <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
               <div className="flex-1 min-w-0"><p className="text-sm text-text-primary truncate">{fileA.name}</p></div>
-              <button onClick={() => { setFileA(null); setTextA(""); }} className="text-xs text-text-tertiary hover:text-danger">✕</button>
+              <button onClick={() => { setFileA(null); setTextA(""); }} className="text-xs text-text-tertiary hover:text-danger">{<UiIcon name="close" size={13} />}</button>
             </div>
           )}
         </div>
@@ -52,7 +53,7 @@ export default function SideBySideDiffTool({ onProcessing, onError }: ToolUIProp
           ) : (
             <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
               <div className="flex-1 min-w-0"><p className="text-sm text-text-primary truncate">{fileB.name}</p></div>
-              <button onClick={() => { setFileB(null); setTextB(""); }} className="text-xs text-text-tertiary hover:text-danger">✕</button>
+              <button onClick={() => { setFileB(null); setTextB(""); }} className="text-xs text-text-tertiary hover:text-danger">{<UiIcon name="close" size={13} />}</button>
             </div>
           )}
         </div>

@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 type OutputFormat = "pdf" | "docx";
 
 export default function BulkImagesToDocTool({ onProcessing, onError }: ToolUIProps) {
@@ -68,7 +69,7 @@ export default function BulkImagesToDocTool({ onProcessing, onError }: ToolUIPro
             <label className="block text-sm text-text-secondary mb-2">Output format</label>
             <div className="flex gap-2">{(["pdf", "docx"] as OutputFormat[]).map(f => <button key={f} onClick={() => setFormat(f)} className={`flex-1 py-2 rounded-lg text-sm font-medium uppercase transition-all ${format === f ? "bg-accent-start text-white" : "bg-bg-elevated text-text-secondary border border-border-base"}`}>{f}</button>)}</div>
           </div>
-          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">✓ Document created!</p><DownloadButton blob={result} filename={`images.${format === "docx" ? "docx" : "pdf"}`} /></div>}
+          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Document created!</p><DownloadButton blob={result} filename={`images.${format === "docx" ? "docx" : "pdf"}`} /></div>}
           {!result && <button onClick={handleConvert} disabled={processing} className="btn-primary w-full py-3">{processing ? "Creating..." : `Create ${format.toUpperCase()} from ${files.length} images`}</button>}
         </div>
       )}

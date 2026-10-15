@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 type TransitionType = "none" | "fade" | "slide-left" | "slide-up" | "dissolve";
 
 export default function PdfPageTransitionTool({ onProcessing, onError }: ToolUIProps) {
@@ -73,7 +74,7 @@ export default function PdfPageTransitionTool({ onProcessing, onError }: ToolUIP
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {(["none", "fade", "slide-left", "slide-up", "dissolve"] as TransitionType[]).map(type => (
                 <button key={type} onClick={() => setTransition(type)} className={`py-2.5 rounded-lg text-sm font-medium capitalize transition-all ${transition === type ? "bg-accent-start text-white" : "bg-bg-elevated text-text-secondary hover:text-text-primary border border-border-base"}`}>
-                  {type === "none" ? "⏹ None" : type === "fade" ? "🔄 Fade" : type === "slide-left" ? "➡️ Slide" : type === "slide-up" ? "⬆️ Slide Up" : "💧 Dissolve"}
+                  {type === "none" ? <><UiIcon name="stop" size={14} className="inline align-[-2px] mr-1" />None</> : type === "fade" ? <><UiIcon name="fade" size={14} className="inline align-[-2px] mr-1" />Fade</> : type === "slide-left" ? <><UiIcon name="slideRight" size={14} className="inline align-[-2px] mr-1" />Slide</> : type === "slide-up" ? <><UiIcon name="slideUp" size={14} className="inline align-[-2px] mr-1" />Slide Up</> : <><UiIcon name="drop" size={14} className="inline align-[-2px] mr-1" />Dissolve</>}
                 </button>
               ))}
             </div>
@@ -93,7 +94,7 @@ export default function PdfPageTransitionTool({ onProcessing, onError }: ToolUIP
 
           {result && (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">✓ Transitions applied!</p>
+              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Transitions applied!</p>
               <DownloadButton blob={result} filename={`presentation-${file.name}`} />
             </div>
           )}

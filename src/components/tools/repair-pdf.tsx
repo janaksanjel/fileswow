@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function RepairPdfTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<Blob | null>(null);
@@ -68,14 +69,14 @@ export default function RepairPdfTool({ onProcessing, onError }: ToolUIProps) {
 
           {status === "repaired" && result && (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">✓ PDF repaired successfully!</p>
+              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}PDF repaired successfully!</p>
               <DownloadButton blob={result} filename={`repaired-${file.name}`} />
             </div>
           )}
 
           {status === "failed" && (
             <div className="p-4 rounded-xl bg-danger/[0.04] border border-danger/10">
-              <p className="text-sm text-danger">✕ Could not repair this PDF. The file may be too corrupted for client-side repair.</p>
+              <p className="text-sm text-danger flex items-start gap-1.5"><UiIcon name="close" size={15} className="shrink-0 mt-0.5" />Could not repair this PDF. The file may be too corrupted for client-side repair.</p>
             </div>
           )}
 

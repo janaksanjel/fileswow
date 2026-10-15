@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function WordFindReplaceTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [findText, setFindText] = useState("");
@@ -58,7 +59,7 @@ export default function WordFindReplaceTool({ onProcessing, onError }: ToolUIPro
           <div><label className="block text-sm text-text-secondary mb-2">Find</label><input type="text" value={findText} onChange={(e) => setFindText(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm focus:border-accent focus:outline-none" placeholder="Text to find..." /></div>
           <div><label className="block text-sm text-text-secondary mb-2">Replace with</label><input type="text" value={replaceText} onChange={(e) => setReplaceText(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm focus:border-accent focus:outline-none" placeholder="Replacement text..." /></div>
           {count > 0 && <p className="text-xs text-accent">{count} occurrence(s) replaced</p>}
-          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">✓ Replaced!</p><DownloadButton blob={result} filename={`replaced-${file!.name}`} /></div>}
+          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Replaced!</p><DownloadButton blob={result} filename={`replaced-${file!.name}`} /></div>}
           {!result && <button onClick={handleReplace} disabled={processing || !findText.trim()} className="btn-primary w-full py-3">{processing ? "Replacing..." : "Find & Replace"}</button>}
         </div>
       )}

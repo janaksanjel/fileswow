@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 const RATIOS = [
   { label: "1:1", w: 1, h: 1 },
   { label: "4:3", w: 4, h: 3 },
@@ -67,7 +68,7 @@ export default function smart_crop_Tool({ onProcessing, onError }: ToolUIProps) 
           </div>
           {result && (
             <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10">
-              <p className="text-sm text-success mb-1">✓ Cropped to {ratio.label}!</p>
+              <p className="text-sm text-success mb-1">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Cropped to {ratio.label}!</p>
               <DownloadButton blob={result} filename={"cropped-" + file.name} />
             </div>
           )}

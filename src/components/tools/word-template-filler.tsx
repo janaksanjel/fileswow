@@ -5,6 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 interface Placeholder { key: string; value: string; }
 
 export default function WordTemplateFillerTool({ onProcessing, onError }: ToolUIProps) {
@@ -76,7 +77,7 @@ export default function WordTemplateFillerTool({ onProcessing, onError }: ToolUI
           {placeholders.map((p, i) => (
             <div key={i}><label className="block text-xs text-text-secondary mb-1">{`{{${p.key}}}`}</label><input type="text" value={p.value} onChange={(e) => updateValue(i, e.target.value)} className="w-full px-3 py-2 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm focus:border-accent focus:outline-none" placeholder={`Value for ${p.key}...`} /></div>
           ))}
-          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">✓ Template filled!</p><DownloadButton blob={result} filename={`filled-${file!.name}`} /></div>}
+          {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Template filled!</p><DownloadButton blob={result} filename={`filled-${file!.name}`} /></div>}
           {!result && <button onClick={handleFill} disabled={processing} className="btn-primary w-full py-3">{processing ? "Filling..." : "Fill Template"}</button>}
         </div>
       )}

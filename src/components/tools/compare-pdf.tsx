@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { DropZone } from "@/components/drop-zone";
 import type { ToolUIProps } from "@/components/tool-registry";
 
+import { UiIcon } from "@/components/ui-icon";
 export default function ComparePdfTool({ onProcessing, onError }: ToolUIProps) {
   const [fileA, setFileA] = useState<File | null>(null);
   const [fileB, setFileB] = useState<File | null>(null);
@@ -56,7 +57,7 @@ export default function ComparePdfTool({ onProcessing, onError }: ToolUIProps) {
             <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
               <span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-accent-start/10 text-accent-end">PDF</span>
               <span className="text-sm text-text-primary truncate flex-1">{fileA.name}</span>
-              <button onClick={() => { setFileA(null); setDiffResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">✕</button>
+              <button onClick={() => { setFileA(null); setDiffResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">{<UiIcon name="close" size={13} />}</button>
             </div>
           )}
         </div>
@@ -69,7 +70,7 @@ export default function ComparePdfTool({ onProcessing, onError }: ToolUIProps) {
             <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
               <span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-accent-start/10 text-accent-end">PDF</span>
               <span className="text-sm text-text-primary truncate flex-1">{fileB.name}</span>
-              <button onClick={() => { setFileB(null); setDiffResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">✕</button>
+              <button onClick={() => { setFileB(null); setDiffResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">{<UiIcon name="close" size={13} />}</button>
             </div>
           )}
         </div>
