@@ -81,7 +81,6 @@ export function FileUploader({
 }: FileUploaderProps) {
   const [items, setItems] = useState<UploadedFile[]>([]);
   const itemsRef = useRef<UploadedFile[]>(items);
-  itemsRef.current = items;
   const [dragging, setDragging] = useState(false);
   const dragDepth = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -109,6 +108,12 @@ export function FileUploader({
       map.clear();
     };
   }, []);
+
+  // Mirror state into the ref after render (never during render) so event
+  // handlers always read the latest list.
+  useEffect(() => {
+    itemsRef.current = items;
+  }, [items]);
 
   /* Add files — append (never replace) */
   const addFiles = useCallback(
@@ -253,6 +258,16 @@ export function FileUploader({
     .join(" / ")
     .toUpperCase();
 
+  /* Contextual label for the solid select button (iLovePDF-style CTA) */
+  const extList = accept.split(",").map((s) => s.trim()).filter((s) => s.startsWith("."));
+  const selectLabel = accept.includes("image/")
+    ? multiple
+      ? "Select images"
+      : "Select an image"
+    : extList.length === 1
+      ? `Select ${extList[0].slice(1).toUpperCase()} file${multiple ? "s" : ""}`
+      : `Select file${multiple ? "s" : ""}`;
+
   /* Hidden shared <input> used by both the big zone and "Add more" */
   const hiddenInput = (
     <input
@@ -291,7 +306,7 @@ export function FileUploader({
           transition-[background-color,border-color,transform] duration-150 ease-out
           ${dragging ? "flow-dropzone-dragging border-accent" : "border-border-strong hover:border-accent/70 hover:bg-accent/[0.03]"}`}
       >
-      <div className={`flex flex-col items-center justify-center gap-3 px-6 ${dragging ? "py-14" : "py-10 sm:py-12"}`}>
+      <div className={`flex flex-col items-center justify-center gap-3 px-6 ${dragging ? "py-14" : "py-10 sm:py-11"}`}>
 
         {/* Document tile — a sheet with an up-arrow */}
         <span
@@ -316,24 +331,22 @@ export function FileUploader({
           </svg>
         </span>
 
-        {/* Text */}
-        <div className="text-center">
-          <p className="text-[15px] font-semibold text-text-primary">
-            {dragging ? "Release to add your files" : "Drop files here or choose a file"}
-          </p>
-          <p className="text-[13px] text-text-tertiary mt-1">
-            {dragging ? (
-              "They’ll be read right in this browser"
-            ) : (
-              <>
-                Drag &amp; drop, choose files, or paste with{" "}
-                <span className="text-accent font-semibold underline decoration-accent/40 decoration-2 underline-offset-4">
-                  ⌘V
-                </span>
-              </>
-            )}
-          </p>
-        </div>
+        {/* Solid CTA — the zone itself remains clickable; this is the visual anchor */}
+        <span className="btn-primary px-6 py-2.5 text-[14px] pointer-events-none">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+          {dragging ? "Release to add your files" : selectLabel}
+        </span>
+
+        {/* Hint */}
+        <p className="text-[13px] text-text-tertiary text-center">
+          {dragging
+            ? "They’ll be read right in this browser"
+            : "or drop files here — paste with ⌘V"}
+        </p>
 
         {!dragging && (acceptLabel || hint) && (
           <p className="font-mono text-[10.5px] font-semibold text-text-secondary px-2.5 py-1 bg-bg-elevated border border-border-base rounded-md uppercase tracking-[0.06em]">

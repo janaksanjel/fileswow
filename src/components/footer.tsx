@@ -6,10 +6,10 @@ import { useI18n } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/language-switcher";
 
 /**
- * Site footer — an always-dark band (like the reference design), built from
- * fixed dark colors rather than theme tokens so it reads the same in light
- * and dark mode. Layout: brand + language switcher on the left, four link
- * columns on the right, centered copyright bar at the bottom.
+ * Site footer — an always-dark band, built from fixed dark colours rather
+ * than theme tokens so it reads the same in light and dark mode. Layout:
+ * brand + language switcher on the left, four link columns on the right,
+ * centered copyright bar at the bottom.
  */
 
 /* Popular tools — the "Other tools" column. Tool names stay in English
@@ -47,7 +47,7 @@ export function Footer() {
   ];
 
   return (
-    <footer className="bg-[#10182b] text-[#cbd5e1]">
+    <footer className="bg-[#0d1526] text-[#cbd5e1]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-14 sm:pt-16 pb-8">
         <div className="flex flex-col lg:flex-row gap-10 lg:gap-14">
           {/* Brand + language */}
@@ -58,7 +58,7 @@ export function Footer() {
               </span>
               <span className="font-heading text-[18px] font-bold tracking-[-0.02em] text-[#ff9a24]">.com</span>
             </Link>
-            <p className="mt-3 text-[13px] leading-relaxed text-[#9aa3b7] max-w-xs">
+            <p className="mt-3 text-[13px] leading-relaxed text-[#94a0b5] max-w-xs">
               {t("footer.tagline")}
             </p>
 
@@ -78,7 +78,7 @@ export function Footer() {
                 alt="FilesWow.com - Free File Tools. No Uploads. Private. | Product Hunt"
                 width={250}
                 height={54}
-                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1255284&amp;theme=dark&amp;t=1789957273599"
+                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1255284&theme=dark&t=1789957273599"
                 loading="lazy"
                 className="h-6 w-auto"
               />
@@ -126,7 +126,7 @@ function FooterColumn({
 }) {
   return (
     <nav aria-label={heading}>
-      <h3 className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#8a93a8] mb-4">
+      <h3 className="text-[11px] font-bold uppercase tracking-[0.12em] text-[#7c879e] mb-4">
         {heading}
       </h3>
       <ul className="space-y-2.5">
@@ -134,7 +134,7 @@ function FooterColumn({
           <li key={href}>
             <Link
               href={href}
-              className="text-[13.5px] text-[#cbd5e1] hover:text-[#ff9a24] transition-colors"
+              className="text-[13.5px] text-[#c3ccdc] hover:text-[#ff9a24] transition-colors"
             >
               {label}
             </Link>

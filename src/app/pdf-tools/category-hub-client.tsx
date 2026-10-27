@@ -299,12 +299,12 @@ export function CategoryHubClient({
           <div className="min-w-0">
             <h1 className="heading-xl text-text-primary mb-2.5">{title}</h1>
             <p className="body-md text-text-secondary max-w-2xl">{subtitle}</p>
-            <div className="flex flex-wrap items-center gap-2 mt-4 font-mono text-[11px] uppercase tracking-[0.1em] text-text-tertiary">
-              <span>{count} {count === 1 ? "tool" : "tools"}</span>
-              <span aria-hidden="true">·</span>
-              <span>runs in your browser</span>
-              <span aria-hidden="true">·</span>
-              <span>free forever</span>
+            <div className="flex flex-wrap items-center gap-2 mt-4">
+              <span className="badge badge-accent">
+                {count} {count === 1 ? "tool" : "tools"}
+              </span>
+              <span className="badge">Runs in your browser</span>
+              <span className="badge">Free forever</span>
             </div>
           </div>
         </div>
@@ -425,7 +425,7 @@ export function CategoryHubClient({
                       : `Popular ${categoryName} tools`}
                   </h2>
                   <div className="flex-1 h-px bg-border-base" />
-                  <span className="font-mono text-[11px] text-text-tertiary whitespace-nowrap">
+                  <span className="badge badge-mono shrink-0">
                     {popularTools.length}
                   </span>
                 </div>
@@ -456,7 +456,7 @@ export function CategoryHubClient({
                       {section.label}
                     </h2>
                     <div className="flex-1 h-px bg-border-base" />
-                    <span className="font-mono text-[11px] text-text-tertiary whitespace-nowrap">
+                    <span className="badge badge-mono shrink-0">
                       {section.tools.length}
                     </span>
                   </div>

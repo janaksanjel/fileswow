@@ -113,19 +113,17 @@ export function ToolShell({
             <p className="body-md text-text-secondary mt-1.5 max-w-xl">{tool.description}</p>
 
             {/* Small, calm privacy indicator — on every tool */}
-            <p className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 font-mono text-[11px] uppercase tracking-[0.08em] text-text-tertiary">
-              <span className="inline-flex items-center gap-1.5">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="text-success" aria-hidden="true">
+            <div className="flex flex-wrap items-center gap-2 mt-3">
+              <span className="badge">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="text-success" aria-hidden="true">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   <path d="M9 12l2 2 4-4" />
                 </svg>
                 Processed on your device
               </span>
-              <span aria-hidden="true">·</span>
-              <span>No upload</span>
-              <span aria-hidden="true">·</span>
-              <span>Free</span>
-            </p>
+              <span className="badge">No upload</span>
+              <span className="badge">Free</span>
+            </div>
           </div>
         </div>
       </div>
@@ -154,7 +152,7 @@ export function ToolShell({
       )}
 
       {/* Tool workbench */}
-      <div className="panel p-4 sm:p-6 mb-8">{children}</div>
+      <div className="panel p-5 sm:p-6 mb-8">{children}</div>
 
       {/* Tier notice for Tier 3 tools */}
       {tool.tier === 3 && (

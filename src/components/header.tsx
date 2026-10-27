@@ -189,7 +189,7 @@ export function Header() {
 
               <Link
                 href={TRANSFER_HREF}
-                className="hidden sm:inline-flex items-center gap-1.5 h-9 px-3.5 rounded-lg text-[13px] font-semibold text-text-on-accent bg-accent hover:bg-accent-hover active:translate-y-px transition-colors"
+                className="btn-primary hidden sm:inline-flex h-9 px-4 py-0 text-[13px]"
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <line x1="22" y1="2" x2="11" y2="13" />
@@ -287,7 +287,7 @@ export function Header() {
                 <Link
                   href={TRANSFER_HREF}
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-center gap-2 h-11 rounded-lg text-[14px] font-semibold text-text-on-accent bg-accent hover:bg-accent-hover transition-colors"
+                  className="btn-primary w-full h-11 py-0 text-[14px]"
                 >
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <line x1="22" y1="2" x2="11" y2="13" />

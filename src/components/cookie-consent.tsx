@@ -27,12 +27,13 @@ export function CookieConsentBanner() {
   useEffect(() => {
     const stored = getStoredConsent();
     if (stored) {
-      setConsent(stored);
-    } else {
-      // Small delay so the page paints first — feels less intrusive.
-      const t = window.setTimeout(() => setVisible(true), 800);
+      // Defer to a task so the effect stays free of synchronous setState.
+      const t = window.setTimeout(() => setConsent(stored), 0);
       return () => window.clearTimeout(t);
     }
+    // Small delay so the page paints first — feels less intrusive.
+    const t = window.setTimeout(() => setVisible(true), 800);
+    return () => window.clearTimeout(t);
   }, []);
 
   const choose = (value: CookieConsent) => {
@@ -74,13 +75,13 @@ export function CookieConsentBanner() {
           <div className="mt-4 flex items-center gap-2.5">
             <button
               onClick={() => choose("accepted")}
-              className="flex-1 px-4 py-2 rounded-xl bg-accent text-text-on-accent text-[13px] font-semibold shadow-sm hover:opacity-90 active:scale-[0.98] transition-all"
+              className="btn-primary flex-1 text-[13px] active:scale-[0.98]"
             >
               Accept all
             </button>
             <button
               onClick={() => choose("declined")}
-              className="flex-1 px-4 py-2 rounded-xl border border-border-base bg-bg-elevated text-text-secondary text-[13px] font-semibold hover:text-text-primary hover:border-border-strong active:scale-[0.98] transition-all"
+              className="btn-secondary flex-1 text-[13px] active:scale-[0.98]"
             >
               Decline
             </button>

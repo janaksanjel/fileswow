@@ -148,7 +148,7 @@ export function HomeClient() {
       <section className="bg-bg-warm border-b border-border-base pt-12 sm:pt-20 pb-12 sm:pb-16">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="max-w-2xl">
-            <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-text-tertiary mb-4">
+            <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-accent mb-4">
               {t("home.heroEyebrow")}
             </p>
             <h1 className="heading-xl text-text-primary mb-4 [text-wrap:balance]">
@@ -160,7 +160,7 @@ export function HomeClient() {
 
             {/* Search */}
             <div className="relative max-w-xl mb-3.5">
-              <div className="flex items-center gap-3 h-14 px-4 sm:px-5 bg-bg-surface border border-border-strong rounded-xl transition-[border-color,box-shadow] duration-150 focus-within:border-accent focus-within:shadow-[0_0_0_3px_var(--accent-subtle)]">
+              <div className="flex items-center gap-3 h-14 px-4 sm:px-5 bg-bg-surface border border-border-strong rounded-xl shadow-sm transition-[border-color,box-shadow] duration-150 focus-within:border-accent focus-within:shadow-[0_0_0_3px_var(--accent-subtle)]">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-tertiary shrink-0" aria-hidden="true">
                   <circle cx="11" cy="11" r="8" />
                   <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -248,7 +248,7 @@ export function HomeClient() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
             <div>
-              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-text-tertiary mb-2">
+              <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-accent mb-2">
                 {t("home.categoriesEyebrow")}
               </p>
               <h2 id="categories-heading" className="heading-lg text-text-primary">
@@ -285,7 +285,7 @@ export function HomeClient() {
       <section className="border-t border-border-base" aria-labelledby="how-heading">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
           <div className="max-w-2xl mb-12">
-            <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-text-tertiary mb-2">
+            <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-accent mb-2">
               {t("home.howEyebrow")}
             </p>
             <h2 id="how-heading" className="heading-lg text-text-primary mb-3">
@@ -354,7 +354,7 @@ export function HomeClient() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
           <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
             <div>
-              <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-text-tertiary mb-2">
+              <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-accent mb-2">
               {t("home.blogEyebrow")}
             </p>
               <h2 id="guides-heading" className="heading-lg text-text-primary">
@@ -395,7 +395,7 @@ export function HomeClient() {
       {/* ─── 7. FAQ ─────────────────────────────────────────────── */}
       <section id="faq" className="border-t border-border-base" aria-labelledby="faq-heading">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
-          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-text-tertiary mb-2">
+          <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-accent mb-2">
             FAQ
           </p>
           <h2 id="faq-heading" className="heading-lg text-text-primary mb-8">
@@ -499,8 +499,8 @@ function CategoryCard({ spec }: { spec: CategoryCardSpec }) {
             {spec.blurb}
           </p>
         </div>
-        {/* The number is the fact — editorial mono numeral, top right */}
-        <span className="font-mono text-[22px] font-medium leading-none text-text-tertiary tabular-nums shrink-0 mt-0.5" aria-hidden="true">
+        {/* Count — quiet neutral pill, top right */}
+        <span className="text-[12px] font-bold text-text-secondary bg-bg-elevated border border-border-base rounded-md px-2 py-0.5 tabular-nums shrink-0 mt-0.5" aria-hidden="true">
           {count}
         </span>
       </div>
@@ -508,13 +508,25 @@ function CategoryCard({ spec }: { spec: CategoryCardSpec }) {
       {/* Featured index — name left, one-line description right, hairline rows */}
       <ul className="mt-auto border-t border-border-base divide-y divide-border-base">
         {featured.map((tool) => (
-          <li key={tool.slug} className="flex items-baseline gap-3 py-2.5 text-[13.5px] leading-snug">
-            <span className="font-medium text-text-primary group-hover:text-accent transition-colors shrink-0">
+          <li key={tool.slug} className="flex items-center gap-3 py-2.5 text-[13.5px] leading-snug">
+            <span className="font-medium text-text-primary group-hover:text-accent transition-colors truncate">
               {tool.name}
             </span>
-            <span className="min-w-0 flex-1 text-[12px] text-text-tertiary line-clamp-1 text-right group-hover:text-text-secondary transition-colors">
-              {tool.description}
-            </span>
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+              className="ml-auto text-text-tertiary opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150 shrink-0"
+            >
+              <line x1="5" y1="12" x2="19" y2="12" />
+              <polyline points="12 5 19 12 12 19" />
+            </svg>
           </li>
         ))}
       </ul>
@@ -540,7 +552,7 @@ function PopularTools() {
     <section className="border-t border-border-base bg-bg-surface" aria-labelledby="popular-heading">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
         <div className="max-w-2xl mb-6">
-          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-text-tertiary mb-2">
+          <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-accent mb-2">
             {t("home.popularEyebrow")}
           </p>
           <h2 id="popular-heading" className="heading-lg text-text-primary mb-2">
@@ -690,7 +702,7 @@ function PrivacySection() {
     <section className="border-t border-border-base bg-bg-surface" aria-labelledby="privacy-heading">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20 grid md:grid-cols-2 gap-10 md:gap-16 items-start">
         <div className="reveal">
-          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-text-tertiary mb-2">
+          <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-accent mb-2">
             {t("home.privacyEyebrow")}
           </p>
           <h2 id="privacy-heading" className="heading-lg text-text-primary mb-3">
@@ -714,7 +726,7 @@ function PrivacySection() {
         <div className="space-y-4 reveal">
           {/* Other sites */}
           <figure className="card p-5">
-            <figcaption className="font-mono text-[11px] uppercase tracking-[0.14em] text-text-tertiary mb-4">
+            <figcaption className="text-[12px] font-bold uppercase tracking-[0.08em] text-accent mb-4">
               {t("home.otherSites")}
             </figcaption>
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">

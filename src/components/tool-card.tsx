@@ -12,11 +12,13 @@ interface ToolCardProps {
 
 /**
  * The one tool card used across the site: icon tile + name + a two-line
- * description, badges only when true (WASM / BETA), a 2px lift and a
- * revealing arrow on hover, visible focus ring, whole card = one link.
+ * description, badges only when true (WASM / BETA). The mono sub-category
+ * tag was dropped — it read as noise next to the description; the hover
+ * arrow is the only affordance now. Whole card = one link.
  */
 export function ToolCard({ tool, index = 0 }: ToolCardProps) {
   const tierLabel = tool.tier === 2 ? "WASM" : tool.tier === 3 ? "BETA" : null;
+  void SUB_CATEGORY_LABELS;
 
   return (
     <Link
@@ -34,8 +36,8 @@ export function ToolCard({ tool, index = 0 }: ToolCardProps) {
           <ToolIcon name={tool.slug} size={19} />
         </span>
 
-        <div className="flex-1 min-w-0 pt-0.5">
-          <div className="flex items-center gap-2 mb-1">
+        <div className="flex-1 min-w-0 pt-0.5 min-h-[44px] flex flex-col">
+          <div className="flex items-center gap-2">
             <h3 className="text-[14px] font-semibold text-text-primary truncate group-hover:text-accent transition-colors duration-150">
               {tool.name}
             </h3>
@@ -48,34 +50,27 @@ export function ToolCard({ tool, index = 0 }: ToolCardProps) {
                 {tierLabel}
               </span>
             )}
+            <span className="ml-auto opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 group-focus-visible:opacity-100 group-focus-visible:translate-x-0 transition-all duration-150 ease-out shrink-0 text-text-tertiary">
+              <svg
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <line x1="5" y1="12" x2="19" y2="12" />
+                <polyline points="12 5 19 12 19" />
+              </svg>
+            </span>
           </div>
-          <p className="text-[12.5px] text-text-secondary leading-snug line-clamp-2">
+          <p className="text-[12.5px] text-text-secondary leading-snug line-clamp-2 mt-1">
             {tool.description}
           </p>
         </div>
-      </div>
-
-      {/* Footer: sub-category tag + hover arrow */}
-      <div className="mt-3.5 pt-3 flex items-center justify-between border-t border-border-base">
-        <span className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-text-tertiary truncate">
-          {SUB_CATEGORY_LABELS[tool.subCategory] ?? tool.subCategory}
-        </span>
-        <span className="w-6 h-6 rounded-full flex items-center justify-center text-text-tertiary opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 group-focus-visible:opacity-100 group-focus-visible:translate-x-0 transition-all duration-150 ease-out shrink-0">
-          <svg
-            width="11"
-            height="11"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <line x1="5" y1="12" x2="19" y2="12" />
-            <polyline points="12 5 19 12 12 19" />
-          </svg>
-        </span>
       </div>
     </Link>
   );

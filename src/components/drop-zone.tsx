@@ -107,6 +107,16 @@ export function DropZone({
     .map((s) => s.trim().replace(".", "").replace("/*", "").replace("*", "ANY").toUpperCase())
     .filter(Boolean);
 
+  /* Contextual label for the solid select button (iLovePDF-style CTA) */
+  const extList = accept.split(",").map((s) => s.trim()).filter((s) => s.startsWith("."));
+  const selectLabel = accept.includes("image/")
+    ? multiple
+      ? "Select images"
+      : "Select an image"
+    : extList.length === 1
+      ? `Select ${extList[0].slice(1).toUpperCase()} file${multiple ? "s" : ""}`
+      : `Select file${multiple ? "s" : ""}`;
+
   return (
     <div
       onDragEnter={handleDragIn}
@@ -146,7 +156,7 @@ export function DropZone({
       />
 
       {/* Zone proper */}
-      <div className="flex flex-col items-center gap-4 px-6 pt-10 sm:pt-12 pb-8">
+      <div className="flex flex-col items-center gap-3.5 px-6 pt-10 sm:pt-11 pb-7">
         {/* Document tile — a sheet with an up-arrow, not a generic blob */}
         <span
           className={`w-14 h-14 rounded-xl flex items-center justify-center ring-1 ring-inset transition-colors duration-150 ${
@@ -163,22 +173,27 @@ export function DropZone({
           </svg>
         </span>
 
-        <div className="text-center">
-          <p className="text-base font-semibold text-text-primary mb-1.5">
-            {isDragging ? "Release to add your file" : label}
-          </p>
-          <p className="text-[13px] text-text-tertiary">
-            {description || (
-              <>
-                Drag &amp; drop,{" "}
-                <span className="text-accent font-semibold underline decoration-accent/40 decoration-2 underline-offset-4 hover:decoration-accent transition-colors">
-                  choose a file
-                </span>
-                , or paste with <kbd className="kbd mx-0.5">⌘V</kbd>
-              </>
-            )}
-          </p>
-        </div>
+        <p className="text-base font-semibold text-text-primary text-center">
+          {isDragging ? "Release to add your file" : label}
+        </p>
+
+        {/* Solid CTA — the whole zone stays clickable; this is the visual anchor */}
+        <span className="btn-primary px-6 py-2.5 text-[14px] pointer-events-none">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+          {selectLabel}
+        </span>
+
+        <p className="text-[13px] text-text-tertiary text-center">
+          {description || (
+            <span>
+              or drop files here — paste with <kbd className="kbd mx-0.5">⌘V</kbd>
+            </span>
+          )}
+        </p>
 
         {formats.length > 0 && !isDragging && (
           <ul className="flex flex-wrap items-center justify-center gap-1.5" aria-label="Accepted file formats">
