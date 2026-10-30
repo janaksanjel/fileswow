@@ -101,9 +101,9 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
 
   return (
     <Dialog open={open} onClose={onClose} label="Search tools" className="w-full max-w-xl">
-      <div className="bg-bg-surface rounded-xl shadow-[var(--elevation-xl)] ring-1 ring-border-base overflow-hidden">
+      <div className="bg-bg-surface rounded-2xl shadow-[0_24px_64px_rgba(0,0,0,0.35)] border border-white/80 dark:border-white/10 overflow-hidden">
         {/* Search input */}
-        <div className="flex items-center gap-3 px-4 sm:px-5 h-14 border-b border-border-base">
+        <div className="flex items-center gap-3 px-4 sm:px-5 h-14 bg-bg-input/40 border-b border-border-base">
           <svg
             width="17"
             height="17"

@@ -87,11 +87,10 @@ export function Dialog({ open, onClose, labelledBy, label, className = "", child
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto px-4 pt-[12vh] pb-10">
-      {/* Flat ink scrim — no blur (glassmorphism is off-limits) */}
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto px-4 pt-[10vh] pb-10">
+      {/* Dark scrim with backdrop blur */}
       <div
-        className="fixed inset-0 animate-fade-in"
-        style={{ background: "color-mix(in srgb, var(--text-primary) 40%, transparent)" }}
+        className="fixed inset-0 animate-fade-in bg-black/60 dark:bg-black/80 backdrop-blur-sm"
         onClick={onClose}
         aria-hidden="true"
       />
@@ -101,7 +100,7 @@ export function Dialog({ open, onClose, labelledBy, label, className = "", child
         aria-modal="true"
         aria-labelledby={labelledBy}
         aria-label={labelledBy ? undefined : label}
-        className={`relative animate-fade-in-up ${className}`}
+        className={`relative z-10 animate-fade-in-up ${className}`}
       >
         {children}
       </div>

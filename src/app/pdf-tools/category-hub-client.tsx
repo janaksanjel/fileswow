@@ -328,7 +328,7 @@ export function CategoryHubClient({
       {/* ─── Sticky sub-nav: group jump links + search ───────────── */}
       <nav
         aria-label="Sections"
-        className="sticky top-16 z-30 bg-bg-surface border-y border-border-base"
+        className="bg-bg-surface border-y border-border-base"
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="flex items-center gap-1 h-12 overflow-x-auto">
@@ -388,7 +388,7 @@ export function CategoryHubClient({
               </button>
             </div>
             {results.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                 {results.map((tool, i) => (
                   <ToolCard key={tool.slug} tool={tool} index={i} />
                 ))}
@@ -429,7 +429,7 @@ export function CategoryHubClient({
                     {popularTools.length}
                   </span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                   {popularTools.map((tool, i) => (
                     <ToolCard key={tool.slug} tool={tool} index={i} />
                   ))}
@@ -460,7 +460,7 @@ export function CategoryHubClient({
                       {section.tools.length}
                     </span>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
                     {section.tools.map((tool, i) => (
                       <ToolCard key={tool.slug} tool={tool} index={i} />
                     ))}

@@ -15,143 +15,165 @@
    orange accents, not an inversion.
    ════════════════════════════════════════════════════════════════ */
 
-/* ─── Light theme (default) ─────────────────────────────────── */
+/* ───── Light theme (Clean Neumorphic UI) ────────────────────────── */
 :root {
-  /* ─── Surfaces: pure white paper + brand warm-white band ───── */
-  --bg-base: #ffffff;          /* page */
-  --bg-surface: #ffffff;       /* cards / panels */
-  --bg-warm: #fff4ec;          /* hero / CTA bands — soft brand tint */
-  --bg-elevated: #f2f3f5;      /* wells, chips, kbd — neutral */
-  --bg-hover: #f4f5f7;
-  --bg-input: #ffffff;
+  /* ───── Clean Neumorphic Canvas & Surfaces ───────────────────────
+     Crisp porcelain/slate canvas where surfaces, cards, and buttons
+     seamlessly extrude with soft ambient shadows and pure white specular
+     highlights, creating a clean tactile physical appearance.      */
+  --bg-base: #ebf0f7;          /* soft clean porcelain canvas */
+  --bg-surface: #ebf0f7;       /* cards / panels extrude seamlessly from base */
+  --bg-warm: #eff3f9;          /* soft tinted hero band */
+  --bg-elevated: #e1e7f1;      /* sunken wells, chips, kbd keycaps */
+  --bg-hover: #e4eaf3;
+  --bg-input: #e2e8f2;         /* physical recessed cavity */
 
-  /* ─── Ink ──────────────────────────────────────────────────── */
-  --text-primary: #111827;     /* brand deep navy */
-  --text-secondary: #4b5563;
-  --text-tertiary: #6b7280;    /* 4.8:1 on white — AA at any size */
-  --text-on-accent: #111827;   /* navy ink on #FF6A00 fills — 6.2:1
-                                  (white on the orange is only 2.9:1) */
+  /* ───── High-Contrast Deep Navy Slate Ink ──────────────────────── */
+  --text-primary: #192231;     /* sharp deep navy slate */
+  --text-secondary: #48566a;   /* balanced readable secondary */
+  --text-tertiary: #718197;    /* micro labels & tertiary */
+  --text-on-accent: #ffffff;
   --text-on-success: #ffffff;
 
-  /* ─── Accent — signature brand orange (#FF6A00) ──────────────
-     Brand decision: the FilesWow mascot and logo are orange, so the
-     single accent is #FF6A00 — warm, friendly and ours. AA math
-     shapes its support roles: white text on #FF6A00 only reaches
-     2.9:1, so accent FILLS pair with deep-navy ink
-     (--text-on-accent, 6.2:1); accent used AS TEXT resolves to a
-     deeper burnt orange (--accent-ink, 5.1:1); borders/indicators
-     use --border-accent (#E85D00, 3.5:1). Brighter #FF9A24 stays
-     for gradient accents only. Every other colour is a neutral
-     grey; category identity lives in the muted --cat-* tints.    */
+  /* ───── FilesWow Signature Warm Orange Accent ──────────────────── */
   --accent: #ff6a00;
-  --accent-hover: #e85d00;
-  --accent-active: #cc4e00;
-  --accent-light: #ff9a24;
-  --accent-subtle: rgba(255, 106, 0, 0.08);
-  --accent-override: #e85d00;
-  --accent-ink: #c24500;       /* accent as small text — 5.1:1 on white */
-  --accent-blue: #3c5a96;      /* semantic info blue — tool notes only */
+  --accent-hover: #ea5d00;
+  --accent-active: #d65200;
+  --accent-light: #ff8e32;
+  --accent-subtle: rgba(255, 106, 0, 0.12);
+  --accent-override: #ea5d00;
+  --accent-ink: #c24500;
+  --accent-blue: #3b82f6;
 
-  /* Category identity: one small muted tint per category */
-  --cat-pdf: #b2452e;
-  --cat-word: #3c5a96;
-  --cat-image: #8b6b22;
-  --cat-text: #4e5462;
-  --cat-cross: #6b7079;
+  /* ───── Vibrant Category Identity ───────────────────────────────── */
+  --cat-pdf: #dc2626;
+  --cat-word: #2563eb;
+  --cat-image: #d97706;
+  --cat-text: #475569;
+  --cat-cross: #64748b;
 
-  /* Legacy gradient tokens — tools still reference these. */
   --accent-start: #ff6a00;
-  --accent-end: #ff9a24;
+  --accent-end: #ff8e32;
 
-  /* Semantic success stays green — it reports outcomes, not brand */
-  --success: #15803d;
-  --danger: #c93a2b;
-  --warning: #8a5709;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --warning: #d97706;
 
-  --border: #e5e7eb;           /* hairline */
-  --border-strong: #d1d5db;    /* visible hairline */
-  --border-accent: #e85d00;    /* 3.5:1 — UI indicator, not text */
-  --border-danger: #c93a2b;
+  /* ───── Clean Subtle Neumorphic Borders ────────────────────────── */
+  --border: rgba(166, 180, 200, 0.4);
+  --border-strong: rgba(166, 180, 200, 0.65);
+  --border-accent: #ea5d00;
+  --border-danger: #dc2626;
 
-  /* Elevation — floating layers only (menus, dialogs, tooltips).
-     Cards and panels rest on hairlines, never on shadow. */
-  --elevation-sm: 0 1px 2px rgba(20, 22, 26, 0.05);
-  --elevation-md: 0 1px 2px rgba(20, 22, 26, 0.05), 0 6px 16px -4px rgba(20, 22, 26, 0.09);
-  --elevation-lg: 0 2px 4px rgba(20, 22, 26, 0.04), 0 16px 32px -8px rgba(20, 22, 26, 0.14);
-  --elevation-xl: 0 4px 8px rgba(20, 22, 26, 0.05), 0 24px 48px -12px rgba(20, 22, 26, 0.18);
+  /* ───── Clean Neumorphic Dual-Shadow Engine (Light) ──────────────
+     Diffused silver-slate shadow to bottom-right + crisp pure white
+     specular highlight to top-left.                                 */
+  --neu-shadow-dark: rgba(166, 180, 200, 0.7);
+  --neu-shadow-light: #ffffff;
+  --neu-shadow-dark-soft: rgba(166, 180, 200, 0.45);
+  --neu-shadow-light-soft: rgba(255, 255, 255, 0.9);
 
-  /* Where arbitrary/legacy hard shadows were used, fall back to this */
+  /* Tactile Neumorphic Elevation Primitives */
+  --neu-flat: 4px 4px 10px var(--neu-shadow-dark), -4px -4px 10px var(--neu-shadow-light);
+  --neu-card: 6px 6px 14px var(--neu-shadow-dark), -6px -6px 14px var(--neu-shadow-light);
+  --neu-card-hover: 9px 9px 20px var(--neu-shadow-dark), -9px -9px 20px var(--neu-shadow-light);
+  --neu-btn: 4px 4px 10px var(--neu-shadow-dark), -4px -4px 10px var(--neu-shadow-light);
+  --neu-btn-hover: 6px 6px 14px var(--neu-shadow-dark), -6px -6px 14px var(--neu-shadow-light);
+  --neu-pressed: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+  --neu-pressed-deep: inset 4px 4px 10px var(--neu-shadow-dark), inset -4px -4px 10px var(--neu-shadow-light);
+  --neu-icon: 3px 3px 7px var(--neu-shadow-dark), -3px -3px 7px var(--neu-shadow-light);
+  --neu-chip: 3px 3px 7px var(--neu-shadow-dark), -3px -3px 7px var(--neu-shadow-light);
+  --neu-chip-active: inset 2px 2px 5px var(--neu-shadow-dark), inset -2px -2px 5px var(--neu-shadow-light);
+
+  --elevation-sm: 3px 3px 7px var(--neu-shadow-dark), -3px -3px 7px var(--neu-shadow-light);
+  --elevation-md: 6px 6px 14px var(--neu-shadow-dark), -6px -6px 14px var(--neu-shadow-light);
+  --elevation-lg: 10px 10px 22px var(--neu-shadow-dark), -10px -10px 22px var(--neu-shadow-light);
+  --elevation-xl: 14px 14px 30px var(--neu-shadow-dark), -14px -14px 30px var(--neu-shadow-light);
+
   --shadow-color: transparent;
-  --shadow-soft: var(--elevation-md);
+  --shadow-soft: var(--neu-card);
 
-  /* Motion — shared tokens (transform/opacity only, 150–250ms) */
   --dur-fast: 150ms;
   --dur: 200ms;
   --dur-slow: 250ms;
   --ease-out: cubic-bezier(0.2, 0.7, 0.3, 1);
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
 
-  /* Faint grid lines (used sparingly as section texture) */
-  --grid-line: rgba(20, 22, 26, 0.05);
+  --grid-line: rgba(166, 180, 200, 0.15);
 
   color-scheme: light;
 }
 
-/* ─── Dark theme ─────────────────────────────────────────────── */
+/* ───── Dark theme (Clean Neumorphic Obsidian) ───────────────────── */
 [data-theme="dark"] {
-  /* Warm graphite — elevated surfaces step *up* a ladder; this is a
-     designed dark mode, not an inversion of the light palette. */
-  --bg-base: #131210;
-  --bg-surface: #1a1815;
-  --bg-warm: #201810;          /* warm band on dark */
-  --bg-elevated: #221f1b;
-  --bg-hover: #282420;
-  --bg-input: #161412;
+  /* ───── Velvet Graphite Neumorphic Surfaces (Dark) ─────────────── */
+  --bg-base: #171a22;
+  --bg-surface: #171a22;
+  --bg-warm: #1b1f28;
+  --bg-elevated: #13151c;
+  --bg-hover: #1e222c;
+  --bg-input: #12141a;
 
-  --text-primary: #f2eee7;
-  --text-secondary: #a8a49c;
-  --text-tertiary: #7d7973;
-  --text-on-accent: #17110a;   /* near-black ink on lifted orange */
-  --text-on-success: #0e1512;
+  --text-primary: #f1f4f9;
+  --text-secondary: #9aa8ba;
+  --text-tertiary: #6b7a8d;
+  --text-on-accent: #ffffff;
+  --text-on-success: #0b1510;
 
-  /* Accent lifted for dark surfaces — #FF8A3D stays unmistakably
-     brand-orange and clears 7:1 against this warm graphite */
-  --accent: #ff8a3d;
-  --accent-hover: #ff9b57;
-  --accent-active: #ffa766;
+  --accent: #ff7a1a;
+  --accent-hover: #ff8c38;
+  --accent-active: #ff9e56;
   --accent-light: #ffa157;
-  --accent-subtle: rgba(255, 138, 61, 0.16);
-  --accent-override: #ff9b57;
-  --accent-ink: #ff9b57;       /* accent as text on dark — 8.9:1 */
-  --accent-blue: #8fb0e8;
+  --accent-subtle: rgba(255, 122, 26, 0.16);
+  --accent-override: #ff8c38;
+  --accent-ink: #ff8c38;
+  --accent-blue: #60a5fa;
 
-  --cat-pdf: #e0917b;
-  --cat-word: #93aede;
-  --cat-image: #d3b169;
-  --cat-text: #a8adb8;
-  --cat-cross: #7e8079;
+  --cat-pdf: #f87171;
+  --cat-word: #60a5fa;
+  --cat-image: #fbbf24;
+  --cat-text: #9aa8ba;
+  --cat-cross: #6b7a8d;
 
-  --accent-start: #ff8a3d;
+  --accent-start: #ff7a1a;
   --accent-end: #ffa157;
 
-  --success: #34a881;
-  --danger: #e4635a;
-  --warning: #d9a441;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --warning: #f59e0b;
 
-  --border: #2a2724;           /* quiet hairline */
-  --border-strong: #3a3631;
-  --border-accent: #ff8a3d;
-  --border-danger: #e4635a;
+  --border: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.12);
+  --border-accent: #ff7a1a;
+  --border-danger: #ef4444;
 
-  --elevation-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --elevation-md: 0 2px 6px rgba(0, 0, 0, 0.45), 0 8px 20px -6px rgba(0, 0, 0, 0.55);
-  --elevation-lg: 0 4px 10px rgba(0, 0, 0, 0.5), 0 20px 44px -12px rgba(0, 0, 0, 0.7);
-  --elevation-xl: 0 8px 16px rgba(0, 0, 0, 0.55), 0 32px 64px -16px rgba(0, 0, 0, 0.8);
+  /* ───── Clean Neumorphic Dual-Shadow Engine (Dark) ───────────────
+     Deep ambient shadow + subtle crisp top-left specular rim.      */
+  --neu-shadow-dark: rgba(0, 0, 0, 0.7);
+  --neu-shadow-light: rgba(255, 255, 255, 0.055);
+  --neu-shadow-dark-soft: rgba(0, 0, 0, 0.5);
+  --neu-shadow-light-soft: rgba(255, 255, 255, 0.04);
+
+  --neu-flat: 4px 4px 10px var(--neu-shadow-dark), -4px -4px 10px var(--neu-shadow-light);
+  --neu-card: 6px 6px 14px var(--neu-shadow-dark), -6px -6px 14px var(--neu-shadow-light);
+  --neu-card-hover: 9px 9px 20px var(--neu-shadow-dark), -9px -9px 20px var(--neu-shadow-light);
+  --neu-btn: 4px 4px 10px var(--neu-shadow-dark), -4px -4px 10px var(--neu-shadow-light);
+  --neu-btn-hover: 6px 6px 14px var(--neu-shadow-dark), -6px -6px 14px var(--neu-shadow-light);
+  --neu-pressed: inset 3px 3px 6px var(--neu-shadow-dark), inset -3px -3px 6px var(--neu-shadow-light);
+  --neu-pressed-deep: inset 4px 4px 10px var(--neu-shadow-dark), inset -4px -4px 10px var(--neu-shadow-light);
+  --neu-icon: 3px 3px 7px var(--neu-shadow-dark), -3px -3px 7px var(--neu-shadow-light);
+  --neu-chip: 3px 3px 7px var(--neu-shadow-dark), -3px -3px 7px var(--neu-shadow-light);
+  --neu-chip-active: inset 2px 2px 5px var(--neu-shadow-dark), inset -2px -2px 5px var(--neu-shadow-light);
+
+  --elevation-sm: 3px 3px 7px var(--neu-shadow-dark), -3px -3px 7px var(--neu-shadow-light);
+  --elevation-md: 6px 6px 14px var(--neu-shadow-dark), -6px -6px 14px var(--neu-shadow-light);
+  --elevation-lg: 10px 10px 22px var(--neu-shadow-dark), -10px -10px 22px var(--neu-shadow-light);
+  --elevation-xl: 14px 14px 30px var(--neu-shadow-dark), -14px -14px 30px var(--neu-shadow-light);
 
   --shadow-color: transparent;
-  --shadow-soft: var(--elevation-md);
+  --shadow-soft: var(--neu-card);
 
-  --grid-line: rgba(237, 236, 230, 0.05);
+  --grid-line: rgba(255, 255, 255, 0.03);
 
   color-scheme: dark;
 }
@@ -563,36 +585,39 @@ select:focus-visible {
    classes (e.g. `lg:hidden`, `py-3`) can still override them. */
 @layer components {
 
-/* ─── Buttons ────────────────────────────────────────────────── */
+/* ───── Realistic Neumorphic Buttons ───────────────────────────────
+   Soft and tactile appearance with dual shadows and highlights creating
+   a convex physical button, and a concave inset pressed state.    */
 .btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.625rem 1.125rem;
+  padding: 0.625rem 1.25rem;
   font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.25rem;
-  color: var(--text-on-accent);
-  background: var(--accent);
-  border: 1px solid color-mix(in srgb, var(--accent) 88%, #000);
-  border-radius: var(--radius-lg);
+  color: #ffffff;
+  background: linear-gradient(145deg, #ff7e1d, #e65c00);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius-xl);
   cursor: pointer;
   white-space: nowrap;
   text-decoration: none;
-  box-shadow: 0 1px 2px rgba(173, 66, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  box-shadow: 4px 4px 10px rgba(180, 70, 0, 0.32), -3px -3px 8px rgba(255, 255, 255, 0.65), inset 1px 1px 1px rgba(255, 255, 255, 0.35);
+  transition: all 0.2s cubic-bezier(0.2, 0.7, 0.3, 1);
   -webkit-tap-highlight-color: transparent;
 }
 
 .btn-primary:hover {
-  background: var(--accent-hover);
-  box-shadow: 0 6px 16px -6px rgba(173, 66, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  background: linear-gradient(145deg, #ff892c, #ea6406);
+  box-shadow: 5px 5px 14px rgba(180, 70, 0, 0.4), -4px -4px 10px rgba(255, 255, 255, 0.75), inset 1px 1px 1px rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
 }
 
 .btn-primary:active {
   transform: translateY(1px);
-  box-shadow: 0 1px 2px rgba(173, 66, 0, 0.3), inset 0 1px 3px rgba(0, 0, 0, 0.12);
+  box-shadow: inset 3px 3px 6px rgba(130, 45, 0, 0.55), inset -2px -2px 5px rgba(255, 150, 70, 0.4);
 }
 
 .btn-primary:disabled {
@@ -607,31 +632,31 @@ select:focus-visible {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.625rem 1.125rem;
+  padding: 0.625rem 1.25rem;
   font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.25rem;
   color: var(--text-primary);
   background: var(--bg-surface);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: var(--radius-xl);
   cursor: pointer;
   white-space: nowrap;
   text-decoration: none;
-  box-shadow: var(--elevation-sm);
-  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  box-shadow: var(--neu-btn);
+  transition: all 0.2s cubic-bezier(0.2, 0.7, 0.3, 1);
   -webkit-tap-highlight-color: transparent;
 }
 
 .btn-secondary:hover {
-  background: var(--bg-hover);
-  border-color: color-mix(in srgb, var(--border-strong) 70%, var(--text-tertiary));
-  box-shadow: var(--elevation-md);
+  color: var(--accent);
+  box-shadow: var(--neu-btn-hover);
+  transform: translateY(-1px);
 }
 
 .btn-secondary:active {
   transform: translateY(1px);
-  box-shadow: var(--elevation-sm);
+  box-shadow: var(--neu-pressed);
 }
 
 .btn-secondary:disabled {
@@ -646,53 +671,64 @@ select:focus-visible {
   align-items: center;
   justify-content: center;
   gap: 0.375rem;
-  padding: 0.5rem;
+  padding: 0.5rem 0.75rem;
   font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-secondary);
   background: transparent;
   border: 1px solid transparent;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+  transition: all 0.15s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
 .btn-ghost:hover {
   color: var(--text-primary);
-  background: var(--bg-hover);
+  background: var(--bg-surface);
+  box-shadow: var(--neu-icon);
 }
 
-/* ─── Icon-button surfaces (tool chrome) ─────────────────────── */
+.btn-ghost:active {
+  box-shadow: var(--neu-pressed);
+  transform: translateY(1px);
+}
+
+/* ───── Raised Tactile Icon Buttons ───────────────────────────────── */
 .icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.5rem;
+  height: 2.5rem;
   color: var(--text-secondary);
   background: var(--bg-surface);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 9999px;
   cursor: pointer;
-  transition: color 0.15s ease, background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: var(--neu-icon);
+  transition: all 0.2s cubic-bezier(0.2, 0.7, 0.3, 1);
 }
 
 .icon-btn:hover {
-  color: var(--text-primary);
-  background: var(--bg-hover);
-  border-color: color-mix(in srgb, var(--border-strong) 70%, var(--text-tertiary));
+  color: var(--accent);
+  box-shadow: var(--neu-btn-hover);
+  transform: translateY(-1px);
 }
 
-/* ─── Cards ──────────────────────────────────────────────────── */
-/* Card — hairline + micro-shadow at rest; 2px lift, deeper border
-   and a soft elevation on hover. Full elevation still belongs to
-   floating layers only. */
+.icon-btn:active {
+  transform: translateY(1px);
+  box-shadow: var(--neu-pressed);
+}
+
+/* ───── Neumorphic Display Cards ────────────────────────────────────
+   Lifted tactile surfaces extruded seamlessly from the canvas with
+   soft ambient shadows, bright highlights, and smooth curvature.    */
 .card {
   background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 18px;
+  box-shadow: var(--neu-card);
   transition:
     transform var(--dur-fast) var(--ease-out),
     border-color var(--dur-fast) var(--ease-out),
@@ -701,82 +737,159 @@ select:focus-visible {
 
 .card:hover {
   transform: translateY(-2px);
-  border-color: var(--border-strong);
-  box-shadow: var(--elevation-md);
+  border-color: color-mix(in srgb, var(--accent) 30%, rgba(255, 255, 255, 0.7));
+  box-shadow: var(--neu-card-hover);
+}
+
+.card:active {
+  transform: translateY(0);
+  box-shadow: var(--neu-pressed);
 }
 
 .card-interactive {
   cursor: pointer;
 }
 
-.card-interactive:hover {
-  border-color: color-mix(in srgb, var(--accent) 45%, var(--border-strong));
-}
-
-/* ─── Panel (shared tool/workbench container) ────────────────── */
+/* ───── Neumorphic Workbench Panel ────────────────────────────────── */
 .panel {
   background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 20px;
+  box-shadow: var(--neu-card);
 }
 
-/* ─── Inputs ─────────────────────────────────────────────────── */
+/* ───── Physical-like Input Fields ──────────────────────────────────
+   Resemble physical forms with subtle embossed depth and inner shadows. */
 .input {
   width: 100%;
-  padding: 0.5625rem 0.8125rem;
+  padding: 0.625rem 0.9375rem;
   font-size: 0.875rem;
   font-weight: 500;
   color: var(--text-primary);
   background: var(--bg-input);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
   outline: none;
-  box-shadow: inset 0 1px 2px rgba(16, 24, 40, 0.04);
+  box-shadow: var(--neu-pressed);
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .input:focus {
-  border-color: color-mix(in srgb, var(--accent) 55%, var(--border-strong));
-  box-shadow: 0 0 0 3px var(--accent-subtle);
+  border-color: var(--accent);
+  box-shadow: var(--neu-pressed), 0 0 0 2px var(--accent-subtle);
 }
 
 .input::placeholder {
   color: var(--text-tertiary);
 }
 
-/* Native form controls */
-input[type="range"] { accent-color: var(--accent); }
-input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); }
-input[type="color"] { accent-color: var(--accent); }
+/* Native select & textarea */
+select.input,
 select {
   background-color: var(--bg-input);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--neu-pressed);
 }
 
-/* ─── Kbd ────────────────────────────────────────────────────── */
+textarea {
+  box-shadow: var(--neu-pressed);
+  border-radius: var(--radius-xl);
+}
+
+/* ───── Tactile Form Controls (Sliders, Switches, Radios) ─────────── */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 9px;
+  background: var(--bg-input);
+  box-shadow: var(--neu-pressed);
+  border-radius: 999px;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #ff8225, #ea5d00);
+  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.28), -2px -2px 5px rgba(255, 255, 255, 0.5), inset 1px 1px 1px rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  appearance: none;
+  width: 1.2rem;
+  height: 1.2rem;
+  background: var(--bg-input);
+  box-shadow: var(--neu-pressed);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  display: inline-grid;
+  place-content: center;
+  cursor: pointer;
+  vertical-align: middle;
+  transition: all 0.15s ease;
+}
+
+input[type="radio"] {
+  border-radius: 50%;
+}
+
+input[type="checkbox"]:checked,
+input[type="radio"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 2px 2px 6px rgba(180, 70, 0, 0.35), inset 1px 1px 1px rgba(255, 255, 255, 0.4);
+}
+
+input[type="checkbox"]:checked::before {
+  content: "";
+  width: 6px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(45deg) translate(-1px, -1px);
+}
+
+input[type="radio"]:checked::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: white;
+}
+
+/* ───── Tactile Mechanical Kbd Keycap ─────────────────────────────── */
 kbd,
 .kbd {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.125rem 0.375rem;
+  padding: 0.15rem 0.45rem;
   font-size: 0.625rem;
   font-weight: 700;
   font-family: var(--font-geist-mono), ui-monospace, monospace;
   line-height: 1.4;
   color: var(--text-tertiary);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-strong);
-  border-bottom-width: 2px;
-  border-radius: var(--radius-sm);
+  background: var(--bg-surface);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-bottom: 2px solid var(--border-strong);
+  border-radius: 6px;
+  box-shadow: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light);
   white-space: nowrap;
 }
 
-/* ─── Floating Action Button ─────────────────────────────────── */
+/* ───── Floating Action Button ────────────────────────────────────── */
 .fab {
   position: fixed;
-  /* Sits beside (left of) the support-chat button, bottom-right — dragged
-     down from its old stacked spot so the chat popup never covers it. */
   bottom: 4.875rem;
   right: 5.25rem;
   z-index: 40;
@@ -791,7 +904,6 @@ kbd,
   pointer-events: auto;
 }
 
-/* ─── Support bot — keep panel clear of the cookie-settings pill ─ */
 .fab-cookie {
   transition: bottom 0.25s ease, opacity 0.25s ease;
 }
@@ -802,78 +914,100 @@ kbd,
   }
 }
 
-/* ─── Tool tier badge ────────────────────────────────────────── */
+/* ───── Tactile Badges & Chips ────────────────────────────────────── */
 .tier-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
-  padding: 0.125rem 0.5rem;
+  padding: 0.15rem 0.55rem;
   font-size: 0.5625rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   line-height: 1.4;
   border-radius: 999px;
+  box-shadow: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light);
 }
 
 .tier-badge-1 {
   color: var(--text-secondary);
-  background: var(--bg-elevated);
+  background: var(--bg-surface);
 }
 
 .tier-badge-2 {
   color: var(--warning);
-  background: color-mix(in srgb, var(--warning) 12%, transparent);
+  background: var(--bg-surface);
 }
 
 .tier-badge-3 {
   color: var(--danger);
-  background: color-mix(in srgb, var(--danger) 10%, transparent);
+  background: var(--bg-surface);
 }
 
-/* ─── Chips (filter / quick-action) ──────────────────────────── */
+/* ───── Neumorphic Pill Badges ────────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--bg-surface);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 999px;
+  box-shadow: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light);
+  line-height: 1.25;
+}
+
+.badge-mono {
+  font-family: var(--font-geist-mono), monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+}
+
+.badge-accent {
+  color: var(--accent);
+  border-color: rgba(255, 106, 0, 0.35);
+  box-shadow: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
 .chip {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.375rem;
-  min-height: 2.25rem;
-  padding: 0.375rem 0.875rem;
+  min-height: 2.35rem;
+  padding: 0.375rem 0.95rem;
   font-size: 0.8125rem;
   font-weight: 600;
   line-height: 1.25rem;
   color: var(--text-secondary);
   background: var(--bg-surface);
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: 999px;
   cursor: pointer;
   white-space: nowrap;
-  transition:
-    color var(--dur-fast) var(--ease-out),
-    background-color var(--dur-fast) var(--ease-out),
-    border-color var(--dur-fast) var(--ease-out),
-    transform var(--dur-fast) var(--ease-out);
+  box-shadow: var(--neu-chip);
+  transition: all 0.2s cubic-bezier(0.2, 0.7, 0.3, 1);
   -webkit-tap-highlight-color: transparent;
 }
 
 .chip:hover {
-  color: var(--text-primary);
-  border-color: var(--border-strong);
-  background: var(--bg-hover);
+  color: var(--accent);
+  box-shadow: var(--neu-btn);
+  transform: translateY(-1px);
 }
 
-.chip:active {
+.chip:active,
+.chip[aria-pressed="true"],
+.chip-active {
+  color: var(--accent) !important;
+  background: var(--bg-elevated) !important;
+  box-shadow: var(--neu-chip-active) !important;
   transform: translateY(1px);
 }
 
-.chip[aria-pressed="true"],
-.chip-active {
-  color: var(--accent-ink);
-  background: var(--accent-subtle);
-  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
-}
-
-/* Coarse pointers get full 44px tap targets */
 @media (pointer: coarse) {
   .chip,
   .hero-chip {
@@ -881,94 +1015,33 @@ kbd,
   }
 }
 
-/* ─── Badges (true status only: New / WASM / Offline) ────────── */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 0.125rem 0.4375rem;
-  font-size: 0.6875rem;
-  font-weight: 600;
-  line-height: 1.4;
-  color: var(--text-secondary);
-  background: var(--bg-elevated);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  white-space: nowrap;
 }
-
-.badge-accent {
-  color: var(--accent);
-  background: var(--accent-subtle);
-  border-color: color-mix(in srgb, var(--accent) 25%, transparent);
-}
-
-.badge-mono {
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
-  font-size: 0.625rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-} /* end @layer components */
-
-/* ─── Legacy translucent semantic panels ───────────────────────
-   Tool screens still use bg-success/[0.04] & border-success/10
-   style utilities. Lift the tint + line so those boxes read
-   clearly against the neutral background without editing every
-   tool. (Only classes containing the slash are matched, so plain
-   bg-success / border-success usages are untouched.)          */
-[class*="bg-success/"] {
-  background: color-mix(in srgb, var(--success) 7%, var(--bg-surface));
-}
-
-[class*="bg-warning/"] {
-  background: color-mix(in srgb, var(--warning) 9%, var(--bg-surface));
-}
-
-[class*="bg-danger/"] {
-  background: color-mix(in srgb, var(--danger) 7%, var(--bg-surface));
-}
-
-[class*="border-success/"] {
-  border-color: color-mix(in srgb, var(--success) 35%, var(--border-strong));
-}
-
-[class*="border-warning/"] {
-  border-color: color-mix(in srgb, var(--warning) 40%, var(--border-strong));
-}
-
-[class*="border-danger/"] {
-  border-color: color-mix(in srgb, var(--danger) 35%, var(--border-strong));
-}
-
-/* Small suggestion chip (hero quick-actions row) */
+/* Tactile hero suggestion chip */
 .hero-chip {
   display: inline-flex;
   align-items: center;
   gap: 0.375rem;
-  padding: 0.4375rem 0.8125rem;
-  min-height: 2rem;
+  padding: 0.45rem 0.9rem;
+  min-height: 2.15rem;
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-secondary);
   background: var(--bg-surface);
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255, 255, 255, 0.6);
   border-radius: 999px;
-  box-shadow: none;
-  transition:
-    color var(--dur-fast) var(--ease-out),
-    border-color var(--dur-fast) var(--ease-out),
-    background-color var(--dur-fast) var(--ease-out),
-    transform var(--dur-fast) var(--ease-out);
+  box-shadow: var(--neu-chip);
+  transition: all 0.2s cubic-bezier(0.2, 0.7, 0.3, 1);
 }
 
 .hero-chip:hover {
-  color: var(--text-primary);
-  border-color: color-mix(in srgb, var(--accent) 45%, var(--border-strong));
-  background: color-mix(in srgb, var(--accent) 5%, var(--bg-surface));
-  transform: translateY(-1px);
+  color: var(--accent);
+  box-shadow: var(--neu-btn);
+  transform: translateY(-2px);
+}
+
+.hero-chip:active {
+  box-shadow: var(--neu-chip-active);
+  transform: translateY(1px);
 }
 
 .hero-chip svg {
@@ -978,6 +1051,105 @@ kbd,
 
 .hero-chip:hover svg {
   color: var(--accent);
+}
+
+/* ───── Raised Icons: 3D Tactile Extruded Tiles ────────────────────
+   Balance simplicity and realism with highlights and ambient shadows,
+   while preserving the distinct vibrant category background tints.   */
+.neu-raised-icon,
+.card span.w-10.h-10,
+.group span.w-10.h-10,
+span.w-12.h-12.rounded-xl,
+span.w-14.h-14.rounded-xl,
+span.w-10.h-10.rounded-lg {
+  box-shadow: var(--neu-icon), inset 1px 1px 1px rgba(255, 255, 255, 0.65) !important;
+  border: 1px solid rgba(255, 255, 255, 0.5) !important;
+  transition: all 0.2s ease !important;
+}
+
+.card:hover span.w-10.h-10,
+.group:hover span.w-10.h-10,
+.group:hover span.w-12.h-12,
+.group:hover span.w-14.h-14 {
+  box-shadow: 2px 2px 5px var(--neu-shadow-dark), -2px -2px 5px var(--neu-shadow-light), inset 1px 1px 1px rgba(255, 255, 255, 0.8) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* ───── Clean Neumorphic Recessed File Dropzone ───────────────────── */
+.flow-dropzone,
+[role="button"][aria-label*="Drop"] {
+  background: var(--bg-surface) !important;
+  box-shadow: var(--neu-pressed) !important;
+  border: 2px dashed var(--border-strong) !important;
+  border-radius: 20px !important;
+  transition: all 0.2s ease !important;
+}
+
+.dropzone-active,
+.flow-dropzone-dragging,
+.flow-dropzone:hover {
+  border-color: var(--accent) !important;
+  box-shadow: var(--neu-pressed), 0 0 0 3px var(--accent-subtle) !important;
+  transform: scale(1.002) !important;
+}
+
+/* ───── Clean Neumorphic Header & Navigation Bar ─────────────────── */
+header.sticky {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Header nav link tactile physics */
+header nav a {
+  border-radius: 12px;
+  transition: all 0.2s cubic-bezier(0.2, 0.7, 0.3, 1);
+}
+
+/* Mega menu dropdown container */
+[id^="mega-"] {
+  background: var(--bg-surface) !important;
+  box-shadow: 0 20px 40px var(--neu-shadow-dark), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  border-bottom: 1px solid rgba(166, 180, 200, 0.4) !important;
+}
+
+[id^="mega-"] a.group {
+  border-radius: 12px;
+  transition: all 0.15s ease;
+}
+
+[id^="mega-"] a.group:hover {
+  background: var(--bg-surface) !important;
+  box-shadow: 3px 3px 7px var(--neu-shadow-dark), -3px -3px 7px var(--neu-shadow-light) !important;
+  transform: translateY(-1px);
+}
+
+[id^="mega-"] a.group:hover span.w-8.h-8 {
+  box-shadow: inset 1px 1px 3px var(--neu-shadow-dark), inset -1px -1px 3px var(--neu-shadow-light) !important;
+}
+
+/* ───── Mega menu & Dialog Floating Slabs ─────────────────────────── */
+[data-mega],
+[role="dialog"] {
+  background: var(--bg-surface) !important;
+  box-shadow: 12px 12px 28px var(--neu-shadow-dark), -12px -12px 28px var(--neu-shadow-light) !important;
+  border-radius: 20px !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+}
+
+/* ───── Tactile Progress Bar ──────────────────────────────────────── */
+.flow-progress {
+  background: var(--bg-input) !important;
+  box-shadow: var(--neu-pressed) !important;
+  border-radius: 999px !important;
+  border: 1px solid var(--border) !important;
+  height: 10px !important;
+}
+
+.flow-progress::after {
+  border-radius: 999px !important;
+  background: linear-gradient(90deg, var(--accent-start), var(--accent-end)) !important;
+  box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.4) !important;
 }
 
 /* ─── Rich text editor (Text to PDF tool) ──────────────────────

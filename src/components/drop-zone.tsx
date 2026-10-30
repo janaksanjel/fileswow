@@ -65,9 +65,34 @@ export function DropZone({
     [onFilesSelected, maxFiles, multiple]
   );
 
-  /* Paste support: forwarded only when the user isn't typing somewhere
-     else on the page (inputs, textareas and rich-text editors keep their
-     own paste behaviour). */
+  /* Enhanced paste support (files, screenshots, images) */
+  const handlePasteFromClipboard = useCallback(async (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    try {
+      if (navigator.clipboard && navigator.clipboard.read) {
+        const items = await navigator.clipboard.read();
+        const newFiles: File[] = [];
+        for (const item of items) {
+          for (const type of item.types) {
+            if (type.startsWith("image/") || type.startsWith("application/pdf") || type.startsWith("text/")) {
+              const blob = await item.getType(type);
+              const ext = type.split("/")[1]?.replace("+xml", "") || "png";
+              const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+              newFiles.push(new File([blob], `pasted-file-${timestamp}.${ext}`, { type, lastModified: Date.now() }));
+            }
+          }
+        }
+        if (newFiles.length > 0) {
+          const accepted = multiple ? newFiles : newFiles.slice(0, 1);
+          onFilesSelected(maxFiles ? accepted.slice(0, maxFiles) : accepted);
+          return;
+        }
+      }
+    } catch {
+      /* clipboard read permission denied */
+    }
+  }, [onFilesSelected, maxFiles, multiple]);
+
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
       const target = e.target as HTMLElement | null;
@@ -80,9 +105,24 @@ export function DropZone({
         return;
       }
       const files = Array.from(e.clipboardData?.files ?? []);
-      if (files.length === 0) return;
+      const items = e.clipboardData?.items;
+      const newFiles: File[] = [...files];
+
+      if (items) {
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          if (item.kind === "file") {
+            const file = item.getAsFile();
+            if (file && !newFiles.some(f => f.name === file.name && f.size === file.size)) {
+              newFiles.push(file);
+            }
+          }
+        }
+      }
+
+      if (newFiles.length === 0) return;
       e.preventDefault();
-      const accepted = multiple ? files : files.slice(0, 1);
+      const accepted = multiple ? newFiles : newFiles.slice(0, 1);
       onFilesSelected(maxFiles ? accepted.slice(0, maxFiles) : accepted);
     };
     window.addEventListener("paste", onPaste);
@@ -177,20 +217,34 @@ export function DropZone({
           {isDragging ? "Release to add your file" : label}
         </p>
 
-        {/* Solid CTA — the whole zone stays clickable; this is the visual anchor */}
-        <span className="btn-primary px-6 py-2.5 text-[14px] pointer-events-none">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="17 8 12 3 7 8" />
-            <line x1="12" y1="3" x2="12" y2="15" />
-          </svg>
-          {selectLabel}
-        </span>
+        {/* Solid CTA & Paste button */}
+        <div className="flex flex-wrap items-center justify-center gap-2.5">
+          <span className="btn-primary px-6 py-2.5 text-[14px] pointer-events-none">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            {selectLabel}
+          </span>
+          <button
+            type="button"
+            onClick={handlePasteFromClipboard}
+            className="btn-secondary px-4 py-2.5 text-[13px] font-semibold flex items-center gap-1.5"
+            title="Paste file or image from clipboard (Ctrl+V)"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+            </svg>
+            Paste
+          </button>
+        </div>
 
         <p className="text-[13px] text-text-tertiary text-center">
           {description || (
-            <span>
-              or drop files here — paste with <kbd className="kbd mx-0.5">⌘V</kbd>
+            <span className="flex items-center justify-center gap-1.5">
+              or drop files here — paste with <kbd className="kbd text-[11px] px-1.5 py-0.5">Ctrl+V</kbd>
             </span>
           )}
         </p>

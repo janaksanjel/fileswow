@@ -227,8 +227,41 @@ export function FileUploader({
     [addFiles]
   );
 
-  /* Paste support — forwarded unless the user is typing in a field or a
-     rich-text editor (those keep their own paste behaviour). */
+  /* Enhanced paste support (files, screenshots, images, text) */
+  const handlePasteFromClipboard = useCallback(async (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    try {
+      if (navigator.clipboard && navigator.clipboard.read) {
+        const items = await navigator.clipboard.read();
+        const newFiles: File[] = [];
+        for (const item of items) {
+          for (const type of item.types) {
+            if (type.startsWith("image/") || type.startsWith("application/pdf") || type.startsWith("text/")) {
+              const blob = await item.getType(type);
+              const ext = type.split("/")[1]?.replace("+xml", "") || "png";
+              const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+              newFiles.push(new File([blob], `pasted-file-${timestamp}.${ext}`, { type, lastModified: Date.now() }));
+            }
+          }
+        }
+        if (newFiles.length > 0) {
+          addFiles(newFiles);
+          return;
+        }
+      }
+
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        const text = (await navigator.clipboard.readText()).trim();
+        if (text) {
+          const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+          addFiles([new File([new Blob([text], { type: "text/plain" })], `pasted-text-${timestamp}.txt`, { type: "text/plain" })]);
+        }
+      }
+    } catch {
+      /* clipboard read permission denied */
+    }
+  }, [addFiles]);
+
   useEffect(() => {
     const onPaste = (e: ClipboardEvent) => {
       const target = e.target as HTMLElement | null;
@@ -241,13 +274,36 @@ export function FileUploader({
         return;
       }
       const files = Array.from(e.clipboardData?.files ?? []);
-      if (files.length === 0) return;
+      const items = e.clipboardData?.items;
+      const newFiles: File[] = [...files];
+
+      if (items) {
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          if (item.kind === "file") {
+            const file = item.getAsFile();
+            if (file && !newFiles.some(f => f.name === file.name && f.size === file.size)) {
+              newFiles.push(file);
+            }
+          }
+        }
+      }
+
+      if (newFiles.length === 0) {
+        const text = e.clipboardData?.getData("text/plain")?.trim();
+        if (text && (accept.includes("text") || accept.includes(".txt"))) {
+          const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+          newFiles.push(new File([new Blob([text], { type: "text/plain" })], `pasted-text-${timestamp}.txt`, { type: "text/plain" }));
+        }
+      }
+
+      if (newFiles.length === 0) return;
       e.preventDefault();
-      addFiles(files);
+      addFiles(newFiles);
     };
     window.addEventListener("paste", onPaste);
     return () => window.removeEventListener("paste", onPaste);
-  }, [addFiles]);
+  }, [addFiles, accept]);
 
   const hasFiles = items.length > 0;
   const allDone = items.every((it) => it.status === "done");
@@ -331,21 +387,39 @@ export function FileUploader({
           </svg>
         </span>
 
-        {/* Solid CTA — the zone itself remains clickable; this is the visual anchor */}
-        <span className="btn-primary px-6 py-2.5 text-[14px] pointer-events-none">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="17 8 12 3 7 8" />
-            <line x1="12" y1="3" x2="12" y2="15" />
-          </svg>
-          {dragging ? "Release to add your files" : selectLabel}
-        </span>
+        {/* Solid CTA & Paste button */}
+        <div className="flex flex-wrap items-center justify-center gap-2.5">
+          <span className="btn-primary px-6 py-2.5 text-[14px] pointer-events-none">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+            {dragging ? "Release to add your files" : selectLabel}
+          </span>
+          <button
+            type="button"
+            onClick={handlePasteFromClipboard}
+            className="btn-secondary px-4 py-2.5 text-[13px] font-semibold flex items-center gap-1.5"
+            title="Paste file or image from clipboard (Ctrl+V)"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+            </svg>
+            Paste
+          </button>
+        </div>
 
         {/* Hint */}
-        <p className="text-[13px] text-text-tertiary text-center">
+        <p className="text-[13px] text-text-tertiary text-center flex items-center justify-center gap-1.5">
           {dragging
             ? "They’ll be read right in this browser"
-            : "or drop files here — paste with ⌘V"}
+            : (
+              <>
+                or drop files here — paste with <kbd className="kbd text-[11px] px-1.5 py-0.5">Ctrl+V</kbd>
+              </>
+            )}
         </p>
 
         {!dragging && (acceptLabel || hint) && (
@@ -471,21 +545,35 @@ export function FileUploader({
             })}
           </ul>
 
-          {/* Add more files — appends via the same hidden input */}
+          {/* Add more files & Paste buttons */}
           {(!maxFiles || items.length < maxFiles) && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                inputRef.current?.click();
-              }}
-              className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12.5px] font-semibold text-accent bg-accent-subtle hover:bg-accent/15 transition-colors"
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              Add more files
-            </button>
+            <div className="mt-2.5 flex items-center gap-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  inputRef.current?.click();
+                }}
+                className="btn-secondary px-3 py-1.5 text-[12.5px] font-semibold flex items-center gap-1.5"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Add more files
+              </button>
+              <button
+                type="button"
+                onClick={handlePasteFromClipboard}
+                className="btn-ghost px-3 py-1.5 text-[12.5px] font-semibold flex items-center gap-1.5 text-text-secondary hover:text-accent"
+                title="Paste from clipboard (Ctrl+V)"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                </svg>
+                Paste
+              </button>
+            </div>
           )}
         </div>
       )}

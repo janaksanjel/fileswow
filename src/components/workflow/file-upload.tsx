@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 /* ─── Public types (consumed by workflow-workspace) ────────────── */
 
@@ -122,6 +122,67 @@ export function FileUpload({
     [acceptedExtensions, category, maxFileSizeMB, onFilesSelected, supportsMultipleFiles]
   );
 
+  const handlePasteFromClipboard = useCallback(async (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    try {
+      if (navigator.clipboard && navigator.clipboard.read) {
+        const items = await navigator.clipboard.read();
+        const newFiles: File[] = [];
+        for (const item of items) {
+          for (const type of item.types) {
+            const blob = await item.getType(type);
+            const ext = type.split("/")[1]?.replace("+xml", "") || "png";
+            const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+            newFiles.push(new File([blob], `pasted-file-${timestamp}.${ext}`, { type, lastModified: Date.now() }));
+          }
+        }
+        if (newFiles.length > 0) {
+          validateAndAdd(newFiles);
+          return;
+        }
+      }
+    } catch {
+      /* clipboard read permission denied */
+    }
+  }, [validateAndAdd]);
+
+  useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+      const files = Array.from(e.clipboardData?.files ?? []);
+      const items = e.clipboardData?.items;
+      const newFiles: File[] = [...files];
+
+      if (items) {
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          if (item.kind === "file") {
+            const file = item.getAsFile();
+            if (file && !newFiles.some(f => f.name === file.name && f.size === file.size)) {
+              newFiles.push(file);
+            }
+          }
+        }
+      }
+
+      if (newFiles.length === 0) return;
+      e.preventDefault();
+      validateAndAdd(newFiles);
+    };
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  }, [validateAndAdd]);
+
+  
+
   const handleDragEnter = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -228,7 +289,7 @@ export function FileUpload({
             <p className="text-[14.5px] font-bold text-text-primary">
               {dragging ? "Drop your files here" : `Add your ${CATEGORY_HINTS[category] ?? "files"}`}
             </p>
-            <p className="text-[12.5px] text-text-tertiary mt-1">
+            <p className="text-[12.5px] text-text-tertiary mt-1 flex items-center justify-center gap-1.5 flex-wrap">
               {dragging ? (
                 "Release to add them"
               ) : (
@@ -237,9 +298,26 @@ export function FileUpload({
                   <span className="text-accent font-semibold underline decoration-accent/40 decoration-2 underline-offset-4">
                     Choose files
                   </span>
+                  <span>· paste with <kbd className="kbd text-[11px] px-1.5 py-0.5">Ctrl+V</kbd></span>
                 </>
               )}
             </p>
+            {!dragging && (
+              <div className="mt-2.5 flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={handlePasteFromClipboard}
+                  className="btn-secondary px-3.5 py-1 text-xs font-semibold flex items-center gap-1.5"
+                  title="Paste from clipboard"
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                  </svg>
+                  Paste from clipboard
+                </button>
+              </div>
+            )}
           </div>
 
           {!dragging && acceptLabel && (

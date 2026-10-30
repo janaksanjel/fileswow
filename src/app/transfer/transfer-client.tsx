@@ -1245,6 +1245,126 @@ export function TransferClient() {
 
   const clearFiles = useCallback(() => setFiles([]), []);
 
+  // ─── Clipboard paste support (files, screenshots, text) ──────────────
+  const handlePasteFiles = useCallback(
+    (e: ClipboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      if (phase !== "idle") return;
+
+      const items = e.clipboardData?.items;
+      const filesFromEvent = Array.from(e.clipboardData?.files ?? []);
+      const newFiles: File[] = [...filesFromEvent];
+
+      if (items) {
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          if (item.kind === "file") {
+            const file = item.getAsFile();
+            if (file && !newFiles.some(f => f.name === file.name && f.size === file.size)) {
+              newFiles.push(file);
+            }
+          }
+        }
+      }
+
+      if (newFiles.length === 0) {
+        const text = e.clipboardData?.getData("text/plain")?.trim();
+        if (text && text.length > 0) {
+          const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+          const textBlob = new Blob([text], { type: "text/plain;charset=utf-8" });
+          const textFile = new File([textBlob], `pasted-text-${timestamp}.txt`, {
+            type: "text/plain",
+            lastModified: Date.now(),
+          });
+          newFiles.push(textFile);
+        }
+      }
+
+      if (newFiles.length > 0) {
+        e.preventDefault();
+        addFiles(newFiles);
+        addLog(`Pasted ${newFiles.length} item(s) from clipboard.`);
+      }
+    },
+    [phase, addFiles, addLog]
+  );
+
+  useEffect(() => {
+    window.addEventListener("paste", handlePasteFiles);
+    return () => window.removeEventListener("paste", handlePasteFiles);
+  }, [handlePasteFiles]);
+
+  const handlePasteFromClipboard = useCallback(async () => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.read) {
+        const items = await navigator.clipboard.read();
+        const newFiles: File[] = [];
+        for (const item of items) {
+          for (const type of item.types) {
+            if (type.startsWith("image/")) {
+              const blob = await item.getType(type);
+              const ext = type.split("/")[1] || "png";
+              const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+              const file = new File([blob], `pasted-image-${timestamp}.${ext}`, {
+                type,
+                lastModified: Date.now(),
+              });
+              newFiles.push(file);
+            }
+          }
+        }
+        if (newFiles.length > 0) {
+          addFiles(newFiles);
+          addLog(`Pasted ${newFiles.length} file(s) from clipboard.`);
+          return;
+        }
+      }
+
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        const text = (await navigator.clipboard.readText()).trim();
+        if (text) {
+          const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+          const textBlob = new Blob([text], { type: "text/plain;charset=utf-8" });
+          const textFile = new File([textBlob], `pasted-text-${timestamp}.txt`, {
+            type: "text/plain",
+            lastModified: Date.now(),
+          });
+          addFiles([textFile]);
+          addLog("Pasted text snippet from clipboard as .txt file.");
+          return;
+        }
+      }
+    } catch {
+      setError("Could not read clipboard automatically. Try pressing Ctrl+V (or Cmd+V) to paste.");
+    }
+  }, [addFiles, addLog]);
+
+  const handlePasteCode = useCallback(async () => {
+    try {
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        const text = (await navigator.clipboard.readText()).trim();
+        if (text) {
+          const code = normalizeCode(text);
+          if (code) {
+            setCodeInput(code);
+            addLog(`Pasted transfer code ${code}`);
+          }
+        }
+      }
+    } catch {
+      /* clipboard read permission denied */
+    }
+  }, [addLog]);
+
   // ─── Receiver: pick save location, then connect ────────────────────────
   const pickDirectory = useCallback(async (): Promise<SaveTarget> => {
     const anyWindow = window as unknown as {
@@ -1482,21 +1602,41 @@ export function TransferClient() {
               aria-label="Choose files to send"
             />
             {files.length === 0 ? (
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full flex flex-col items-center justify-center gap-3 py-10 sm:py-14 rounded-xl border-2 border-dashed border-border-strong hover:border-accent hover:bg-accent-subtle/30 transition-colors cursor-pointer"
-              >
-                <span className="w-14 h-14 rounded-2xl bg-accent-subtle flex items-center justify-center">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="17 8 12 3 7 8" />
-                    <line x1="12" y1="3" x2="12" y2="15" />
-                  </svg>
-                </span>
-                <span className="text-sm font-semibold text-text-primary">Add files — click or drop here</span>
-                <span className="text-xs text-text-tertiary">Any file type · up to 50 GB total · nothing is uploaded</span>
-              </button>
+              <div className="w-full flex flex-col items-center justify-center gap-3 py-10 sm:py-14 rounded-2xl border-2 border-dashed border-border-strong hover:border-accent hover:bg-accent-subtle/20 transition-all">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full flex flex-col items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span className="w-16 h-16 rounded-2xl bg-accent-subtle flex items-center justify-center shadow-[var(--neu-icon)]">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="17 8 12 3 7 8" />
+                      <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                  </span>
+                  <span className="text-base font-bold text-text-primary mt-1">Add files — click or drag & drop here</span>
+                  <span className="text-xs text-text-secondary flex items-center gap-1.5">
+                    or paste from clipboard with <kbd className="kbd text-[11px] px-1.5 py-0.5">Ctrl+V</kbd>
+                  </span>
+                  <span className="text-xs text-text-tertiary">Any file type · up to 50 GB total · direct device-to-device</span>
+                </button>
+
+                <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/40">
+                  <button
+                    type="button"
+                    onClick={handlePasteFromClipboard}
+                    className="btn-secondary px-3.5 py-1.5 text-xs font-semibold flex items-center gap-1.5"
+                    title="Paste image, file, or text from clipboard"
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                    </svg>
+                    Paste from clipboard
+                  </button>
+                </div>
+              </div>
             ) : (
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
@@ -1505,6 +1645,18 @@ export function TransferClient() {
                     {totalSizeTooBig && <span className="text-danger font-semibold"> — over the 50 GB limit</span>}
                   </p>
                   <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handlePasteFromClipboard}
+                      className="btn-ghost text-xs flex items-center gap-1"
+                      title="Paste from clipboard (Ctrl+V)"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                      </svg>
+                      Paste
+                    </button>
                     <button type="button" onClick={() => fileInputRef.current?.click()} className="btn-ghost text-xs">
                       + Add more
                     </button>
@@ -1573,17 +1725,31 @@ export function TransferClient() {
               Enter the <strong className="text-text-primary">6-digit code</strong> shown on the sending device. You&apos;ll pick a save folder before connecting.
             </p>
             <div className="flex flex-col sm:flex-row gap-2.5">
-              <input
-                type="text"
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                placeholder="000000"
-                value={codeInput}
-                onChange={(e) => setCodeInput(normalizeCode(e.target.value))}
-                className="input flex-1 text-center font-mono text-xl tracking-[0.5em] sm:text-left sm:tracking-[0.35em] h-11"
-                maxLength={CODE_LENGTH}
-                aria-label="6-digit transfer code"
-              />
+              <div className="relative flex-1">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  placeholder="000000"
+                  value={codeInput}
+                  onChange={(e) => setCodeInput(normalizeCode(e.target.value))}
+                  className="input w-full text-center font-mono text-xl tracking-[0.5em] sm:text-left sm:tracking-[0.35em] h-11 pr-20"
+                  maxLength={CODE_LENGTH}
+                  aria-label="6-digit transfer code"
+                />
+                <button
+                  type="button"
+                  onClick={handlePasteCode}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 btn-ghost text-xs px-2.5 py-1 flex items-center gap-1 text-text-tertiary hover:text-accent font-semibold"
+                  title="Paste code from clipboard"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                  </svg>
+                  Paste
+                </button>
+              </div>
               <button type="submit" disabled={codeInput.length !== CODE_LENGTH || pickProgress} className="btn-primary h-11 px-5 text-sm shrink-0">
                 {pickProgress ? (
                   <>

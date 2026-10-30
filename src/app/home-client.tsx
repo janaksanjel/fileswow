@@ -584,7 +584,7 @@ function PopularTools() {
         {/* Grid — remounts on chip change for a smooth 8px reflow */}
         <div
           key={chip}
-          className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 animate-fade-in-up"
+          className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 animate-fade-in-up"
         >
           {visible.map((tool, i) => (
             <ToolCard key={tool.slug} tool={tool} index={i} />
