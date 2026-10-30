@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FileUploader } from "./file-uploader";
 import { DownloadButton } from "./download-button";
+import { PdfDrawerPreview } from "./pdf-drawer-preview";
 
 /* ─── Types ──────────────────────────────────────────────────────── */
 
@@ -364,6 +365,11 @@ function OutputPanel({
   onDownloadAll?: () => void;
   onBack: () => void;
 }) {
+  const [previewOutput, setPreviewOutput] = useState<StepOutput | null>(null);
+
+  const isPdf = (name: string, blob: Blob) =>
+    name.toLowerCase().endsWith(".pdf") || blob.type === "application/pdf";
+
   return (
     <div>
       {/* Success banner */}
@@ -403,6 +409,23 @@ function OutputPanel({
             <span className="text-[11px] text-text-tertiary tabular-nums shrink-0">
               {(o.blob.size / 1024).toFixed(0)} KB
             </span>
+
+            {/* Preview button for PDF files */}
+            {isPdf(o.name, o.blob) && (
+              <button
+                type="button"
+                onClick={() => setPreviewOutput(o)}
+                className="btn-secondary px-2.5 py-1.5 text-[11.5px] font-semibold flex items-center gap-1.5 hover:border-accent hover:text-accent transition-colors shrink-0"
+                title="Preview in right drawer before downloading"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                <span>Preview</span>
+              </button>
+            )}
+
             <DownloadButton blob={o.blob} filename={o.name} label="Save" />
           </li>
         ))}
@@ -427,6 +450,14 @@ function OutputPanel({
           Start over
         </button>
       </div>
+
+      {/* Slide-over Right Drawer Preview */}
+      <PdfDrawerPreview
+        open={previewOutput !== null}
+        onClose={() => setPreviewOutput(null)}
+        fileOrBlob={previewOutput?.blob ?? null}
+        title={previewOutput ? `Preview: ${previewOutput.name}` : "PDF Preview"}
+      />
     </div>
   );
 }

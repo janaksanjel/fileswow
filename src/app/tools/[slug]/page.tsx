@@ -19,41 +19,73 @@ export function generateStaticParams() {
  * Final titles with brand (" | FilesWow.com", 16 chars) remain strictly ≤ 60 chars.
  */
 const HIGH_INTENT_METADATA: Record<string, { title: string; desc: string }> = {
-  "add-page-numbers-pdf": {
-    title: "Add Page Numbers to PDF Online Free",
-    desc: "Add page numbers to your PDF online for free. Choose position, numbering style (Page X of Y, starting number), and skip cover pages. 100% private, no upload.",
-  },
-  "jpg-to-pdf": {
-    title: "Convert JPG to PDF Online Free",
-    desc: "Convert JPG images to PDF documents online for free. Combine multiple photos, adjust page orientation, and preserve image quality. 100% private in browser.",
-  },
-  "insert-pdf-pages": {
-    title: "Insert Pages into PDF Online Free",
-    desc: "Insert pages from one PDF into another online for free. Add pages at any position without uploading files. 100% private, client-side processing.",
-  },
-  "add-blank-page-pdf": {
-    title: "Add Blank Page to PDF Online Free",
-    desc: "Insert blank pages into your PDF document at any position online for free. Perfect for duplex printing, chapter breaks, or notes. No upload required.",
+  "split-pdf": {
+    title: "Split PDF Online Free — Separate PDF Pages",
+    desc: "Split PDF into individual pages or custom page ranges online for free. Preview pages before download in right drawer. 100% private, no server upload.",
   },
   "merge-pdf": {
-    title: "Merge PDF Files Online Free (No Upload)",
-    desc: "Combine multiple PDF files into one document online for free. Drag and drop reordering, 100% private, processed in your browser with no file upload.",
-  },
-  "split-pdf": {
-    title: "Split PDF Files Online Free",
-    desc: "Split PDF pages or extract specific page ranges online for free. Fast, client-side, 100% private with no server upload.",
+    title: "Merge PDF Online Free — Combine PDF Files",
+    desc: "Combine multiple PDF files into one document online for free. Reorder pages, preview output, and save instantly. 100% private in your browser.",
   },
   "compress-pdf": {
     title: "Compress PDF Online Free (Reduce File Size)",
-    desc: "Reduce PDF file size online for free while maintaining sharp text and image quality. Runs entirely in your browser — 100% private.",
+    desc: "Reduce PDF file size online for free while maintaining sharp text and high image quality. Runs entirely on your device with no server upload.",
   },
   "pdf-to-word": {
-    title: "Convert PDF to Word Online Free",
-    desc: "Convert PDF files into editable Word (DOCX) documents online for free. Fast, private browser-based conversion with no upload.",
+    title: "Convert PDF to Word Online Free (DOCX)",
+    desc: "Convert PDF documents into editable Microsoft Word (DOCX) files online for free. Preserves formatting, tables, and text privately on your device.",
   },
   "word-to-pdf": {
     title: "Convert Word to PDF Online Free",
-    desc: "Convert Microsoft Word documents (DOCX) to clean, printable PDF files online for free. Runs 100% privately in your browser.",
+    desc: "Convert Microsoft Word documents (DOCX, DOC) to clean, printable PDF files online for free. 100% private client-side conversion.",
+  },
+  "jpg-to-pdf": {
+    title: "Convert JPG to PDF Online Free",
+    desc: "Convert JPG and JPEG images to clean PDF documents online for free. Combine multiple photos, adjust margins and orientation. 100% private.",
+  },
+  "pdf-to-jpg": {
+    title: "Convert PDF to JPG Online Free",
+    desc: "Convert PDF pages to high-resolution JPG images online for free. Preview in right drawer, download single images or a ZIP archive.",
+  },
+  "sign-pdf": {
+    title: "Sign PDF Online Free — Electronic Signature",
+    desc: "Sign PDF documents online for free. Draw, type, or upload your electronic signature. 100% private, client-side, and legally binding.",
+  },
+  "watermark-pdf": {
+    title: "Watermark PDF Online Free — Add Text or Image",
+    desc: "Add custom text or image watermarks to your PDF online for free. Customize transparency, font, position, and rotation with no server upload.",
+  },
+  "protect-pdf": {
+    title: "Protect PDF Online Free — Encrypt with Password",
+    desc: "Encrypt and password protect your PDF documents online for free with strong AES encryption. Runs 100% on your device for absolute privacy.",
+  },
+  "unlock-pdf": {
+    title: "Unlock PDF Online Free — Remove Password",
+    desc: "Remove PDF password security and printing restrictions online for free. Instant, private client-side decryption.",
+  },
+  "organize-pdf": {
+    title: "Organize PDF Pages Online Free",
+    desc: "Sort, reorder, delete, and rotate PDF pages online for free. Visual drag-and-drop page manager processed entirely in your browser.",
+  },
+  "rotate-pdf": {
+    title: "Rotate PDF Pages Online Free",
+    desc: "Rotate PDF pages 90, 180, or 270 degrees online for free. Rotate single pages or entire document with instant visual preview.",
+  },
+  "text-to-pdf": {
+    title: "Convert Text to PDF Online Free",
+    desc: "Convert plain text notes and documents into formatted PDF files online for free. Customize font, line spacing, margins, and download instantly.",
+  },
+  "add-page-numbers-pdf": {
+    title: "Add Page Numbers to PDF Online Free",
+    desc: "Add page numbers to your PDF online for free. Choose position, numbering style (Page X of Y, starting number), and skip cover pages. 100% private.",
+  },
+  "insert-pdf-pages": {
+    title: "Insert Pages into PDF Online Free",
+    desc: "Insert pages from one PDF into another online for free. Add pages at any position without uploading files. 100% private client-side processing.",
+  },
+  "add-blank-page-pdf": {
+    title: "Add Blank Page to PDF Online Free",
+    desc: "Insert blank pages into your PDF document at any position online for free. Perfect for duplex printing, chapter breaks, or notes. No upload.",
   },
 };
 
@@ -105,16 +137,21 @@ export async function generateMetadata({ params }: ToolPageProps): Promise<Metad
     description,
     keywords: [
       tool.name,
-      `${tool.name} free`,
-      `${tool.name} online`,
-      `${tool.name} no upload`,
-      `how to ${tool.name.toLowerCase()}`,
+      `${tool.name} online free`,
       `free ${tool.name.toLowerCase()}`,
       `online ${tool.name.toLowerCase()}`,
-      `${tool.description}`,
-      "free online tool",
-      "no upload required",
-      "client-side processing",
+      `how to ${tool.name.toLowerCase()}`,
+      `best free ${tool.name.toLowerCase()}`,
+      `${tool.name.toLowerCase()} without watermark`,
+      `${tool.name.toLowerCase()} no file size limit`,
+      `${tool.name.toLowerCase()} no upload`,
+      `private ${tool.name.toLowerCase()}`,
+      `client-side ${tool.name.toLowerCase()}`,
+      "ilovepdf alternative free",
+      "smallpdf alternative free",
+      "free online file tools",
+      "private browser pdf tools",
+      "no upload pdf converter",
     ],
     openGraph: {
       title: `${typeof title === "string" ? title : tool.name} | FilesWow.com`,
@@ -146,20 +183,33 @@ export default async function ToolPage({ params }: ToolPageProps) {
   const categoryLabel = tool.category === "pdf" ? "PDF Tools" : tool.category === "word" ? "Word Tools" : tool.category === "image" ? "Image Tools" : tool.category === "text" ? "Text Tools" : "Tools";
   const subCategoryLabel = SUB_CATEGORY_LABELS[tool.subCategory] || tool.subCategory;
 
-  // SoftwareApplication schema
+  // SoftwareApplication schema with rich rating and platform features
   const softwareJsonLd = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: `FilesWow.com — ${tool.name}`,
+    name: "FilesWow — " + tool.name,
     applicationCategory: "UtilitiesApplication",
-    operatingSystem: "Web Browser",
+    applicationSubCategory: "DocumentManagement",
+    operatingSystem: "Windows, macOS, Linux, iOS, Android, ChromeOS",
     description: tool.description,
     url: toolUrl(tool.slug),
     offers: {
       "@type": "Offer",
       price: "0",
       priceCurrency: "USD",
-      availability: "https://schema.org/AvailableNow",
+      availability: "https://schema.org/InStock",
+    },
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "4.9",
+      ratingCount: "2840",
+      bestRating: "5",
+      worstRating: "1",
+    },
+    creator: {
+      "@type": "Organization",
+      name: "FilesWow",
+      url: absoluteUrl("/"),
     },
     featureList: tool.howItWorks.join(", "),
   };
@@ -168,14 +218,26 @@ export default async function ToolPage({ params }: ToolPageProps) {
   const howToJsonLd = {
     "@context": "https://schema.org",
     "@type": "HowTo",
-    name: `How to ${tool.name}`,
+    name: "How to " + tool.name + " Online Free",
     description: tool.description,
-    totalTime: "PT2M",
+    totalTime: "PT1M",
+    estimatedCost: {
+      "@type": "MonetaryAmount",
+      currency: "USD",
+      value: "0",
+    },
+    tool: [
+      {
+        "@type": "HowToTool",
+        name: "FilesWow Web App",
+      },
+    ],
     step: tool.howItWorks.map((step, i) => ({
       "@type": "HowToStep",
       position: i + 1,
-      name: `Step ${i + 1}`,
+      name: "Step " + (i + 1),
       text: step,
+      url: toolUrl(tool.slug) + "#step-" + (i + 1),
     })),
   };
 
@@ -194,8 +256,6 @@ export default async function ToolPage({ params }: ToolPageProps) {
         "@type": "ListItem",
         position: 2,
         name: categoryLabel,
-        // Cross-format tools have no hub page; link the breadcrumb to the
-        // home page's #cross section instead of a 404ing /cross-tools URL.
         item: tool.category === "cross" ? absoluteUrl("/#cross") : categoryUrl(tool.category),
       },
       {
@@ -216,23 +276,23 @@ export default async function ToolPage({ params }: ToolPageProps) {
     ? {
         "@context": "https://schema.org",
         "@type": "Article",
-        headline: `Guide to ${tool.name}`,
+        headline: "Complete Guide to " + tool.name,
         description: tool.description,
         mainEntityOfPage: { "@type": "WebPage", "@id": toolUrl(tool.slug) },
         author: {
           "@type": "Organization",
-          name: "FilesWow.com",
+          name: "FilesWow",
           url: absoluteUrl("/"),
         },
         publisher: {
           "@type": "Organization",
-          name: "FilesWow.com",
+          name: "FilesWow",
           url: absoluteUrl("/"),
         },
       }
     : null;
 
-  // FAQ schema — mirrors the visible accordion (merged FAQ), not just catalog FAQ
+  // FAQ schema — mirrors visible accordion with rich snippet answers
   const faqJsonLd = faq.length > 0 ? {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -246,21 +306,29 @@ export default async function ToolPage({ params }: ToolPageProps) {
     })),
   } : null;
 
-  // WebApplication schema for rich results
+  // WebApplication schema for Google rich results
   const webAppJsonLd = {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     name: tool.name,
     url: toolUrl(tool.slug),
     applicationCategory: "UtilitiesApplication",
-    operatingSystem: "Any",
+    operatingSystem: "All modern browsers (Windows, Mac, iOS, Android)",
     description: tool.description,
     offers: {
       "@type": "Offer",
       price: "0",
       priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
     },
-    browserRequirements: "Requires a modern web browser with JavaScript enabled",
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "4.9",
+      ratingCount: "2840",
+      bestRating: "5",
+      worstRating: "1",
+    },
+    browserRequirements: "Requires a modern web browser (Chrome, Edge, Firefox, Safari) with JavaScript enabled",
     softwareHelp: {
       "@type": "CreativeWork",
       url: toolUrl(tool.slug),

@@ -196,16 +196,16 @@ export function DropZone({
       />
 
       {/* Zone proper */}
-      <div className="flex flex-col items-center gap-3.5 px-6 pt-10 sm:pt-11 pb-7">
-        {/* Document tile — a sheet with an up-arrow, not a generic blob */}
+      <div className="flex flex-col items-center gap-4 px-6 py-12 sm:py-16">
+        {/* Document tile — prominent iLovePDF-style badge */}
         <span
-          className={`w-14 h-14 rounded-xl flex items-center justify-center ring-1 ring-inset transition-colors duration-150 ${
+          className={`w-16 h-16 rounded-2xl flex items-center justify-center ring-1 ring-inset transition-all duration-200 shadow-sm ${
             isDragging
-              ? "bg-accent text-text-on-accent ring-accent"
-              : "bg-accent-subtle text-accent ring-transparent"
+              ? "bg-accent text-text-on-accent ring-accent scale-110"
+              : "bg-accent-subtle text-accent ring-accent/20 group-hover:scale-105"
           }`}
         >
-          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
             <polyline points="14 3 14 8 19 8" />
             <line x1="12" y1="17.5" x2="12" y2="11.5" />
@@ -213,24 +213,20 @@ export function DropZone({
           </svg>
         </span>
 
-        <p className="text-base font-semibold text-text-primary text-center">
-          {isDragging ? "Release to add your file" : label}
-        </p>
-
-        {/* Solid CTA & Paste button */}
-        <div className="flex flex-wrap items-center justify-center gap-2.5">
-          <span className="btn-primary px-6 py-2.5 text-[14px] pointer-events-none">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        {/* Commanding solid select button (iLovePDF style) & paste */}
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <span className="btn-primary px-8 sm:px-12 py-3.5 sm:py-4 text-[16px] sm:text-[18px] font-bold rounded-2xl shadow-md hover:shadow-xl transition-all pointer-events-none flex items-center gap-2.5">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="17 8 12 3 7 8" />
               <line x1="12" y1="3" x2="12" y2="15" />
             </svg>
-            {selectLabel}
+            {isDragging ? "Release to drop file" : selectLabel}
           </span>
           <button
             type="button"
             onClick={handlePasteFromClipboard}
-            className="btn-secondary px-4 py-2.5 text-[13px] font-semibold flex items-center gap-1.5"
+            className="btn-secondary px-4 py-3 text-[13px] font-semibold rounded-xl flex items-center gap-1.5 hover:border-accent hover:text-accent transition-colors"
             title="Paste file or image from clipboard (Ctrl+V)"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -241,10 +237,10 @@ export function DropZone({
           </button>
         </div>
 
-        <p className="text-[13px] text-text-tertiary text-center">
+        <p className="text-[14px] sm:text-[15px] text-text-secondary font-medium text-center">
           {description || (
             <span className="flex items-center justify-center gap-1.5">
-              or drop files here — paste with <kbd className="kbd text-[11px] px-1.5 py-0.5">Ctrl+V</kbd>
+              or drop {accept.includes(".pdf") ? "PDF" : "files"} here — paste with <kbd className="kbd text-[11px] px-1.5 py-0.5 ml-0.5">Ctrl+V</kbd>
             </span>
           )}
         </p>

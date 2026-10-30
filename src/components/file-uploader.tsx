@@ -362,20 +362,20 @@ export function FileUploader({
           transition-[background-color,border-color,transform] duration-150 ease-out
           ${dragging ? "flow-dropzone-dragging border-accent" : "border-border-strong hover:border-accent/70 hover:bg-accent/[0.03]"}`}
       >
-      <div className={`flex flex-col items-center justify-center gap-3 px-6 ${dragging ? "py-14" : "py-10 sm:py-11"}`}>
+      <div className={`flex flex-col items-center justify-center gap-4 px-6 ${dragging ? "py-16" : "py-12 sm:py-16"}`}>
 
-        {/* Document tile — a sheet with an up-arrow */}
+        {/* Document tile — prominent iLovePDF-style upload badge */}
         <span
-          className={`w-14 h-14 rounded-xl flex items-center justify-center ring-1 ring-inset transition-colors duration-150
-            ${dragging ? "bg-accent text-text-on-accent ring-accent" : "bg-accent-subtle text-accent ring-transparent"}`}
+          className={`w-16 h-16 rounded-2xl flex items-center justify-center ring-1 ring-inset transition-all duration-200 shadow-sm
+            ${dragging ? "bg-accent text-text-on-accent ring-accent scale-110" : "bg-accent-subtle text-accent ring-accent/20 group-hover:scale-105"}`}
         >
           <svg
-            width="26"
-            height="26"
+            width="30"
+            height="30"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth="1.75"
+            strokeWidth="1.8"
             strokeLinecap="round"
             strokeLinejoin="round"
             aria-hidden="true"
@@ -387,20 +387,20 @@ export function FileUploader({
           </svg>
         </span>
 
-        {/* Solid CTA & Paste button */}
-        <div className="flex flex-wrap items-center justify-center gap-2.5">
-          <span className="btn-primary px-6 py-2.5 text-[14px] pointer-events-none">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        {/* Commanding iLovePDF-style Select Button & Paste */}
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <span className="btn-primary px-8 sm:px-12 py-3.5 sm:py-4.5 text-[16px] sm:text-[18px] font-bold rounded-2xl shadow-md hover:shadow-xl transition-all pointer-events-none flex items-center gap-2.5">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="17 8 12 3 7 8" />
               <line x1="12" y1="3" x2="12" y2="15" />
             </svg>
-            {dragging ? "Release to add your files" : selectLabel}
+            {dragging ? "Release to drop files" : selectLabel}
           </span>
           <button
             type="button"
             onClick={handlePasteFromClipboard}
-            className="btn-secondary px-4 py-2.5 text-[13px] font-semibold flex items-center gap-1.5"
+            className="btn-secondary px-4 py-3 text-[13px] font-semibold rounded-xl flex items-center gap-1.5 hover:border-accent hover:text-accent transition-colors"
             title="Paste file or image from clipboard (Ctrl+V)"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -411,13 +411,13 @@ export function FileUploader({
           </button>
         </div>
 
-        {/* Hint */}
-        <p className="text-[13px] text-text-tertiary text-center flex items-center justify-center gap-1.5">
+        {/* Clear drop text & paste badge */}
+        <p className="text-[14px] sm:text-[15px] text-text-secondary font-medium text-center flex items-center justify-center gap-1.5">
           {dragging
-            ? "They’ll be read right in this browser"
+            ? "Drop files to process on your device"
             : (
               <>
-                or drop files here — paste with <kbd className="kbd text-[11px] px-1.5 py-0.5">Ctrl+V</kbd>
+                or drop {accept.includes(".pdf") ? "PDF" : "files"} here — paste with <kbd className="kbd text-[11px] px-1.5 py-0.5 ml-0.5">Ctrl+V</kbd>
               </>
             )}
         </p>
