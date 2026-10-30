@@ -116,6 +116,10 @@ const FONT_FAMILIES = [
   { label: "Garamond", value: "Garamond, 'Times New Roman', serif" },
   { label: "Courier New", value: "'Courier New', Courier, monospace" },
   { label: "Verdana", value: "Verdana, Geneva, sans-serif" },
+  { label: "Noto Sans Devanagari (Nepali/Hindi)", value: "'Noto Sans Devanagari', 'Nirmala UI', 'Mangal', sans-serif" },
+  { label: "Kalimati (Nepali)", value: "'Kalimati', 'Noto Sans Devanagari', 'Nirmala UI', sans-serif" },
+  { label: "Mangal (Nepali/Hindi)", value: "'Mangal', 'Noto Sans Devanagari', 'Nirmala UI', sans-serif" },
+  { label: "Preeti (Nepali legacy)", value: "Preeti, sans-serif" },
 ];
 
 const FONT_SIZES = ["10px", "12px", "14px", "16px", "18px", "20px", "24px", "32px"];
@@ -186,6 +190,13 @@ export default function RichTextEditor({
     setWordCount(text.trim() ? text.trim().split(/\s+/).length : 0);
     setIsEmpty(text.trim() === "");
     editor.dataset.empty = text.trim() === "" ? "true" : "false";
+
+    // Ensure Unicode fonts (like Noto Sans Devanagari) are loaded if non-Latin scripts are typed
+    if (/[\u0900-\u097F]/.test(text)) {
+      void import("@/lib/script-fonts").then(({ prepareScriptFonts }) => {
+        void prepareScriptFonts(text);
+      });
+    }
   }, []);
 
   // Track the active formatting under the caret for toolbar state.

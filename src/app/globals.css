@@ -986,7 +986,7 @@ kbd,
    restore document-like rendering (headings, lists, quotes, code,
    tables) so what the user sees is what typesets into the PDF.    */
 .rte-content {
-  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), "Noto Sans Devanagari", "Nirmala UI", "Kohinoor Devanagari", "Devanagari MT", "Mangal", Arial, Helvetica, sans-serif;
   caret-color: var(--accent);
 }
 

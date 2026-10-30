@@ -30,7 +30,11 @@ export default function TextToWordTool({ onProcessing, onError }: ToolUIProps) {
       // Derive the download filename from the first heading (DOM is
       // available here; never read refs during render).
       const heading = editor.querySelector("h1, h2")?.textContent?.trim();
-      const slug = (heading || "document").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
+      const slug = (heading || "document")
+        .toLowerCase()
+        .replace(/[^\p{L}\p{N}]+/gu, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 40);
       setFilename(`${slug || "document"}.docx`);
 
       const { richTextToDocx } = await import("@/lib/richtext-docx");

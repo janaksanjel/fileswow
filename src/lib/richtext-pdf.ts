@@ -669,8 +669,197 @@ function drawRun(doc: jsPDF, seg: Segment, text: string, x: number, baseline: nu
   }
 }
 
+function hasNonWinAnsi(text: string): boolean {
+  for (const ch of text) {
+    const cp = ch.codePointAt(0) ?? 0;
+    if (cp > 0xff && !WINANSI_EXTRA.has(cp)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+async function renderScriptAwarePdf(
+  root: HTMLElement,
+  options: RichTextPdfOptions
+): Promise<RichTextPdfResult> {
+  const { prepareScriptFonts, waitForFonts, waitForImages } = await import("@/lib/script-fonts");
+  const html2canvas = (await import("html2canvas")).default;
+
+  const doc = new jsPDF({
+    unit: "pt",
+    format: options.pageSize,
+    orientation: options.orientation,
+    compress: true,
+  });
+
+  const marginPt = MARGINS_PT[options.margin];
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const contentW = pageW - marginPt * 2;
+  const contentH = pageH - marginPt * 2;
+
+  const allText = root.textContent || "";
+  const { fontFamily, hasRtl } = await prepareScriptFonts(allText);
+
+  const tempDiv = document.createElement("div");
+  tempDiv.className = "rte-content";
+  tempDiv.innerHTML = root.innerHTML;
+  if (hasRtl) tempDiv.setAttribute("dir", "auto");
+
+  // Avoid light/white text inherited from dark mode editor
+  const allElms = tempDiv.querySelectorAll<HTMLElement>("*");
+  allElms.forEach((el) => {
+    const col = el.style.color;
+    if (col && (col.includes("255, 255, 255") || col.includes("240, 240, 240") || col.includes("var(--"))) {
+      el.style.color = `rgb(${PDF_INK[0]}, ${PDF_INK[1]}, ${PDF_INK[2]})`;
+    }
+  });
+
+  // Point to pixel conversion at 96 DPI: 1 pt = 96/72 px = 1.3333 px
+  const widthPx = Math.round(contentW * (96 / 72));
+  tempDiv.style.cssText = `
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    width: ${widthPx}px;
+    padding: 0;
+    margin: 0;
+    background: #ffffff;
+    color: rgb(${PDF_INK[0]}, ${PDF_INK[1]}, ${PDF_INK[2]});
+    font-family: ${fontFamily};
+    line-height: ${options.lineSpacing};
+    box-sizing: border-box;
+    word-break: break-word;
+  `;
+
+  document.body.appendChild(tempDiv);
+
+  let canvas: HTMLCanvasElement;
+  try {
+    await Promise.all([waitForFonts(), waitForImages(tempDiv)]);
+    canvas = await html2canvas(tempDiv, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: "#ffffff",
+    });
+  } finally {
+    document.body.removeChild(tempDiv);
+  }
+
+  const cW = canvas.width;
+  const cH = canvas.height;
+  const pxPerPt = cW / contentW;
+
+  const reservedBottomPt = options.pageNumbers ? 24 : 0;
+  const usableHeightPt = contentH - reservedBottomPt;
+  const pageCanvasH = usableHeightPt * pxPerPt;
+
+  const ctx2d = canvas.getContext("2d");
+  const pageSlices: { y: number; height: number }[] = [];
+  let currentY = 0;
+
+  while (currentY < cH) {
+    let sliceH = Math.min(pageCanvasH, cH - currentY);
+
+    if (currentY + sliceH < cH && ctx2d) {
+      const searchWindow = Math.min(Math.round(80 * (pxPerPt / 1.33)), Math.round(sliceH * 0.25));
+      const searchTop = Math.round(currentY + sliceH - searchWindow);
+      const searchBottom = Math.round(currentY + sliceH);
+      const checkH = searchBottom - searchTop;
+
+      if (checkH > 0) {
+        const imgData = ctx2d.getImageData(0, searchTop, cW, checkH);
+        const data = imgData.data;
+        let foundBlankRow = -1;
+
+        for (let r = checkH - 1; r >= 0; r--) {
+          let isRowBlank = true;
+          for (let c = 0; c < cW; c += 4) {
+            const idx = (r * cW + c) * 4;
+            const red = data[idx];
+            const green = data[idx + 1];
+            const blue = data[idx + 2];
+            const alpha = data[idx + 3];
+            if (alpha > 20 && (red < 245 || green < 245 || blue < 245)) {
+              isRowBlank = false;
+              break;
+            }
+          }
+          if (isRowBlank) {
+            foundBlankRow = searchTop + r;
+            break;
+          }
+        }
+
+        if (foundBlankRow > currentY + 40) {
+          sliceH = foundBlankRow - currentY;
+        }
+      }
+    }
+
+    pageSlices.push({ y: currentY, height: sliceH });
+    currentY += sliceH;
+  }
+
+  for (let i = 0; i < pageSlices.length; i++) {
+    if (i > 0) {
+      doc.addPage([pageW, pageH], options.orientation);
+    }
+    const slice = pageSlices[i];
+    const sliceCanvas = document.createElement("canvas");
+    sliceCanvas.width = cW;
+    sliceCanvas.height = slice.height;
+    const sCtx = sliceCanvas.getContext("2d");
+    if (sCtx) {
+      sCtx.fillStyle = "#ffffff";
+      sCtx.fillRect(0, 0, cW, slice.height);
+      sCtx.drawImage(canvas, 0, slice.y, cW, slice.height, 0, 0, cW, slice.height);
+    }
+    const sliceImg = sliceCanvas.toDataURL("image/png");
+    const sliceHeightPt = slice.height / pxPerPt;
+    doc.addImage(sliceImg, "PNG", marginPt, marginPt, contentW, sliceHeightPt);
+  }
+
+  if (options.pageNumbers) {
+    const total = pageSlices.length;
+    for (let i = 1; i <= total; i++) {
+      doc.setPage(i);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(130, 130, 130);
+      const label = `Page ${i} of ${total}`;
+      const py = options.pageNumberPosition === "top-right" ? marginPt * 0.45 : pageH - marginPt * 0.5;
+      if (options.pageNumberPosition === "bottom-center") {
+        doc.text(label, pageW / 2, py, { align: "center" });
+      } else {
+        doc.text(label, pageW - marginPt, py, { align: "right" });
+      }
+    }
+  }
+
+  doc.setProperties({
+    title: docTitleFor(root),
+    creator: "FilesWow.com — Text to PDF",
+  });
+
+  return {
+    blob: doc.output("blob"),
+    pageCount: pageSlices.length,
+    warnings: [],
+  };
+}
+
 export async function richTextToPdf(root: HTMLElement, options: RichTextPdfOptions): Promise<RichTextPdfResult> {
   if (typeof window === "undefined") throw new Error("Rich text export requires a browser");
+
+  // Non-Latin scripts (Devanagari/Nepali, Arabic, Bengali, etc.) require complex text shaping
+  // and Unicode fonts not supported by jsPDF's built-in 14 Type-1 fonts. Render them through
+  // the script-aware high-fidelity pipeline so all conjuncts, matras, and glyphs render accurately.
+  if (hasNonWinAnsi(root.textContent ?? "")) {
+    return renderScriptAwarePdf(root, options);
+  }
 
   const warnings: string[] = [];
   const replaced = { count: 0 };

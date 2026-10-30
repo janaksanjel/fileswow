@@ -39,6 +39,7 @@ type RGB = [number, number, number];
 
 interface TextStyle {
   family: FontFamily;
+  fontFamilyRaw?: string;
   size: number; // pt
   bold: boolean;
   italic: boolean;
@@ -151,6 +152,7 @@ function styleOf(el: Element | null, fallback: TextStyle): TextStyle {
   const hasBg = bgCss !== "rgba(0, 0, 0, 0)" && bgCss !== "transparent";
   return {
     family: mapFontFamily(cs.fontFamily),
+    fontFamilyRaw: cs.fontFamily,
     size: Math.max(4, pxToPt(parseFloat(cs.fontSize) || 16)),
     bold: weight >= 600,
     italic: /italic|oblique/.test(cs.fontStyle),
@@ -527,16 +529,79 @@ function hexColor(rgb: RGB): string {
   return rgb.map((n) => n.toString(16).padStart(2, "0")).join("").toUpperCase();
 }
 
+export function resolveWordFont(
+  rawFont: string | undefined,
+  fallback: FontFamily,
+  isComplex: boolean
+): { ascii: string; hAnsi: string; cs: string } {
+  const f = (rawFont || "").toLowerCase();
+  let ascii = WORD_FONT[fallback] || "Arial";
+  let cs = "Mangal";
+
+  if (/preeti/i.test(f)) {
+    ascii = "Preeti";
+    cs = "Preeti";
+    return { ascii, cs, hAnsi: ascii };
+  }
+  if (/kalimati/i.test(f)) {
+    ascii = "Kalimati";
+    cs = "Kalimati";
+    return { ascii, cs, hAnsi: ascii };
+  }
+  if (/mangal/i.test(f)) {
+    ascii = "Mangal";
+    cs = "Mangal";
+    return { ascii, cs, hAnsi: ascii };
+  }
+  if (/noto sans devanagari/i.test(f)) {
+    ascii = "Noto Sans Devanagari";
+    cs = "Noto Sans Devanagari";
+    return { ascii, cs, hAnsi: ascii };
+  }
+  if (/nirmala/i.test(f)) {
+    ascii = "Nirmala UI";
+    cs = "Nirmala UI";
+    return { ascii, cs, hAnsi: ascii };
+  }
+  if (/(courier|mono|consolas|menlo)/i.test(f)) {
+    ascii = "Courier New";
+  } else if (/(times|georgia|garamond|book|serif)/i.test(f) && !/sans/i.test(f)) {
+    ascii = "Times New Roman";
+  } else if (/verdana/i.test(f)) {
+    ascii = "Verdana";
+  } else if (/georgia/i.test(f)) {
+    ascii = "Georgia";
+  } else {
+    ascii = "Arial";
+  }
+
+  // When text contains Devanagari (Nepali/Hindi) or complex scripts,
+  // ensure the complex-script font slot is a proper Devanagari font.
+  if (isComplex) {
+    cs = "Mangal";
+  }
+
+  return { ascii, cs, hAnsi: ascii };
+}
+
 function runChildFor(seg: Segment): TextRun | ExternalHyperlink {
   const s = seg.style;
+  const isDevanagari = /[\u0900-\u097F]/.test(seg.text);
+  const isComplex = isDevanagari || /[\u0600-\u08FF\u0980-\u0DFF]/.test(seg.text);
+  const font = resolveWordFont(s.fontFamilyRaw, s.family, isComplex);
+  const halfPtSize = Math.round(s.size * PT_TO_HALFWPT);
+
   const styleOptions = {
     bold: s.bold || undefined,
+    boldComplexScript: s.bold || undefined,
     italics: s.italic || undefined,
+    italicsComplexScript: s.italic || undefined,
     underline: s.underline ? {} : undefined,
     strike: s.strike || undefined,
     color: hexColor(s.color),
-    size: Math.round(s.size * PT_TO_HALFWPT),
-    font: WORD_FONT[s.family],
+    size: halfPtSize,
+    sizeComplexScript: halfPtSize,
+    font,
     shading: s.bg
       ? { type: ShadingType.CLEAR, fill: hexColor(s.bg), color: "auto" }
       : undefined,
@@ -677,6 +742,21 @@ export async function richTextToDocx(root: HTMLElement): Promise<RichTextDocxRes
   const doc = new Document({
     creator: "FilesWow.com — Text to Word",
     title: docTitleFor(root),
+    styles: {
+      default: {
+        document: {
+          run: {
+            font: {
+              ascii: "Arial",
+              hAnsi: "Arial",
+              cs: "Mangal",
+            },
+            size: 24,
+            sizeComplexScript: 24,
+          },
+        },
+      },
+    },
     numbering: {
       config: [
         {
