@@ -1,3 +1,4 @@
+import { FilePreviewButton } from "@/components/file-preview-button";
 "use client";
 
 import { useState, useCallback } from "react";
@@ -63,7 +64,8 @@ export default function BulkImagesToDocTool({ onProcessing, onError }: ToolUIPro
         <DropZone accept="image/*" multiple onFilesSelected={handleFiles} label="Drop images" description="Multiple JPG, PNG images" />
       ) : (
         <div className="space-y-4">
-          <div className="flex items-center justify-between"><p className="text-sm text-text-secondary">{files.length} image(s)</p><button onClick={() => { setFiles([]); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger">Clear</button></div>
+          <div className="flex items-center justify-between"><p className="text-sm text-text-secondary">{files.length} image(s)</p><FilePreviewButton file={files[0]} />
+            <button onClick={() => { setFiles([]); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger">Clear</button></div>
           <div className="grid grid-cols-4 gap-2">{files.slice(0, 8).map((f, i) => <div key={i} className="aspect-square rounded-lg bg-bg-elevated border border-border-base flex items-center justify-center text-xs text-text-tertiary">{f.name.split(".").pop()?.toUpperCase()}</div>)}{files.length > 8 && <div className="aspect-square rounded-lg bg-bg-elevated border border-border-base flex items-center justify-center text-xs text-text-tertiary">+{files.length - 8}</div>}</div>
           <div>
             <label className="block text-sm text-text-secondary mb-2">Output format</label>

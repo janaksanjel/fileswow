@@ -1,3 +1,4 @@
+import { FilePreviewButton } from "@/components/file-preview-button";
 "use client";
 
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
@@ -462,6 +463,7 @@ export default function AddPageNumbersPdfTool({ onProcessing, onError }: ToolUIP
               </div>
             </div>
 
+            <FilePreviewButton file={file} />
             <button
               type="button"
               onClick={() => {

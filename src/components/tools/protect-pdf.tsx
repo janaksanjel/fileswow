@@ -1,25 +1,24 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { DropZone } from "@/components/drop-zone";
-import { DownloadButton } from "@/components/download-button";
+import { StepFlow, type StepOutput } from "@/components/step-flow";
 import type { ToolUIProps } from "@/components/tool-registry";
 
-import { UiIcon } from "@/components/ui-icon";
 export default function ProtectPdfTool({ onProcessing, onError }: ToolUIProps) {
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [result, setResult] = useState<Blob | null>(null);
+  const [outputs, setOutputs] = useState<StepOutput[]>([]);
   const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFile = useCallback((files: File[]) => {
-    setFile(files[0] || null);
-    setResult(null);
+  const handleFilesChanged = useCallback((next: File[]) => {
+    setFiles(next);
+    setOutputs([]);
   }, []);
 
   const passwordMismatch = password && confirmPassword && password !== confirmPassword;
-  const canProtect = file && password.length >= 4 && !passwordMismatch;
+  const canProtect = files.length > 0 && password.length >= 4 && !passwordMismatch;
 
   const handleProtect = async () => {
     if (!canProtect) return;
@@ -27,11 +26,13 @@ export default function ProtectPdfTool({ onProcessing, onError }: ToolUIProps) {
     onProcessing?.(true);
     try {
       const { protectPdf, savePdf } = await import("@/lib/engines/pdf");
-      const doc = await protectPdf(file!, password);
+      const doc = await protectPdf(files[0], password);
       const blob = await savePdf(doc);
-      setResult(blob);
+      setOutputs([{ name: `protected-${files[0].name}`, blob }]);
     } catch (err) {
-      onError?.(err instanceof Error ? err.message : "Failed to protect PDF");
+      const msg = err instanceof Error ? err.message : "Failed to protect PDF";
+      setError(msg);
+      onError?.(msg);
     } finally {
       setProcessing(false);
       onProcessing?.(false);
@@ -39,63 +40,58 @@ export default function ProtectPdfTool({ onProcessing, onError }: ToolUIProps) {
   };
 
   return (
-    <div className="space-y-6">
-      {!file ? (
-        <DropZone accept=".pdf" onFilesSelected={handleFile} label="Drop a PDF to protect" description="Select a single PDF file" />
-      ) : (
+    <StepFlow
+      accept=".pdf"
+      maxFiles={1}
+      hint="Single PDF document"
+      actionLabel="Protect PDF"
+      processingLabel="Protecting PDF..."
+      outputs={outputs}
+      canRun={canProtect}
+      processing={processing}
+      fileCount={files.length}
+      onFilesChanged={handleFilesChanged}
+      onResetFilesOnly={() => setOutputs([])}
+      onRun={handleProtect}
+      onReset={() => {
+        setFiles([]);
+        setOutputs([]);
+        setError(null);
+        setPassword("");
+        setConfirmPassword("");
+      }}
+      error={error}
+      onDismissError={() => setError(null)}
+      renderOperation={() => (
         <div className="space-y-4">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
-            <span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-accent-start/10 text-accent-end">PDF</span>
-            <span className="text-sm text-text-primary truncate flex-1">{file.name}</span>
-            <button onClick={() => { setFile(null); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">Remove</button>
-          </div>
-
           <div>
-            <label className="block text-sm text-text-secondary mb-2">Password</label>
+            <label className="block text-sm text-text-secondary mb-2 font-semibold">Password</label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter a password (min 4 characters)"
-              className="w-full px-4 py-2.5 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm focus:border-accent focus:outline-none transition-colors"
+              className="w-full px-4 py-2.5 rounded-xl bg-bg-input border border-border-strong text-text-primary text-sm focus:border-accent focus:outline-none transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-sm text-text-secondary mb-2">Confirm password</label>
+            <label className="block text-sm text-text-secondary mb-2 font-semibold">Confirm password</label>
             <input
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="Re-enter password"
-              className={`w-full px-4 py-2.5 rounded-lg bg-bg-elevated border text-text-primary text-sm focus:outline-none transition-colors ${
-                passwordMismatch ? "border-danger focus:border-danger" : "border-border-base focus:border-accent"
+              className={`w-full px-4 py-2.5 rounded-xl bg-bg-input border text-text-primary text-sm focus:outline-none transition-colors ${
+                passwordMismatch ? "border-danger focus:border-danger" : "border-border-strong focus:border-accent"
               }`}
             />
             {passwordMismatch && (
-              <p className="mt-1 text-xs text-danger">Passwords do not match</p>
+              <p className="mt-1.5 text-xs text-danger font-medium">Passwords do not match</p>
             )}
           </div>
-
-          {result && (
-            <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}PDF protected with password!</p>
-              <DownloadButton blob={result} filename={`protected-${file.name}`} />
-            </div>
-          )}
-
-          {!result && (
-            <button onClick={handleProtect} disabled={processing || !canProtect} className="btn-primary w-full py-3">
-              {processing ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />
-                  Protecting...
-                </span>
-              ) : "Protect PDF"}
-            </button>
-          )}
         </div>
       )}
-    </div>
+    />
   );
 }

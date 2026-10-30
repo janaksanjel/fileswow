@@ -1,41 +1,48 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { DropZone } from "@/components/drop-zone";
-import { DownloadButton } from "@/components/download-button";
+import { StepFlow, type StepOutput } from "@/components/step-flow";
 import type { ToolUIProps } from "@/components/tool-registry";
 
-import { UiIcon } from "@/components/ui-icon";
 export default function AddBlankPagePdfTool({ onProcessing, onError }: ToolUIProps) {
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [position, setPosition] = useState(1);
-  const [result, setResult] = useState<Blob | null>(null);
-  const [processing, setProcessing] = useState(false);
   const [pageCount, setPageCount] = useState(0);
+  const [outputs, setOutputs] = useState<StepOutput[]>([]);
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFile = useCallback(async (files: File[]) => {
-    const f = files[0];
-    if (!f) return;
-    setFile(f);
-    setResult(null);
-    try {
-      const { loadPdf } = await import("@/lib/engines/pdf");
-      const doc = await loadPdf(f);
-      setPageCount(doc.getPageCount());
-    } catch { setPageCount(0); }
+  const handleFilesChanged = useCallback(async (next: File[]) => {
+    setFiles(next);
+    setOutputs([]);
+    if (next.length > 0) {
+      try {
+        const { loadPdf } = await import("@/lib/engines/pdf");
+        const doc = await loadPdf(next[0]);
+        const count = doc.getPageCount();
+        setPageCount(count);
+        setPosition(count + 1);
+      } catch {
+        setPageCount(0);
+      }
+    } else {
+      setPageCount(0);
+    }
   }, []);
 
   const handleAdd = async () => {
-    if (!file) return;
+    if (!files.length) return;
     setProcessing(true);
     onProcessing?.(true);
     try {
       const { addBlankPage, savePdf } = await import("@/lib/engines/pdf");
-      const doc = await addBlankPage(file, position);
+      const doc = await addBlankPage(files[0], position);
       const blob = await savePdf(doc);
-      setResult(blob);
+      setOutputs([{ name: `blank-added-${files[0].name}`, blob }]);
     } catch (err) {
-      onError?.(err instanceof Error ? err.message : "Failed to add page");
+      const msg = err instanceof Error ? err.message : "Failed to add blank page";
+      setError(msg);
+      onError?.(msg);
     } finally {
       setProcessing(false);
       onProcessing?.(false);
@@ -43,35 +50,50 @@ export default function AddBlankPagePdfTool({ onProcessing, onError }: ToolUIPro
   };
 
   return (
-    <div className="space-y-6">
-      {!file ? (
-        <DropZone accept=".pdf" onFilesSelected={handleFile} label="Drop a PDF" description="Add a blank page to it" />
-      ) : (
+    <StepFlow
+      accept=".pdf"
+      maxFiles={1}
+      hint="Single PDF document"
+      actionLabel="Add Blank Page"
+      processingLabel="Adding blank page..."
+      outputs={outputs}
+      canRun={files.length > 0}
+      processing={processing}
+      fileCount={files.length}
+      onFilesChanged={handleFilesChanged}
+      onResetFilesOnly={() => {
+        setOutputs([]);
+        setPageCount(0);
+      }}
+      onRun={handleAdd}
+      onReset={() => {
+        setFiles([]);
+        setOutputs([]);
+        setError(null);
+        setPageCount(0);
+      }}
+      error={error}
+      onDismissError={() => setError(null)}
+      renderOperation={() => (
         <div className="space-y-4">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
-            <span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-accent-start/10 text-accent-end">PDF</span>
-            <span className="text-sm text-text-primary truncate flex-1">{file.name}</span>
-            <span className="text-xs text-text-tertiary">{pageCount} pages</span>
-            <button onClick={() => { setFile(null); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">Remove</button>
-          </div>
           <div>
-            <label className="block text-sm text-text-secondary mb-2">Insert position (1-based)</label>
-            <input type="number" min="1" max={pageCount + 1} value={position} onChange={(e) => setPosition(Number(e.target.value))} className="w-24 px-3 py-2 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm font-mono focus:border-accent focus:outline-none transition-colors" />
-            <p className="mt-1 text-xs text-text-tertiary">1 = beginning, {pageCount + 1} = end</p>
+            <label className="block text-sm text-text-secondary mb-2 font-semibold">
+              Insert position (1 to {pageCount + 1})
+            </label>
+            <input
+              type="number"
+              min={1}
+              max={pageCount + 1}
+              value={position}
+              onChange={(e) => setPosition(Number(e.target.value))}
+              className="w-32 px-3.5 py-2.5 rounded-xl bg-bg-input border border-border-strong text-text-primary text-sm font-mono focus:border-accent focus:outline-none transition-colors"
+            />
+            <p className="mt-1.5 text-xs text-text-tertiary">
+              1 = beginning, {pageCount + 1} = end of document. Document has {pageCount} pages.
+            </p>
           </div>
-          {result && (
-            <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Blank page added!</p>
-              <DownloadButton blob={result} filename={`modified-${file.name}`} />
-            </div>
-          )}
-          {!result && (
-            <button onClick={handleAdd} disabled={processing} className="btn-primary w-full py-3">
-              {processing ? "Adding..." : "Add Blank Page"}
-            </button>
-          )}
         </div>
       )}
-    </div>
+    />
   );
 }

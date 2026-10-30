@@ -1,48 +1,48 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { DropZone } from "@/components/drop-zone";
-import { DownloadButton } from "@/components/download-button";
+import { StepFlow, type StepOutput } from "@/components/step-flow";
 import type { ToolUIProps } from "@/components/tool-registry";
 
-import { UiIcon } from "@/components/ui-icon";
 export default function CropPdfTool({ onProcessing, onError }: ToolUIProps) {
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [top, setTop] = useState(50);
   const [bottom, setBottom] = useState(50);
   const [left, setLeft] = useState(50);
   const [right, setRight] = useState(50);
-  const [result, setResult] = useState<Blob | null>(null);
+  const [outputs, setOutputs] = useState<StepOutput[]>([]);
   const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFile = useCallback((files: File[]) => {
-    setFile(files[0] || null);
-    setResult(null);
+  const handleFilesChanged = useCallback((next: File[]) => {
+    setFiles(next);
+    setOutputs([]);
   }, []);
 
   const handleCrop = async () => {
-    if (!file) return;
+    if (!files.length) return;
     setProcessing(true);
     onProcessing?.(true);
     try {
       const { loadPdf, savePdf } = await import("@/lib/engines/pdf");
-      const { PDFDocument, rgb } = await import("pdf-lib");
-      const doc = await loadPdf(file);
+      const doc = await loadPdf(files[0]);
 
       for (const page of doc.getPages()) {
         const { width, height } = page.getSize();
         page.setMediaBox(
           left,
           bottom,
-          width - left - right,
-          height - top - bottom
+          Math.max(10, width - left - right),
+          Math.max(10, height - top - bottom)
         );
       }
 
       const blob = await savePdf(doc);
-      setResult(blob);
+      setOutputs([{ name: `cropped-${files[0].name}`, blob }]);
     } catch (err) {
-      onError?.(err instanceof Error ? err.message : "Failed to crop PDF");
+      const msg = err instanceof Error ? err.message : "Failed to crop PDF";
+      setError(msg);
+      onError?.(msg);
     } finally {
       setProcessing(false);
       onProcessing?.(false);
@@ -50,50 +50,53 @@ export default function CropPdfTool({ onProcessing, onError }: ToolUIProps) {
   };
 
   return (
-    <div className="space-y-6">
-      {!file ? (
-        <DropZone accept=".pdf" onFilesSelected={handleFile} label="Drop a PDF to crop" description="Select a single PDF file" />
-      ) : (
+    <StepFlow
+      accept=".pdf"
+      maxFiles={1}
+      hint="Single PDF document"
+      actionLabel="Crop PDF"
+      processingLabel="Cropping PDF..."
+      outputs={outputs}
+      canRun={files.length > 0}
+      processing={processing}
+      fileCount={files.length}
+      onFilesChanged={handleFilesChanged}
+      onResetFilesOnly={() => setOutputs([])}
+      onRun={handleCrop}
+      onReset={() => {
+        setFiles([]);
+        setOutputs([]);
+        setError(null);
+      }}
+      error={error}
+      onDismissError={() => setError(null)}
+      renderOperation={() => (
         <div className="space-y-4">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
-            <span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-accent-start/10 text-accent-end">PDF</span>
-            <span className="text-sm text-text-primary truncate flex-1">{file.name}</span>
-            <button onClick={() => { setFile(null); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">Remove</button>
-          </div>
-
           <div className="grid grid-cols-2 gap-4">
             {[
-              { label: "Top", value: top, set: setTop },
-              { label: "Bottom", value: bottom, set: setBottom },
-              { label: "Left", value: left, set: setLeft },
-              { label: "Right", value: right, set: setRight },
+              { label: "Top Margin", value: top, set: setTop },
+              { label: "Bottom Margin", value: bottom, set: setBottom },
+              { label: "Left Margin", value: left, set: setLeft },
+              { label: "Right Margin", value: right, set: setRight },
             ].map(({ label, value, set }) => (
               <div key={label}>
-                <label className="block text-sm text-text-secondary mb-2">{label}: {value}px</label>
-                <input type="range" min="0" max="200" value={value} onChange={(e) => set(Number(e.target.value))} className="w-full accent-accent-start" />
+                <div className="flex justify-between text-sm text-text-secondary mb-1.5 font-medium">
+                  <span>{label}</span>
+                  <span className="font-mono text-accent">{value}px</span>
+                </div>
+                <input
+                  type="range"
+                  min="0"
+                  max="200"
+                  value={value}
+                  onChange={(e) => set(Number(e.target.value))}
+                  className="w-full accent-accent"
+                />
               </div>
             ))}
           </div>
-
-          {result && (
-            <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Crop complete!</p>
-              <DownloadButton blob={result} filename={`cropped-${file.name}`} />
-            </div>
-          )}
-
-          {!result && (
-            <button onClick={handleCrop} disabled={processing} className="btn-primary w-full py-3">
-              {processing ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />
-                  Cropping...
-                </span>
-              ) : "Crop PDF"}
-            </button>
-          )}
         </div>
       )}
-    </div>
+    />
   );
 }

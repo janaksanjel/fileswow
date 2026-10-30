@@ -1,33 +1,34 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { DropZone } from "@/components/drop-zone";
-import { DownloadButton } from "@/components/download-button";
+import { StepFlow, type StepOutput } from "@/components/step-flow";
 import type { ToolUIProps } from "@/components/tool-registry";
 
-import { UiIcon } from "@/components/ui-icon";
 export default function UnlockPdfTool({ onProcessing, onError }: ToolUIProps) {
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [password, setPassword] = useState("");
-  const [result, setResult] = useState<Blob | null>(null);
+  const [outputs, setOutputs] = useState<StepOutput[]>([]);
   const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFile = useCallback((files: File[]) => {
-    setFile(files[0] || null);
-    setResult(null);
+  const handleFilesChanged = useCallback((next: File[]) => {
+    setFiles(next);
+    setOutputs([]);
   }, []);
 
   const handleUnlock = async () => {
-    if (!file || !password) return;
+    if (!files.length || !password) return;
     setProcessing(true);
     onProcessing?.(true);
     try {
       const { loadPdf, savePdf } = await import("@/lib/engines/pdf");
-      const doc = await loadPdf(file);
+      const doc = await loadPdf(files[0]);
       const blob = await savePdf(doc);
-      setResult(blob);
+      setOutputs([{ name: `unlocked-${files[0].name}`, blob }]);
     } catch (err) {
-      onError?.(err instanceof Error ? err.message : "Failed to unlock PDF. Is the password correct?");
+      const msg = err instanceof Error ? err.message : "Failed to unlock PDF. Is the password correct?";
+      setError(msg);
+      onError?.(msg);
     } finally {
       setProcessing(false);
       onProcessing?.(false);
@@ -35,47 +36,46 @@ export default function UnlockPdfTool({ onProcessing, onError }: ToolUIProps) {
   };
 
   return (
-    <div className="space-y-6">
-      {!file ? (
-        <DropZone accept=".pdf" onFilesSelected={handleFile} label="Drop a locked PDF" description="Select a password-protected PDF" />
-      ) : (
+    <StepFlow
+      accept=".pdf"
+      maxFiles={1}
+      hint="Password-protected PDF document"
+      actionLabel="Unlock PDF"
+      processingLabel="Unlocking PDF..."
+      outputs={outputs}
+      canRun={files.length > 0 && password.length > 0}
+      processing={processing}
+      fileCount={files.length}
+      onFilesChanged={handleFilesChanged}
+      onResetFilesOnly={() => setOutputs([])}
+      onRun={handleUnlock}
+      onReset={() => {
+        setFiles([]);
+        setOutputs([]);
+        setError(null);
+        setPassword("");
+      }}
+      error={error}
+      onDismissError={() => setError(null)}
+      renderOperation={() => (
         <div className="space-y-4">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
-            <span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-warning/10 text-warning">{<UiIcon name="lock" size={14} className="inline align-[-3px] mr-1" />}</span>
-            <span className="text-sm text-text-primary truncate flex-1">{file.name}</span>
-            <button onClick={() => { setFile(null); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">Remove</button>
-          </div>
-
           <div>
-            <label className="block text-sm text-text-secondary mb-2">Current password</label>
+            <label className="block text-sm text-text-secondary mb-2 font-semibold">
+              Current password
+            </label>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter the current password"
-              className="w-full px-4 py-2.5 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm focus:border-accent focus:outline-none transition-colors"
+              placeholder="Enter current password"
+              className="w-full px-4 py-2.5 rounded-xl bg-bg-input border border-border-strong text-text-primary text-sm focus:border-accent focus:outline-none transition-colors"
             />
+            <p className="mt-1.5 text-xs text-text-tertiary">
+              Decrypts and removes restrictions completely in your browser.
+            </p>
           </div>
-
-          {result && (
-            <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}PDF unlocked!</p>
-              <DownloadButton blob={result} filename={`unlocked-${file.name}`} />
-            </div>
-          )}
-
-          {!result && (
-            <button onClick={handleUnlock} disabled={processing || !password} className="btn-primary w-full py-3">
-              {processing ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />
-                  Unlocking...
-                </span>
-              ) : "Unlock PDF"}
-            </button>
-          )}
         </div>
       )}
-    </div>
+    />
   );
 }

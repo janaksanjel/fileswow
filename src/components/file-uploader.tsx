@@ -1,3 +1,4 @@
+import { PdfDrawerPreview } from "./pdf-drawer-preview";
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -68,6 +69,18 @@ const EXT_STYLES: Record<string, string> = {
   CSV: "bg-success/10 text-success",
 };
 
+
+function isPreviewableFile(file: File) {
+  const type = file.type?.toLowerCase() || "";
+  const name = file.name.toLowerCase();
+  return (
+    type === "application/pdf" ||
+    name.endsWith(".pdf") ||
+    type.startsWith("image/") ||
+    /\.(png|jpe?g|webp|svg|gif|bmp|ico|avif)$/i.test(name)
+  );
+}
+
 /* ─── Component ────────────────────────────────────────────────── */
 
 export function FileUploader({
@@ -80,6 +93,7 @@ export function FileUploader({
   simulateUpload = true,
 }: FileUploaderProps) {
   const [items, setItems] = useState<UploadedFile[]>([]);
+  const [previewFile, setPreviewFile] = useState<File | null>(null);
   const itemsRef = useRef<UploadedFile[]>(items);
   const [dragging, setDragging] = useState(false);
   const dragDepth = useRef(0);
@@ -577,6 +591,13 @@ export function FileUploader({
           )}
         </div>
       )}
+      {/* Right Drawer Preview for uploaded file */}
+      <PdfDrawerPreview
+        open={previewFile !== null}
+        onClose={() => setPreviewFile(null)}
+        fileOrBlob={previewFile}
+        title={previewFile?.name ?? "Preview"}
+      />
     </div>
   );
 }

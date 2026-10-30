@@ -1,3 +1,4 @@
+import { FilePreviewButton } from "@/components/file-preview-button";
 "use client";
 
 import { useState, useCallback } from "react";
@@ -72,6 +73,7 @@ export default function ico_to_png_Tool({ onProcessing, onError }: ToolUIProps) 
               <p className="text-sm text-text-primary truncate">{file.name}</p>
               <p className="text-xs text-text-tertiary">{fmt(originalSize)}</p>
             </div>
+            <FilePreviewButton file={file} />
             <button onClick={() => { setFile(null); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">Remove</button>
           </div>
 

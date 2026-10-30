@@ -1,3 +1,4 @@
+import { FilePreviewButton } from "@/components/file-preview-button";
 "use client";
 
 import { useState, useCallback } from "react";
@@ -47,6 +48,7 @@ export default function png_to_svg_Tool({ onProcessing, onError }: ToolUIProps) 
           <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
             <span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-accent-start/10 text-accent-end">PNG</span>
             <div className="flex-1"><p className="text-sm text-text-primary truncate">{file.name}</p></div>
+            <FilePreviewButton file={file} />
             <button onClick={() => { setFile(null); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger">Remove</button>
           </div>
           {result && (

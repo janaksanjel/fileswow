@@ -1,3 +1,4 @@
+import { FilePreviewButton } from "@/components/file-preview-button";
 "use client";
 
 import { useState, useCallback } from "react";
@@ -84,6 +85,7 @@ export default function SplitPdfByPageCountTool({ onProcessing, onError }: ToolU
               <p className="text-sm text-text-primary truncate">{file.name}</p>
               <p className="text-xs text-text-tertiary">{pageCount} pages</p>
             </div>
+            <FilePreviewButton file={file} />
             <button onClick={() => { setFile(null); setResults([]); setPageCount(0); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">Remove</button>
           </div>
 

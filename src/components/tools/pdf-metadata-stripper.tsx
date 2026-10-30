@@ -1,45 +1,47 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { DropZone } from "@/components/drop-zone";
-import { DownloadButton } from "@/components/download-button";
+import { StepFlow, type StepOutput } from "@/components/step-flow";
 import type { ToolUIProps } from "@/components/tool-registry";
 
-import { UiIcon } from "@/components/ui-icon";
 export default function PdfMetadataStripperTool({ onProcessing, onError }: ToolUIProps) {
-  const [file, setFile] = useState<File | null>(null);
-  const [result, setResult] = useState<Blob | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [outputs, setOutputs] = useState<StepOutput[]>([]);
   const [processing, setProcessing] = useState(false);
   const [pageCount, setPageCount] = useState(0);
   const [originalMeta, setOriginalMeta] = useState<{ title?: string; author?: string; subject?: string; creator?: string }>({});
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFile = useCallback(async (files: File[]) => {
-    const f = files[0];
-    if (!f) return;
-    setFile(f);
-    setResult(null);
-    try {
-      const { loadPdf } = await import("@/lib/engines/pdf");
-      const doc = await loadPdf(f);
-      setPageCount(doc.getPageCount());
-      setOriginalMeta({
-        title: doc.getTitle() || undefined,
-        author: doc.getAuthor() || undefined,
-        subject: doc.getSubject() || undefined,
-        creator: doc.getCreator() || undefined,
-      });
-    } catch {
+  const handleFilesChanged = useCallback(async (next: File[]) => {
+    setFiles(next);
+    setOutputs([]);
+    if (next.length > 0) {
+      try {
+        const { loadPdf } = await import("@/lib/engines/pdf");
+        const doc = await loadPdf(next[0]);
+        setPageCount(doc.getPageCount());
+        setOriginalMeta({
+          title: doc.getTitle() || undefined,
+          author: doc.getAuthor() || undefined,
+          subject: doc.getSubject() || undefined,
+          creator: doc.getCreator() || undefined,
+        });
+      } catch {
+        setPageCount(0);
+      }
+    } else {
       setPageCount(0);
+      setOriginalMeta({});
     }
   }, []);
 
   const handleStrip = async () => {
-    if (!file) return;
+    if (!files.length) return;
     setProcessing(true);
     onProcessing?.(true);
     try {
       const { PDFDocument } = await import("pdf-lib");
-      const buffer = await file.arrayBuffer();
+      const buffer = await files[0].arrayBuffer();
       const doc = await PDFDocument.load(buffer);
 
       doc.setTitle("");
@@ -50,9 +52,12 @@ export default function PdfMetadataStripperTool({ onProcessing, onError }: ToolU
       doc.setProducer("");
 
       const bytes = await doc.save();
-      setResult(new Blob([new Uint8Array(bytes)], { type: "application/pdf" }));
+      const blob = new Blob([new Uint8Array(bytes)], { type: "application/pdf" });
+      setOutputs([{ name: `clean-${files[0].name}`, blob }]);
     } catch (err) {
-      onError?.(err instanceof Error ? err.message : "Failed to strip metadata");
+      const msg = err instanceof Error ? err.message : "Failed to strip metadata";
+      setError(msg);
+      onError?.(msg);
     } finally {
       setProcessing(false);
       onProcessing?.(false);
@@ -62,58 +67,56 @@ export default function PdfMetadataStripperTool({ onProcessing, onError }: ToolU
   const hasMeta = originalMeta.title || originalMeta.author || originalMeta.subject || originalMeta.creator;
 
   return (
-    <div className="space-y-6">
-      {!file ? (
-        <DropZone accept=".pdf" onFilesSelected={handleFile} label="Drop a PDF to strip metadata" description="Remove all personal data from the PDF" />
-      ) : (
+    <StepFlow
+      accept=".pdf"
+      maxFiles={1}
+      hint="Single PDF document"
+      actionLabel="Strip All Metadata"
+      processingLabel="Removing metadata..."
+      outputs={outputs}
+      canRun={files.length > 0}
+      processing={processing}
+      fileCount={files.length}
+      onFilesChanged={handleFilesChanged}
+      onResetFilesOnly={() => {
+        setOutputs([]);
+        setPageCount(0);
+        setOriginalMeta({});
+      }}
+      onRun={handleStrip}
+      onReset={() => {
+        setFiles([]);
+        setOutputs([]);
+        setError(null);
+        setPageCount(0);
+        setOriginalMeta({});
+      }}
+      error={error}
+      onDismissError={() => setError(null)}
+      renderOperation={() => (
         <div className="space-y-4">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
-            <span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-accent-start/10 text-accent-end">PDF</span>
-            <div className="flex-1">
-              <p className="text-sm text-text-primary truncate">{file.name}</p>
-              <p className="text-xs text-text-tertiary">{pageCount} pages</p>
-            </div>
-            <button onClick={() => { setFile(null); setResult(null); setOriginalMeta({}); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">Remove</button>
-          </div>
-
-          {hasMeta && (
-            <div className="p-3 rounded-lg bg-warning/[0.04] border border-warning/10">
-              <p className="text-xs font-semibold text-warning mb-2">{<UiIcon name="lock" size={14} className="inline align-[-3px] mr-1" />} Metadata found:</p>
-              <ul className="space-y-1">
-                {originalMeta.title && <li className="text-xs text-text-secondary">Title: {originalMeta.title}</li>}
-                {originalMeta.author && <li className="text-xs text-text-secondary">Author: {originalMeta.author}</li>}
-                {originalMeta.subject && <li className="text-xs text-text-secondary">Subject: {originalMeta.subject}</li>}
-                {originalMeta.creator && <li className="text-xs text-text-secondary">Creator: {originalMeta.creator}</li>}
+          {hasMeta ? (
+            <div className="p-4 rounded-xl bg-warning/[0.06] border border-warning/20">
+              <p className="text-xs font-bold text-warning uppercase tracking-wider mb-2.5">
+                Sensitive Metadata Detected:
+              </p>
+              <ul className="space-y-1 text-xs text-text-secondary font-mono">
+                {originalMeta.title && <li>Title: {originalMeta.title}</li>}
+                {originalMeta.author && <li>Author: {originalMeta.author}</li>}
+                {originalMeta.subject && <li>Subject: {originalMeta.subject}</li>}
+                {originalMeta.creator && <li>Creator: {originalMeta.creator}</li>}
               </ul>
             </div>
-          )}
-
-          {!hasMeta && (
-            <div className="p-3 rounded-lg bg-success/[0.04] border border-success/10">
-              <p className="text-xs text-success">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}No metadata detected — file is already clean</p>
+          ) : (
+            <div className="p-4 rounded-xl bg-bg-input border border-border-strong text-text-secondary text-sm">
+              <p className="font-semibold text-text-primary mb-1">Privacy Sanitization</p>
+              <p className="text-xs text-text-tertiary">
+                Clears author names, device models, software tags, creation dates, and hidden PDF revision histories. Document has {pageCount} pages.
+              </p>
             </div>
-          )}
-
-          <div className="p-3 rounded-lg bg-bg-elevated border border-border-base">
-            <p className="text-xs text-text-secondary">
-              ℹ This removes title, author, subject, keywords, creator, and producer fields. The page content is preserved.
-            </p>
-          </div>
-
-          {result && (
-            <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Metadata stripped!</p>
-              <DownloadButton blob={result} filename={`cleaned-${file.name}`} />
-            </div>
-          )}
-
-          {!result && (
-            <button onClick={handleStrip} disabled={processing} className="btn-primary w-full py-3">
-              {processing ? "Stripping metadata..." : "Strip All Metadata"}
-            </button>
           )}
         </div>
       )}
-    </div>
+    />
   );
 }

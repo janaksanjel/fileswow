@@ -1,3 +1,4 @@
+import { FilePreviewButton } from "@/components/file-preview-button";
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
@@ -307,7 +308,8 @@ export default function WatermarkRemoverPdfTool({ onProcessing, onError }: ToolU
           <p className="text-sm text-text-primary truncate">{file.name}</p>
           <p className="text-xs text-text-tertiary">{pages.length || "…"} pages · {fmt(file.size)}</p>
         </div>
-        <button onClick={() => { setFile(null); setPages([]); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">Remove</button>
+        <FilePreviewButton file={file} />
+            <button onClick={() => { setFile(null); setPages([]); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">Remove</button>
       </div>
 
       {!pages.length && processing && (

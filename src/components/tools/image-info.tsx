@@ -1,3 +1,4 @@
+import { FilePreviewButton } from "@/components/file-preview-button";
 "use client";
 
 import { useState, useCallback } from "react";
@@ -39,6 +40,7 @@ img.src = URL.createObjectURL(f);
               <p className="text-sm text-text-primary truncate">{file.name}</p>
               <p className="text-xs text-text-tertiary">{(file.size / 1024).toFixed(1)} KB | {file.type}</p>
             </div>
+            <FilePreviewButton file={file} />
             <button onClick={() => { setFile(null); setInfo(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">Remove</button>
           </div>
 

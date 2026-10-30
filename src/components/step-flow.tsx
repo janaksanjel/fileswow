@@ -66,6 +66,19 @@ export interface StepFlowOperationContext {
 
 type Step = 1 | 2 | 3;
 
+function isPreviewableFile(file?: File | Blob | null) {
+  if (!file) return false;
+  const type = file.type?.toLowerCase() || "";
+  const name = (file instanceof File ? file.name : "").toLowerCase();
+  return (
+    type === "application/pdf" ||
+    name.endsWith(".pdf") ||
+    type.startsWith("image/") ||
+    /\.(png|jpe?g|webp|svg|gif|bmp|ico|avif)$/i.test(name)
+  );
+}
+
+
 /* ─── Step indicator ────────────────────────────────────────────── */
 
 const STEPS: Array<{ num: Step; label: string }> = [
@@ -154,6 +167,8 @@ export function StepFlow({
 }: StepFlowProps) {
   const [step, setStep] = useState<Step>(1);
   const panelRef = useRef<HTMLDivElement>(null);
+  const [currentFiles, setCurrentFiles] = useState<File[]>([]);
+  const [activeDrawerFile, setActiveDrawerFile] = useState<{ file: File | Blob; title: string } | null>(null);
 
   /* All step transitions happen inside event handlers or rAF-deferred
      effects — never synchronously during render — so no cascades.
@@ -161,6 +176,7 @@ export function StepFlow({
      back to Upload inside that handler (see handleFilesChanged). */
   const handleFilesChanged = useCallback(
     (files: File[]) => {
+      setCurrentFiles(files);
       if (files.length === 0) {
         setStep(1);
         onResetFilesOnly();
@@ -270,18 +286,34 @@ export function StepFlow({
               onFilesChanged={handleFilesChanged}
               onInvalidated={onInvalidated}
             />
-            {/* Continue */}
-            <button
-              onClick={goToOperation}
-              disabled={!hasFiles}
-              className="btn-primary w-full mt-5 py-3 group"
-            >
-              <span>Continue</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true">
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
-              </svg>
-            </button>
+            {/* Continue & Preview Buttons */}
+            <div className="flex items-center gap-2.5 mt-5">
+              {hasFiles && currentFiles.length > 0 && isPreviewableFile(currentFiles[0]) && (
+                <button
+                  type="button"
+                  onClick={() => setActiveDrawerFile({ file: currentFiles[0], title: currentFiles[0].name })}
+                  className="btn-secondary px-4 py-3 text-[13px] font-semibold flex items-center justify-center gap-1.5 shrink-0 hover:border-accent hover:text-accent transition-colors"
+                  title="Preview uploaded file in right drawer"
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                  <span>Preview</span>
+                </button>
+              )}
+              <button
+                onClick={goToOperation}
+                disabled={!hasFiles}
+                className="btn-primary flex-1 py-3 group"
+              >
+                <span>Continue</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </button>
+            </div>
             {!hasFiles && (
               <p className="text-center text-[11.5px] text-text-tertiary mt-2.5">
                 Add at least one file to continue
@@ -297,12 +329,28 @@ export function StepFlow({
               <span className="text-[12px] font-semibold text-text-secondary truncate">
                 {fileCount} file{fileCount !== 1 ? "s" : ""} ready
               </span>
-              <button
-                onClick={goUpload}
-                className="text-[11.5px] font-semibold text-accent hover:underline underline-offset-2 shrink-0"
-              >
-                Change files
-              </button>
+              <div className="flex items-center gap-3 shrink-0">
+                {currentFiles.length > 0 && isPreviewableFile(currentFiles[0]) && (
+                  <button
+                    type="button"
+                    onClick={() => setActiveDrawerFile({ file: currentFiles[0], title: currentFiles[0].name })}
+                    className="text-[11.5px] font-bold text-accent hover:underline flex items-center gap-1.5"
+                    title="Preview uploaded document/image in right drawer"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    <span>Preview in Drawer</span>
+                  </button>
+                )}
+                <button
+                  onClick={goUpload}
+                  className="text-[11.5px] font-semibold text-text-secondary hover:underline underline-offset-2 shrink-0"
+                >
+                  Change files
+                </button>
+              </div>
             </div>
 
             {renderOperation({ files: fileCount, backToUpload: goUpload })}
@@ -348,6 +396,14 @@ export function StepFlow({
           </div>
         )}
       </div>
+
+      {/* Slide-over Right Drawer Preview for uploaded file in Step 1 & 2 */}
+      <PdfDrawerPreview
+        open={activeDrawerFile !== null}
+        onClose={() => setActiveDrawerFile(null)}
+        fileOrBlob={activeDrawerFile?.file ?? null}
+        title={activeDrawerFile?.title ?? "File Preview"}
+      />
     </div>
   );
 }
@@ -367,8 +423,16 @@ function OutputPanel({
 }) {
   const [previewOutput, setPreviewOutput] = useState<StepOutput | null>(null);
 
-  const isPdf = (name: string, blob: Blob) =>
-    name.toLowerCase().endsWith(".pdf") || blob.type === "application/pdf";
+  const isPreviewableOutput = (name: string, blob: Blob) => {
+    const n = name.toLowerCase();
+    const t = blob.type.toLowerCase();
+    return (
+      n.endsWith(".pdf") ||
+      t === "application/pdf" ||
+      t.startsWith("image/") ||
+      /\.(png|jpe?g|webp|svg|gif|bmp|ico|avif)$/i.test(n)
+    );
+  };
 
   return (
     <div>
@@ -411,7 +475,7 @@ function OutputPanel({
             </span>
 
             {/* Preview button for PDF files */}
-            {isPdf(o.name, o.blob) && (
+            {isPreviewableOutput(o.name, o.blob) && (
               <button
                 type="button"
                 onClick={() => setPreviewOutput(o)}
@@ -426,7 +490,7 @@ function OutputPanel({
               </button>
             )}
 
-            <DownloadButton blob={o.blob} filename={o.name} label="Save" />
+            <DownloadButton blob={o.blob} filename={o.name} label="Save" hidePreview />
           </li>
         ))}
       </ul>

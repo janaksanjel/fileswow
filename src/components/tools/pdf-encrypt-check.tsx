@@ -1,3 +1,4 @@
+import { FilePreviewButton } from "@/components/file-preview-button";
 "use client";
 
 import { useState, useCallback } from "react";
@@ -80,6 +81,7 @@ export default function PdfEncryptCheckTool({ onProcessing, onError }: ToolUIPro
               <p className="text-sm text-text-primary truncate">{file.name}</p>
               <p className="text-xs text-text-tertiary">{(file.size / 1024).toFixed(1)} KB</p>
             </div>
+            <FilePreviewButton file={file} />
             <button onClick={() => { setFile(null); setInfo(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">Remove</button>
           </div>
 

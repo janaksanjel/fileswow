@@ -1,3 +1,4 @@
+import { FilePreviewButton } from "@/components/file-preview-button";
 "use client";
 import { useState, useCallback } from "react";
 import { DropZone } from "@/components/drop-zone";
@@ -41,6 +42,7 @@ export default function circle_crop_image_Tool({ onProcessing, onError }: ToolUI
         <div className="space-y-4">
           <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
             <div className="flex-1"><p className="text-sm text-text-primary truncate">{file.name}</p></div>
+            <FilePreviewButton file={file} />
             <button onClick={() => { setFile(null); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger">Remove</button>
           </div>
           {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10"><p className="text-sm text-success mb-1">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Circle cropped!</p><DownloadButton blob={result} filename={"circle-" + file.name} /></div>}

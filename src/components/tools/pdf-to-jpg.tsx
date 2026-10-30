@@ -1,46 +1,46 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { DropZone } from "@/components/drop-zone";
-import { DownloadButton } from "@/components/download-button";
+import { StepFlow, type StepOutput } from "@/components/step-flow";
 import type { ToolUIProps } from "@/components/tool-registry";
 
-import { UiIcon } from "@/components/ui-icon";
 export default function PdfToJpgTool({ onProcessing, onError }: ToolUIProps) {
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [dpi, setDpi] = useState(150);
-  const [results, setResults] = useState<{ name: string; blob: Blob }[]>([]);
+  const [outputs, setOutputs] = useState<StepOutput[]>([]);
   const [processing, setProcessing] = useState(false);
   const [pageCount, setPageCount] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFile = useCallback(async (files: File[]) => {
-    const f = files[0];
-    if (!f) return;
-    setFile(f);
-    setResults([]);
-    try {
-      const { loadPdf } = await import("@/lib/engines/pdf");
-      const doc = await loadPdf(f);
-      setPageCount(doc.getPageCount());
-    } catch {
+  const handleFilesChanged = useCallback(async (next: File[]) => {
+    setFiles(next);
+    setOutputs([]);
+    if (next.length > 0) {
+      try {
+        const { loadPdf } = await import("@/lib/engines/pdf");
+        const doc = await loadPdf(next[0]);
+        setPageCount(doc.getPageCount());
+      } catch {
+        setPageCount(0);
+      }
+    } else {
       setPageCount(0);
     }
   }, []);
 
   const handleConvert = async () => {
-    if (!file) return;
+    if (!files.length) return;
     setProcessing(true);
     onProcessing?.(true);
     try {
-      const { loadPdf } = await import("@/lib/engines/pdf");
       const { GlobalWorkerOptions } = await import("pdfjs-dist");
       const pdfjsLib = await import("pdfjs-dist");
 
       GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
-      const arrayBuffer = await file.arrayBuffer();
+      const arrayBuffer = await files[0].arrayBuffer();
       const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      const images: { name: string; blob: Blob }[] = [];
+      const images: StepOutput[] = [];
 
       for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
@@ -48,109 +48,93 @@ export default function PdfToJpgTool({ onProcessing, onError }: ToolUIProps) {
         const canvas = document.createElement("canvas");
         canvas.width = viewport.width;
         canvas.height = viewport.height;
-        await page.render({ canvas, viewport }).promise;
+        await (page.render as any)({ canvasContext: canvas.getContext("2d")!, canvas, viewport }).promise;
 
         const blob = await new Promise<Blob>((resolve) =>
           canvas.toBlob((b) => resolve(b!), "image/jpeg", 0.92)
         );
-        images.push({ name: `page-${i}.jpg`, blob });
+        images.push({ name: `${files[0].name.replace(/\.pdf$/i, "")}-page-${i}.jpg`, blob });
       }
 
-      setResults(images);
+      setOutputs(images);
     } catch (err) {
-      onError?.(err instanceof Error ? err.message : "Failed to convert PDF to JPG");
+      const msg = err instanceof Error ? err.message : "Failed to convert PDF to JPG";
+      setError(msg);
+      onError?.(msg);
     } finally {
       setProcessing(false);
       onProcessing?.(false);
     }
   };
 
-  const downloadAll = async () => {
+  const handleDownloadAll = async () => {
     const JSZip = (await import("jszip")).default;
     const zip = new JSZip();
-    for (const r of results) {
+    for (const r of outputs) {
       zip.file(r.name, r.blob);
     }
     const zipBlob = await zip.generateAsync({ type: "blob" });
     const url = URL.createObjectURL(zipBlob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "pages.zip";
+    a.download = `${files[0]?.name.replace(/\.pdf$/i, "") || "pdf"}-images.zip`;
     a.click();
     URL.revokeObjectURL(url);
   };
 
   return (
-    <div className="space-y-6">
-      {!file && (
-        <DropZone
-          accept=".pdf"
-          onFilesSelected={handleFile}
-          label="Drop a PDF to convert"
-          description="Select a single PDF file"
-        />
-      )}
-
-      {file && (
+    <StepFlow
+      accept=".pdf"
+      maxFiles={1}
+      hint="Single PDF document"
+      actionLabel={pageCount > 0 ? `Convert ${pageCount} Page${pageCount !== 1 ? "s" : ""} to JPG` : "Convert to JPG"}
+      processingLabel="Rendering JPG images..."
+      outputs={outputs}
+      canRun={files.length > 0}
+      processing={processing}
+      fileCount={files.length}
+      onFilesChanged={handleFilesChanged}
+      onResetFilesOnly={() => {
+        setOutputs([]);
+        setPageCount(0);
+      }}
+      onRun={handleConvert}
+      onReset={() => {
+        setFiles([]);
+        setOutputs([]);
+        setError(null);
+        setPageCount(0);
+      }}
+      onDownloadAll={handleDownloadAll}
+      error={error}
+      onDismissError={() => setError(null)}
+      renderOperation={() => (
         <div className="space-y-4">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
-            <span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-accent-start/10 text-accent-end">PDF</span>
-            <div className="flex-1">
-              <p className="text-sm text-text-primary truncate">{file.name}</p>
-              <p className="text-xs text-text-tertiary">{pageCount} pages</p>
-            </div>
-            <button onClick={() => { setFile(null); setResults([]); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">Remove</button>
-          </div>
-
           <div>
-            <label className="block text-sm text-text-secondary mb-2">Image quality (DPI): {dpi}</label>
+            <label className="block text-sm text-text-secondary mb-2 font-semibold">Image Resolution (DPI)</label>
             <div className="flex gap-2">
-              {[72, 150, 300].map((d) => (
+              {[
+                { label: "72 DPI (Standard Web)", value: 72 },
+                { label: "150 DPI (Balanced)", value: 150 },
+                { label: "300 DPI (High Print)", value: 300 },
+              ].map((d) => (
                 <button
-                  key={d}
-                  onClick={() => setDpi(d)}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
-                    dpi === d
-                      ? "bg-accent-start text-white"
-                      : "bg-bg-elevated text-text-secondary hover:text-text-primary border border-border-base"
+                  key={d.value}
+                  type="button"
+                  onClick={() => setDpi(d.value)}
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                    dpi === d.value
+                      ? "bg-accent text-white shadow-sm"
+                      : "bg-bg-input text-text-secondary hover:text-text-primary border border-border-strong"
                   }`}
                 >
-                  {d} DPI
+                  {d.label}
                 </button>
               ))}
             </div>
           </div>
-
-          {results.length > 0 && (
-            <div className="space-y-3">
-              <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10">
-                <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Conversion complete! {results.length} image{results.length !== 1 ? "s" : ""} created</p>
-                <div className="flex flex-wrap gap-2">
-                  {results.map((r) => (
-                    <DownloadButton key={r.name} blob={r.blob} filename={r.name} label={r.name} />
-                  ))}
-                  {results.length > 1 && (
-                    <button onClick={downloadAll} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-text-primary bg-bg-surface border border-border-base hover:bg-bg-elevated transition-colors">
-                      {<UiIcon name="download" size={15} className="inline align-[-3px] mr-1.5" />}Download all (ZIP)
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {!results.length && (
-            <button onClick={handleConvert} disabled={processing} className="btn-primary w-full py-3">
-              {processing ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />
-                  Converting...
-                </span>
-              ) : "Convert to JPG"}
-            </button>
-          )}
         </div>
       )}
-    </div>
+    />
   );
 }

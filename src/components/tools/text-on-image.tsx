@@ -1,3 +1,4 @@
+import { FilePreviewButton } from "@/components/file-preview-button";
 "use client";
 
 import { useState, useCallback } from "react";
@@ -55,6 +56,7 @@ export default function text_on_image_Tool({ onProcessing, onError }: ToolUIProp
         <div className="space-y-4">
           <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
             <div className="flex-1"><p className="text-sm text-text-primary truncate">{file.name}</p></div>
+            <FilePreviewButton file={file} />
             <button onClick={() => { setFile(null); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger">Remove</button>
           </div>
           <div><label className="block text-sm text-text-secondary mb-1">Text</label>

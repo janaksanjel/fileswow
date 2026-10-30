@@ -1,3 +1,4 @@
+import { FilePreviewButton } from "@/components/file-preview-button";
 "use client";
 
 import { useState, useCallback } from "react";
@@ -170,7 +171,8 @@ export default function WatermarkRemoverWordTool({ onProcessing, onError }: Tool
           <p className="text-sm text-text-primary truncate">{file.name}</p>
           <p className="text-xs text-text-tertiary">{fmt(file.size)}</p>
         </div>
-        <button onClick={() => { setFile(null); setResult(null); setReport(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">Remove</button>
+        <FilePreviewButton file={file} />
+            <button onClick={() => { setFile(null); setResult(null); setReport(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">Remove</button>
       </div>
 
       <div className="space-y-2.5 p-4 rounded-xl bg-bg-elevated border border-border-base">

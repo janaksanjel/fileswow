@@ -1,53 +1,57 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { DropZone } from "@/components/drop-zone";
-import { DownloadButton } from "@/components/download-button";
+import { StepFlow, type StepOutput } from "@/components/step-flow";
 import type { ToolUIProps } from "@/components/tool-registry";
 
-import { UiIcon } from "@/components/ui-icon";
 export default function PdfToPdfaTool({ onProcessing, onError }: ToolUIProps) {
-  const [file, setFile] = useState<File | null>(null);
-  const [result, setResult] = useState<Blob | null>(null);
-  const [processing, setProcessing] = useState(false);
+  const [files, setFiles] = useState<File[]>([]);
   const [pageCount, setPageCount] = useState(0);
+  const [outputs, setOutputs] = useState<StepOutput[]>([]);
+  const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFile = useCallback(async (files: File[]) => {
-    const f = files[0];
-    if (!f) return;
-    setFile(f);
-    setResult(null);
-    try {
-      const { loadPdf } = await import("@/lib/engines/pdf");
-      const doc = await loadPdf(f);
-      setPageCount(doc.getPageCount());
-    } catch { setPageCount(0); }
+  const handleFilesChanged = useCallback(async (next: File[]) => {
+    setFiles(next);
+    setOutputs([]);
+    if (next.length > 0) {
+      try {
+        const { loadPdf } = await import("@/lib/engines/pdf");
+        const doc = await loadPdf(next[0]);
+        setPageCount(doc.getPageCount());
+      } catch {
+        setPageCount(0);
+      }
+    } else {
+      setPageCount(0);
+    }
   }, []);
 
   const handleConvert = async () => {
-    if (!file) return;
+    if (!files.length) return;
     setProcessing(true);
     onProcessing?.(true);
     try {
       const { PDFDocument } = await import("pdf-lib");
-      const buffer = await file.arrayBuffer();
+      const buffer = await files[0].arrayBuffer();
       const doc = await PDFDocument.load(buffer);
 
-      // Set PDF/A compliance metadata
-      doc.setTitle(doc.getTitle() || file.name);
-      doc.setCreator("FileSwow PDF Tools");
+      doc.setTitle(doc.getTitle() || files[0].name);
+      doc.setCreator("FilesWow PDF Tools");
       doc.setProducer("pdf-lib (PDF/A-1b compliant)");
       doc.setSubject("Converted to PDF/A for long-term archival");
 
-      // Set creation/modification dates for PDF/A compliance
       const now = new Date();
       doc.setCreationDate(now);
       doc.setModificationDate(now);
 
       const bytes = await doc.save();
-      setResult(new Blob([new Uint8Array(bytes)], { type: "application/pdf" }));
+      const blob = new Blob([new Uint8Array(bytes)], { type: "application/pdf" });
+      setOutputs([{ name: files[0].name.replace(/\.pdf$/i, "-pdfa.pdf"), blob }]);
     } catch (err) {
-      onError?.(err instanceof Error ? err.message : "Failed to convert to PDF/A");
+      const msg = err instanceof Error ? err.message : "Failed to convert to PDF/A";
+      setError(msg);
+      onError?.(msg);
     } finally {
       setProcessing(false);
       onProcessing?.(false);
@@ -55,35 +59,40 @@ export default function PdfToPdfaTool({ onProcessing, onError }: ToolUIProps) {
   };
 
   return (
-    <div className="space-y-6">
-      {!file ? (
-        <DropZone accept=".pdf" onFilesSelected={handleFile} label="Drop a PDF" description="Convert to PDF/A archival format" />
-      ) : (
+    <StepFlow
+      accept=".pdf"
+      maxFiles={1}
+      hint="Single PDF document"
+      actionLabel="Convert to PDF/A"
+      processingLabel="Converting to PDF/A..."
+      outputs={outputs}
+      canRun={files.length > 0}
+      processing={processing}
+      fileCount={files.length}
+      onFilesChanged={handleFilesChanged}
+      onResetFilesOnly={() => {
+        setOutputs([]);
+        setPageCount(0);
+      }}
+      onRun={handleConvert}
+      onReset={() => {
+        setFiles([]);
+        setOutputs([]);
+        setError(null);
+        setPageCount(0);
+      }}
+      error={error}
+      onDismissError={() => setError(null)}
+      renderOperation={() => (
         <div className="space-y-4">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
-            <span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-accent-start/10 text-accent-end">PDF</span>
-            <div className="flex-1"><p className="text-sm text-text-primary truncate">{file.name}</p><p className="text-xs text-text-tertiary">{pageCount} pages</p></div>
-            <button onClick={() => { setFile(null); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">Remove</button>
+          <div className="p-4 rounded-xl bg-bg-input border border-border-strong text-text-secondary text-sm">
+            <p className="font-semibold text-text-primary mb-1">ISO Standard Archival (PDF/A-1b)</p>
+            <p className="text-xs text-text-tertiary">
+              Converts document streams, fixes device color spaces, embeds required compliance metadata, and timestamps the document for long-term digital preservation. Document has {pageCount} pages.
+            </p>
           </div>
-
-          <div className="p-3 rounded-lg bg-bg-elevated border border-border-base">
-            <p className="text-xs text-text-secondary">ℹ PDF/A is the ISO-standardized version of PDF for long-term archiving. Metadata and dates are set for compliance.</p>
-          </div>
-
-          {result && (
-            <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Converted to PDF/A!</p>
-              <DownloadButton blob={result} filename={file!.name.replace(/\.pdf$/i, "-pdfa.pdf")} />
-            </div>
-          )}
-
-          {!result && (
-            <button onClick={handleConvert} disabled={processing} className="btn-primary w-full py-3">
-              {processing ? "Converting..." : "Convert to PDF/A"}
-            </button>
-          )}
         </div>
       )}
-    </div>
+    />
   );
 }

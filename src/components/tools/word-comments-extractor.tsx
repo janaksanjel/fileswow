@@ -1,3 +1,4 @@
+import { FilePreviewButton } from "@/components/file-preview-button";
 "use client";
 
 import { useState, useCallback } from "react";
@@ -44,6 +45,7 @@ export default function WordCommentsExtractorTool({ onProcessing, onError }: Too
           <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
             <span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-accent-start/10 text-accent-end">DOCX</span>
             <div className="flex-1"><p className="text-sm text-text-primary truncate">{file.name}</p><p className="text-xs text-text-tertiary">{comments.length} comment(s)</p></div>
+            <FilePreviewButton file={file} />
             <button onClick={() => { setFile(null); setComments([]); }} className="text-xs text-text-tertiary hover:text-danger">Remove</button>
           </div>
           {processing && <div className="flex items-center justify-center py-8"><span className="w-6 h-6 border border-accent-start/30 border-t-accent-start rounded-full animate-spin-slow" /></div>}

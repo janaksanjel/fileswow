@@ -1,3 +1,4 @@
+import { FilePreviewButton } from "@/components/file-preview-button";
 "use client";
 
 import { useState, useCallback } from "react";
@@ -70,6 +71,7 @@ export default function WordTocGeneratorTool({ onProcessing, onError }: ToolUIPr
           <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
             <span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-accent-start/10 text-accent-end">DOCX</span>
             <div className="flex-1"><p className="text-sm text-text-primary truncate">{file.name}</p></div>
+            <FilePreviewButton file={file} />
             <button onClick={() => { setFile(null); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger">Remove</button>
           </div>
           {result && <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center"><p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}TOC generated!</p><DownloadButton blob={result} filename={`toc-${file!.name}`} /></div>}

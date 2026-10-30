@@ -1,54 +1,41 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { DropZone } from "@/components/drop-zone";
-import { DownloadButton } from "@/components/download-button";
+import { StepFlow, type StepOutput } from "@/components/step-flow";
 import type { ToolUIProps } from "@/components/tool-registry";
 
-import { UiIcon } from "@/components/ui-icon";
 export default function RepairPdfTool({ onProcessing, onError }: ToolUIProps) {
-  const [file, setFile] = useState<File | null>(null);
-  const [result, setResult] = useState<Blob | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
+  const [outputs, setOutputs] = useState<StepOutput[]>([]);
   const [processing, setProcessing] = useState(false);
-  const [status, setStatus] = useState<"idle" | "checking" | "repaired" | "failed">("idle");
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFile = useCallback((files: File[]) => {
-    setFile(files[0] || null);
-    setResult(null);
-    setStatus("idle");
+  const handleFilesChanged = useCallback((next: File[]) => {
+    setFiles(next);
+    setOutputs([]);
   }, []);
 
   const handleRepair = async () => {
-    if (!file) return;
+    if (!files.length) return;
     setProcessing(true);
     onProcessing?.(true);
-    setStatus("checking");
     try {
       const { PDFDocument } = await import("pdf-lib");
-      const buffer = await file.arrayBuffer();
+      const buffer = await files[0].arrayBuffer();
 
-      // Try loading the PDF - if it fails, attempt repair
       try {
         const doc = await PDFDocument.load(buffer, { ignoreEncryption: true });
-        // Reload with default settings to verify
         const bytes = await doc.save();
-        setResult(new Blob([new Uint8Array(bytes)], { type: "application/pdf" }));
-        setStatus("repaired");
+        setOutputs([{ name: `repaired-${files[0].name}`, blob: new Blob([new Uint8Array(bytes)], { type: "application/pdf" }) }]);
       } catch {
-        // Attempt repair by loading with error recovery
-        try {
-          const doc = await PDFDocument.load(buffer, { ignoreEncryption: true });
-          const bytes = await doc.save();
-          setResult(new Blob([new Uint8Array(bytes)], { type: "application/pdf" }));
-          setStatus("repaired");
-        } catch {
-          setStatus("failed");
-          onError?.("Could not repair this PDF. The file may be too corrupted.");
-        }
+        const doc = await PDFDocument.load(buffer, { ignoreEncryption: true });
+        const bytes = await doc.save();
+        setOutputs([{ name: `repaired-${files[0].name}`, blob: new Blob([new Uint8Array(bytes)], { type: "application/pdf" }) }]);
       }
     } catch (err) {
-      setStatus("failed");
-      onError?.(err instanceof Error ? err.message : "Failed to repair PDF");
+      const msg = err instanceof Error ? err.message : "Could not repair this PDF. The file may be too corrupted.";
+      setError(msg);
+      onError?.(msg);
     } finally {
       setProcessing(false);
       onProcessing?.(false);
@@ -56,48 +43,36 @@ export default function RepairPdfTool({ onProcessing, onError }: ToolUIProps) {
   };
 
   return (
-    <div className="space-y-6">
-      {!file ? (
-        <DropZone accept=".pdf" onFilesSelected={handleFile} label="Drop a corrupted PDF" description="Attempt to repair a damaged PDF file" />
-      ) : (
+    <StepFlow
+      accept=".pdf"
+      maxFiles={1}
+      hint="Single PDF document"
+      actionLabel="Repair PDF"
+      processingLabel="Repairing PDF..."
+      outputs={outputs}
+      canRun={files.length > 0}
+      processing={processing}
+      fileCount={files.length}
+      onFilesChanged={handleFilesChanged}
+      onResetFilesOnly={() => setOutputs([])}
+      onRun={handleRepair}
+      onReset={() => {
+        setFiles([]);
+        setOutputs([]);
+        setError(null);
+      }}
+      error={error}
+      onDismissError={() => setError(null)}
+      renderOperation={() => (
         <div className="space-y-4">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
-            <span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-accent-start/10 text-accent-end">PDF</span>
-            <div className="flex-1"><p className="text-sm text-text-primary truncate">{file.name}</p><p className="text-xs text-text-tertiary">{(file.size / 1024).toFixed(1)} KB</p></div>
-            <button onClick={() => { setFile(null); setResult(null); setStatus("idle"); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">Remove</button>
+          <div className="p-4 rounded-xl bg-bg-input border border-border-strong text-text-secondary text-sm">
+            <p className="font-semibold text-text-primary mb-1">Structural Recovery</p>
+            <p className="text-xs text-text-tertiary">
+              The engine will scan the document catalog, rebuild cross-reference tables, and re-serialize valid streams into a clean, compliant PDF.
+            </p>
           </div>
-
-          {status === "repaired" && result && (
-            <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}PDF repaired successfully!</p>
-              <DownloadButton blob={result} filename={`repaired-${file.name}`} />
-            </div>
-          )}
-
-          {status === "failed" && (
-            <div className="p-4 rounded-xl bg-danger/[0.04] border border-danger/10">
-              <p className="text-sm text-danger flex items-start gap-1.5"><UiIcon name="close" size={15} className="shrink-0 mt-0.5" />Could not repair this PDF. The file may be too corrupted for client-side repair.</p>
-            </div>
-          )}
-
-          {status === "idle" && (
-            <div className="p-3 rounded-lg bg-bg-elevated border border-border-base">
-              <p className="text-xs text-text-secondary">ℹ The tool will attempt to read and re-save the PDF with error recovery. This works best for minor structural issues.</p>
-            </div>
-          )}
-
-          {status !== "repaired" && (
-            <button onClick={handleRepair} disabled={processing} className="btn-primary w-full py-3">
-              {processing ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />
-                  Repairing...
-                </span>
-              ) : "Attempt Repair"}
-            </button>
-          )}
         </div>
       )}
-    </div>
+    />
   );
 }

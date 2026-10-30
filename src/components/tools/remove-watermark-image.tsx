@@ -1,3 +1,4 @@
+import { FilePreviewButton } from "@/components/file-preview-button";
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
@@ -267,7 +268,8 @@ export default function WatermarkRemoverImageTool({ onProcessing, onError }: Too
           <p className="text-sm text-text-primary truncate">{file.name}</p>
           <p className="text-xs text-text-tertiary">{dims.w} × {dims.h} px{file.size ? ` · ${fmt(file.size)}` : ""}</p>
         </div>
-        <button onClick={() => { setFile(null); setImgUrl(null); setResult(null); if (imgUrl) URL.revokeObjectURL(imgUrl); if (resultUrl) URL.revokeObjectURL(resultUrl); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">Remove</button>
+        <FilePreviewButton file={file} />
+            <button onClick={() => { setFile(null); setImgUrl(null); setResult(null); if (imgUrl) URL.revokeObjectURL(imgUrl); if (resultUrl) URL.revokeObjectURL(resultUrl); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">Remove</button>
       </div>
 
       {/* Selection canvas */}

@@ -1,3 +1,4 @@
+import { FilePreviewButton } from "@/components/file-preview-button";
 "use client";
 
 import { useState, useCallback } from "react";
@@ -54,6 +55,7 @@ export default function WordFindReplaceTool({ onProcessing, onError }: ToolUIPro
           <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
             <span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-accent-start/10 text-accent-end">DOCX</span>
             <div className="flex-1"><p className="text-sm text-text-primary truncate">{file.name}</p></div>
+            <FilePreviewButton file={file} />
             <button onClick={() => { setFile(null); setResult(null); setCount(0); }} className="text-xs text-text-tertiary hover:text-danger">Remove</button>
           </div>
           <div><label className="block text-sm text-text-secondary mb-2">Find</label><input type="text" value={findText} onChange={(e) => setFindText(e.target.value)} className="w-full px-4 py-2.5 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm focus:border-accent focus:outline-none" placeholder="Text to find..." /></div>

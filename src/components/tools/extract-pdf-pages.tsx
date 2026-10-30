@@ -1,28 +1,33 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { DropZone } from "@/components/drop-zone";
-import { DownloadButton } from "@/components/download-button";
+import { StepFlow, type StepOutput } from "@/components/step-flow";
 import type { ToolUIProps } from "@/components/tool-registry";
+import { PdfDrawerPreview } from "@/components/pdf-drawer-preview";
 
-import { UiIcon } from "@/components/ui-icon";
 export default function ExtractPdfPagesTool({ onProcessing, onError }: ToolUIProps) {
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [pages, setPages] = useState("");
   const [pageCount, setPageCount] = useState(0);
-  const [result, setResult] = useState<Blob | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [outputs, setOutputs] = useState<StepOutput[]>([]);
   const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFile = useCallback(async (files: File[]) => {
-    const f = files[0];
-    if (!f) return;
-    setFile(f);
-    setResult(null);
-    try {
-      const { loadPdf } = await import("@/lib/engines/pdf");
-      const doc = await loadPdf(f);
-      setPageCount(doc.getPageCount());
-    } catch { setPageCount(0); }
+  const handleFilesChanged = useCallback(async (next: File[]) => {
+    setFiles(next);
+    setOutputs([]);
+    if (next.length > 0) {
+      try {
+        const { loadPdf } = await import("@/lib/engines/pdf");
+        const doc = await loadPdf(next[0]);
+        setPageCount(doc.getPageCount());
+      } catch {
+        setPageCount(0);
+      }
+    } else {
+      setPageCount(0);
+    }
   }, []);
 
   const parsePages = (input: string): number[] => {
@@ -37,22 +42,26 @@ export default function ExtractPdfPagesTool({ onProcessing, onError }: ToolUIPro
         if (!isNaN(n)) nums.push(n);
       }
     }
-    return nums.filter(n => n >= 1 && n <= pageCount);
+    return nums.filter((n) => n >= 1 && (pageCount === 0 || n <= pageCount));
   };
 
+  const toExtract = parsePages(pages);
+
   const handleExtract = async () => {
-    if (!file) return;
+    if (!files.length) return;
     const p = parsePages(pages);
     if (p.length === 0) return;
     setProcessing(true);
     onProcessing?.(true);
     try {
       const { extractPages, savePdf } = await import("@/lib/engines/pdf");
-      const doc = await extractPages(file, p);
+      const doc = await extractPages(files[0], p);
       const blob = await savePdf(doc);
-      setResult(blob);
+      setOutputs([{ name: `extracted-${files[0].name}`, blob }]);
     } catch (err) {
-      onError?.(err instanceof Error ? err.message : "Failed to extract pages");
+      const msg = err instanceof Error ? err.message : "Failed to extract pages";
+      setError(msg);
+      onError?.(msg);
     } finally {
       setProcessing(false);
       onProcessing?.(false);
@@ -60,35 +69,90 @@ export default function ExtractPdfPagesTool({ onProcessing, onError }: ToolUIPro
   };
 
   return (
-    <div className="space-y-6">
-      {!file ? (
-        <DropZone accept=".pdf" onFilesSelected={handleFile} label="Drop a PDF" description="Select pages to extract" />
-      ) : (
-        <div className="space-y-4">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
-            <span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-accent-start/10 text-accent-end">PDF</span>
-            <span className="text-sm text-text-primary truncate flex-1">{file.name}</span>
-            <span className="text-xs text-text-tertiary">{pageCount} pages</span>
-            <button onClick={() => { setFile(null); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">Remove</button>
-          </div>
-          <div>
-            <label className="block text-sm text-text-secondary mb-2">Pages to extract</label>
-            <input type="text" value={pages} onChange={(e) => setPages(e.target.value)} placeholder="e.g., 1, 3, 5-8" className="w-full px-4 py-2.5 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm font-mono focus:border-accent focus:outline-none transition-colors" />
-            <p className="mt-1 text-xs text-text-tertiary">Range: 1–{pageCount}</p>
-          </div>
-          {result && (
-            <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Pages extracted!</p>
-              <DownloadButton blob={result} filename="extracted.pdf" />
+    <>
+      <StepFlow
+        accept=".pdf"
+        maxFiles={1}
+        hint="Single PDF document"
+        actionLabel={toExtract.length > 0 ? `Extract ${toExtract.length} Page(s)` : "Extract Pages"}
+        processingLabel="Extracting pages..."
+        outputs={outputs}
+        canRun={files.length > 0 && toExtract.length > 0}
+        processing={processing}
+        fileCount={files.length}
+        onFilesChanged={handleFilesChanged}
+        onResetFilesOnly={() => {
+          setOutputs([]);
+          setPageCount(0);
+        }}
+        onRun={handleExtract}
+        onReset={() => {
+          setFiles([]);
+          setOutputs([]);
+          setError(null);
+          setPageCount(0);
+          setPages("");
+        }}
+        error={error}
+        onDismissError={() => setError(null)}
+        renderOperation={() => (
+          <div className="space-y-4">
+            {/* Top drawer preview callout banner — matches Split PDF */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-accent/[0.06] border border-accent/20">
+              <div className="flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-lg bg-accent/15 text-accent flex items-center justify-center shrink-0">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                    <circle cx="12" cy="12" r="3" />
+                  </svg>
+                </span>
+                <div>
+                  <p className="text-[13px] font-bold text-text-primary">
+                    Document has {pageCount} page{pageCount !== 1 ? "s" : ""}
+                  </p>
+                  <p className="text-[11.5px] text-text-secondary">
+                    Inspect high-res pages and zoom before extracting
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDrawerOpen(true)}
+                className="btn-primary py-2 px-4 text-[12.5px] shrink-0 flex items-center justify-center gap-1.5 shadow-sm"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+                <span>Preview in Right Drawer</span>
+              </button>
             </div>
-          )}
-          {!result && (
-            <button onClick={handleExtract} disabled={processing || parsePages(pages).length === 0} className="btn-primary w-full py-3">
-              {processing ? "Extracting..." : `Extract ${parsePages(pages).length} page(s)`}
-            </button>
-          )}
-        </div>
-      )}
-    </div>
+
+            <div>
+              <label className="block text-sm text-text-secondary mb-2 font-semibold">
+                Pages to extract (comma-separated or ranges)
+              </label>
+              <input
+                type="text"
+                value={pages}
+                onChange={(e) => setPages(e.target.value)}
+                placeholder="e.g., 1, 3, 5-8"
+                className="w-full px-4 py-2.5 rounded-xl bg-bg-input border border-border-strong text-text-primary text-sm font-mono focus:border-accent focus:outline-none transition-colors"
+              />
+              <p className="mt-1.5 text-xs text-text-tertiary">
+                Range: 1–{pageCount}. Document has {pageCount} pages.
+              </p>
+            </div>
+          </div>
+        )}
+      />
+
+      <PdfDrawerPreview
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        fileOrBlob={files[0] || null}
+        title={files[0]?.name || "PDF Document"}
+      />
+    </>
   );
 }

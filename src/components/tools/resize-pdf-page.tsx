@@ -1,11 +1,9 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { DropZone } from "@/components/drop-zone";
-import { DownloadButton } from "@/components/download-button";
+import { StepFlow, type StepOutput } from "@/components/step-flow";
 import type { ToolUIProps } from "@/components/tool-registry";
 
-import { UiIcon } from "@/components/ui-icon";
 const PRESETS = [
   { label: "A4", width: 595.28, height: 841.89 },
   { label: "Letter", width: 612, height: 792 },
@@ -16,42 +14,41 @@ const PRESETS = [
 ];
 
 export default function ResizePdfPageTool({ onProcessing, onError }: ToolUIProps) {
-  const [file, setFile] = useState<File | null>(null);
+  const [files, setFiles] = useState<File[]>([]);
   const [preset, setPreset] = useState("A4");
   const [customWidth, setCustomWidth] = useState(595);
   const [customHeight, setCustomHeight] = useState(842);
-  const [result, setResult] = useState<Blob | null>(null);
+  const [outputs, setOutputs] = useState<StepOutput[]>([]);
   const [processing, setProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleFile = useCallback((files: File[]) => {
-    setFile(files[0] || null);
-    setResult(null);
+  const handleFilesChanged = useCallback((next: File[]) => {
+    setFiles(next);
+    setOutputs([]);
   }, []);
 
   const handleResize = async () => {
-    if (!file) return;
+    if (!files.length) return;
     setProcessing(true);
     onProcessing?.(true);
     try {
       const { loadPdf, savePdf } = await import("@/lib/engines/pdf");
-      const doc = await loadPdf(file);
+      const doc = await loadPdf(files[0]);
 
       const selected = PRESETS.find((p) => p.label === preset);
       const w = preset === "Custom" ? customWidth : selected?.width || 595.28;
       const h = preset === "Custom" ? customHeight : selected?.height || 841.89;
 
       for (const page of doc.getPages()) {
-        const { width, height } = page.getSize();
-        const scaleX = w / width;
-        const scaleY = h / height;
-        const scale = Math.min(scaleX, scaleY);
         page.setSize(w, h);
       }
 
       const blob = await savePdf(doc);
-      setResult(blob);
+      setOutputs([{ name: `resized-${files[0].name}`, blob }]);
     } catch (err) {
-      onError?.(err instanceof Error ? err.message : "Failed to resize PDF");
+      const msg = err instanceof Error ? err.message : "Failed to resize PDF";
+      setError(msg);
+      onError?.(msg);
     } finally {
       setProcessing(false);
       onProcessing?.(false);
@@ -59,28 +56,40 @@ export default function ResizePdfPageTool({ onProcessing, onError }: ToolUIProps
   };
 
   return (
-    <div className="space-y-6">
-      {!file ? (
-        <DropZone accept=".pdf" onFilesSelected={handleFile} label="Drop a PDF to resize" description="Select a single PDF file" />
-      ) : (
+    <StepFlow
+      accept=".pdf"
+      maxFiles={1}
+      hint="Single PDF document"
+      actionLabel={`Resize to ${preset}`}
+      processingLabel="Resizing PDF..."
+      outputs={outputs}
+      canRun={files.length > 0}
+      processing={processing}
+      fileCount={files.length}
+      onFilesChanged={handleFilesChanged}
+      onResetFilesOnly={() => setOutputs([])}
+      onRun={handleResize}
+      onReset={() => {
+        setFiles([]);
+        setOutputs([]);
+        setError(null);
+      }}
+      error={error}
+      onDismissError={() => setError(null)}
+      renderOperation={() => (
         <div className="space-y-4">
-          <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
-            <span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-accent-start/10 text-accent-end">PDF</span>
-            <span className="text-sm text-text-primary truncate flex-1">{file.name}</span>
-            <button onClick={() => { setFile(null); setResult(null); }} className="text-xs text-text-tertiary hover:text-danger transition-colors">Remove</button>
-          </div>
-
           <div>
-            <label className="block text-sm text-text-secondary mb-2">Page size</label>
+            <label className="block text-sm text-text-secondary mb-2 font-semibold">Target Page size</label>
             <div className="grid grid-cols-3 gap-2">
               {PRESETS.map((p) => (
                 <button
                   key={p.label}
+                  type="button"
                   onClick={() => setPreset(p.label)}
-                  className={`py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`py-2.5 rounded-xl text-sm font-semibold transition-all ${
                     preset === p.label
-                      ? "bg-accent-start text-white"
-                      : "bg-bg-elevated text-text-secondary hover:text-text-primary border border-border-base"
+                      ? "bg-accent text-white shadow-sm"
+                      : "bg-bg-input text-text-secondary hover:text-text-primary border border-border-strong"
                   }`}
                 >
                   {p.label}
@@ -92,35 +101,27 @@ export default function ResizePdfPageTool({ onProcessing, onError }: ToolUIProps
           {preset === "Custom" && (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm text-text-secondary mb-2">Width (pt)</label>
-                <input type="number" value={customWidth} onChange={(e) => setCustomWidth(Number(e.target.value))} className="w-full px-4 py-2.5 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm font-mono focus:border-accent focus:outline-none transition-colors" />
+                <label className="block text-sm text-text-secondary mb-1.5 font-semibold">Width (pt)</label>
+                <input
+                  type="number"
+                  value={customWidth}
+                  onChange={(e) => setCustomWidth(Number(e.target.value))}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-bg-input border border-border-strong text-text-primary text-sm font-mono focus:border-accent focus:outline-none transition-colors"
+                />
               </div>
               <div>
-                <label className="block text-sm text-text-secondary mb-2">Height (pt)</label>
-                <input type="number" value={customHeight} onChange={(e) => setCustomHeight(Number(e.target.value))} className="w-full px-4 py-2.5 rounded-lg bg-bg-elevated border border-border-base text-text-primary text-sm font-mono focus:border-accent focus:outline-none transition-colors" />
+                <label className="block text-sm text-text-secondary mb-1.5 font-semibold">Height (pt)</label>
+                <input
+                  type="number"
+                  value={customHeight}
+                  onChange={(e) => setCustomHeight(Number(e.target.value))}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-bg-input border border-border-strong text-text-primary text-sm font-mono focus:border-accent focus:outline-none transition-colors"
+                />
               </div>
             </div>
-          )}
-
-          {result && (
-            <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center">
-              <p className="text-sm text-success mb-3">{<UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />}Resize complete!</p>
-              <DownloadButton blob={result} filename={`resized-${file.name}`} />
-            </div>
-          )}
-
-          {!result && (
-            <button onClick={handleResize} disabled={processing} className="btn-primary w-full py-3">
-              {processing ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="w-4 h-4 border border-white/30 border-t-white rounded-full animate-spin-slow" />
-                  Resizing...
-                </span>
-              ) : "Resize PDF"}
-            </button>
           )}
         </div>
       )}
-    </div>
+    />
   );
 }
