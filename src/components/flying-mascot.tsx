@@ -12,6 +12,8 @@ const BIRD_COLORS = [
   { body: 0xf43f5e, wing: 0xfb7185, belly: 0xfff1f2, name: "Ruby Robin" },
   { body: 0x0ea5e9, wing: 0x38bdf8, belly: 0xf0f9ff, name: "Cyan Kingfisher" },
   { body: 0xeab308, wing: 0xfacc15, belly: 0xfefce8, name: "Golden Canary" },
+  { body: 0xec4899, wing: 0xf472b6, belly: 0xfdf2f8, name: "Pink Flamingo" },
+  { body: 0x14b8a6, wing: 0x2dd4bf, belly: 0xf0fdfa, name: "Teal Hummingbird" },
 ];
 
 // Curated top tools / for-you tools
@@ -37,11 +39,41 @@ const TOP_TOOLS = [
   { slug: "pdf-to-excel", name: "PDF to Excel" },
 ];
 
+interface BirdInstance {
+  id: number;
+  isPermanent: boolean;
+  group: any;
+  bodyMat: any;
+  bellyMat: any;
+  wingMat: any;
+  tailMat: any;
+  leftWingPivot: any;
+  rightWingPivot: any;
+  body: any;
+  colorIdx: number;
+  pos: any;
+  vel: any;
+  targetWaypoint: any;
+  waypointTimer: number;
+  state: "flying" | "crashing" | "vanished" | "spawning" | "dismissing";
+  spawnProgress: number;
+  crashVy: number;
+  crashVx: number;
+  crashRotSpeed: number;
+  createdAt: number;
+  lifetime: number;
+  dismissProgress: number;
+  currentScreenX: number;
+  currentScreenY: number;
+}
+
 /**
- * FlyingMascot — 3D bird that flies autonomously across the entire website.
- * Roams independently across the screen (does NOT follow cursor).
- * When clicked, it crashes/drops down, vanishes with a sparkle burst,
- * and after 1 second a brand-new bird with a different color swoops in!
+ * FlyingMascot — 3D bird that flies autonomously across the homepage.
+ * - One main permanent bird always soars around.
+ * - Every time Wowie the mascot is clicked, a new bird of a different color
+ *   bursts out from the mascot!
+ * - Spawned birds fly freely for 10 seconds, then gracefully auto-dismiss into the sky.
+ * - Clicking any bird crashes it with a sparkle burst to open a surprise tool!
  */
 export function FlyingMascot() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -58,6 +90,8 @@ export function FlyingMascot() {
 
     let isDisposed = false;
     let animId: number;
+    let birdIdCounter = 0;
+    let nextColorIndex = 0;
 
     const loadThree = (): Promise<any> => {
       if ((window as any).THREE) return Promise.resolve((window as any).THREE);
@@ -104,71 +138,7 @@ export function FlyingMascot() {
       sunLight.position.set(5, 8, 8);
       scene.add(sunLight);
 
-      // ─── Build Bird Mascot ───
-      const birdGroup = new THREE.Group();
-      scene.add(birdGroup);
-
-      let colorIdx = 0;
-      const curColor = BIRD_COLORS[colorIdx];
-
-      // Body
-      const bodyMat = new THREE.MeshStandardMaterial({
-        color: curColor.body,
-        roughness: 0.38,
-        metalness: 0.05,
-      });
-      const body = new THREE.Mesh(new THREE.SphereGeometry(0.34, 28, 22), bodyMat);
-      birdGroup.add(body);
-
-      // Belly
-      const bellyMat = new THREE.MeshBasicMaterial({ color: curColor.belly });
-      const belly = new THREE.Mesh(new THREE.SphereGeometry(0.24, 20, 16), bellyMat);
-      belly.position.set(0, -0.06, 0.16);
-      belly.scale.set(1, 0.9, 0.45);
-      birdGroup.add(belly);
-
-      // Golden beak
-      const beakMat = new THREE.MeshStandardMaterial({
-        color: 0xffa000,
-        roughness: 0.3,
-      });
-      const beak = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.22, 16), beakMat);
-      beak.rotation.x = Math.PI / 2;
-      beak.position.set(0, -0.02, 0.38);
-      birdGroup.add(beak);
-
-      // Eyes
-      const eyeWhite = new THREE.MeshBasicMaterial({ color: 0xffffff });
-      const pupilMat = new THREE.MeshBasicMaterial({ color: 0x0a0f1c });
-      const shineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-
-      [-1, 1].forEach((dir) => {
-        const eyeGroup = new THREE.Group();
-        const sc = new THREE.Mesh(new THREE.SphereGeometry(0.085, 16, 12), eyeWhite);
-        sc.scale.z = 0.45;
-        eyeGroup.add(sc);
-
-        const pu = new THREE.Mesh(new THREE.SphereGeometry(0.045, 12, 10), pupilMat);
-        pu.position.set(0, 0, 0.025);
-        pu.scale.z = 0.45;
-        eyeGroup.add(pu);
-
-        const sh = new THREE.Mesh(new THREE.SphereGeometry(0.016, 8, 8), shineMat);
-        sh.position.set(0.015, 0.02, 0.04);
-        eyeGroup.add(sh);
-
-        eyeGroup.position.set(dir * 0.13, 0.11, 0.27);
-        eyeGroup.rotation.y = dir * 0.25;
-        birdGroup.add(eyeGroup);
-      });
-
-      // Wings
-      const wingMat = new THREE.MeshStandardMaterial({
-        color: curColor.wing,
-        roughness: 0.45,
-        side: THREE.DoubleSide,
-      });
-
+      // Reusable Wing Shape
       function createWingShape() {
         const shape = new THREE.Shape();
         shape.moveTo(0, 0);
@@ -178,41 +148,8 @@ export function FlyingMascot() {
       }
       const wingGeo = new THREE.ShapeGeometry(createWingShape());
 
-      const leftWingPivot = new THREE.Group();
-      leftWingPivot.position.set(-0.32, 0.05, 0);
-      const leftWingMesh = new THREE.Mesh(wingGeo, wingMat);
-      leftWingMesh.scale.set(-1, 1, 1);
-      leftWingPivot.add(leftWingMesh);
-      birdGroup.add(leftWingPivot);
-
-      const rightWingPivot = new THREE.Group();
-      rightWingPivot.position.set(0.32, 0.05, 0);
-      const rightWingMesh = new THREE.Mesh(wingGeo, wingMat);
-      rightWingPivot.add(rightWingMesh);
-      birdGroup.add(rightWingPivot);
-
-      // Tail
-      const tailMat = new THREE.MeshStandardMaterial({ color: curColor.wing, roughness: 0.4 });
-      const tail = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.28, 12), tailMat);
-      tail.rotation.x = -Math.PI / 2 + 0.2;
-      tail.position.set(0, 0.06, -0.36);
-      birdGroup.add(tail);
-
-      // Function to apply a new different color to the bird
-      function applyNewColor() {
-        // Pick guaranteed different color
-        const nextIdx = (colorIdx + 1 + Math.floor(Math.random() * (BIRD_COLORS.length - 1))) % BIRD_COLORS.length;
-        colorIdx = nextIdx;
-        const c = BIRD_COLORS[colorIdx];
-
-        bodyMat.color.setHex(c.body);
-        bellyMat.color.setHex(c.belly);
-        wingMat.color.setHex(c.wing);
-        tailMat.color.setHex(c.wing);
-      }
-
       // ─── Sparkle Trail ───
-      const TRAIL_COUNT = 36;
+      const TRAIL_COUNT = 72;
       const trailPositions = new Float32Array(TRAIL_COUNT * 3).fill(-999);
       const trailColors = new Float32Array(TRAIL_COUNT * 3);
       const trailGeo = new THREE.BufferGeometry();
@@ -245,7 +182,7 @@ export function FlyingMascot() {
       let trailIdx = 0;
       let lastTrailTime = 0;
 
-      // ─── Resize & Visible Frustum Calc ───
+      // ─── Resize & Frustum ───
       let visibleHeight = 11.6;
       let visibleWidth = 11.6 * (window.innerWidth / window.innerHeight);
 
@@ -264,81 +201,263 @@ export function FlyingMascot() {
       window.addEventListener("resize", handleResize);
       handleResize();
 
-      // ─── State Management ───
-      // "flying" | "crashing" | "vanished" | "spawning"
-      let birdState: "flying" | "crashing" | "vanished" | "spawning" = "flying";
-      let crashVy = 0;
-      let crashVx = 0;
-      let crashRotSpeed = 0;
-      let spawnProgress = 1;
+      const clock = new THREE.Clock();
+      let t = 0;
 
-      // Current bird world position & velocity
-      const birdPos = new THREE.Vector3(0, 1.5, 0);
-      const birdVel = new THREE.Vector3(1.5, 0.4, 0);
+      // ─── Bird Factory ───
+      function createBird(
+        colorIdx: number,
+        isPermanent = false,
+        initialPos?: any,
+        initialVel?: any
+      ): BirdInstance {
+        const birdGroup = new THREE.Group();
+        scene.add(birdGroup);
+        const curColor = BIRD_COLORS[colorIdx % BIRD_COLORS.length];
 
-      // Autonomous flight target waypoint (never chases cursor)
-      const targetWaypoint = new THREE.Vector3(
-        (Math.random() - 0.5) * 6,
-        (Math.random() - 0.5) * 3,
-        (Math.random() - 0.5) * 1.5
-      );
-      let waypointTimer = 0;
+        // Body
+        const bodyMat = new THREE.MeshStandardMaterial({
+          color: curColor.body,
+          roughness: 0.38,
+          metalness: 0.05,
+        });
+        const body = new THREE.Mesh(new THREE.SphereGeometry(0.34, 28, 22), bodyMat);
+        birdGroup.add(body);
 
-      // Current 2D screen coordinates for click detection
-      let currentScreenX = -999;
-      let currentScreenY = -999;
-      let isHovering = false;
+        // Belly
+        const bellyMat = new THREE.MeshBasicMaterial({ color: curColor.belly });
+        const belly = new THREE.Mesh(new THREE.SphereGeometry(0.24, 20, 16), bellyMat);
+        belly.position.set(0, -0.06, 0.16);
+        belly.scale.set(1, 0.9, 0.45);
+        birdGroup.add(belly);
 
-      // Check if cursor hovers over the bird (for tap/click interaction only — does NOT follow cursor)
+        // Golden beak
+        const beakMat = new THREE.MeshStandardMaterial({
+          color: 0xffa000,
+          roughness: 0.3,
+        });
+        const beak = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.22, 16), beakMat);
+        beak.rotation.x = Math.PI / 2;
+        beak.position.set(0, -0.02, 0.38);
+        birdGroup.add(beak);
+
+        // Eyes
+        const eyeWhite = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        const pupilMat = new THREE.MeshBasicMaterial({ color: 0x0a0f1c });
+        const shineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+        [-1, 1].forEach((dir) => {
+          const eyeGroup = new THREE.Group();
+          const sc = new THREE.Mesh(new THREE.SphereGeometry(0.085, 16, 12), eyeWhite);
+          sc.scale.z = 0.45;
+          eyeGroup.add(sc);
+
+          const pu = new THREE.Mesh(new THREE.SphereGeometry(0.045, 12, 10), pupilMat);
+          pu.position.set(0, 0, 0.025);
+          pu.scale.z = 0.45;
+          eyeGroup.add(pu);
+
+          const sh = new THREE.Mesh(new THREE.SphereGeometry(0.016, 8, 8), shineMat);
+          sh.position.set(0.015, 0.02, 0.04);
+          eyeGroup.add(sh);
+
+          eyeGroup.position.set(dir * 0.13, 0.11, 0.27);
+          eyeGroup.rotation.y = dir * 0.25;
+          birdGroup.add(eyeGroup);
+        });
+
+        // Wings
+        const wingMat = new THREE.MeshStandardMaterial({
+          color: curColor.wing,
+          roughness: 0.45,
+          side: THREE.DoubleSide,
+        });
+
+        const leftWingPivot = new THREE.Group();
+        leftWingPivot.position.set(-0.32, 0.05, 0);
+        const leftWingMesh = new THREE.Mesh(wingGeo, wingMat);
+        leftWingMesh.scale.set(-1, 1, 1);
+        leftWingPivot.add(leftWingMesh);
+        birdGroup.add(leftWingPivot);
+
+        const rightWingPivot = new THREE.Group();
+        rightWingPivot.position.set(0.32, 0.05, 0);
+        const rightWingMesh = new THREE.Mesh(wingGeo, wingMat);
+        rightWingPivot.add(rightWingMesh);
+        birdGroup.add(rightWingPivot);
+
+        // Tail
+        const tailMat = new THREE.MeshStandardMaterial({ color: curColor.wing, roughness: 0.4 });
+        const tail = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.28, 12), tailMat);
+        tail.rotation.x = -Math.PI / 2 + 0.2;
+        tail.position.set(0, 0.06, -0.36);
+        birdGroup.add(tail);
+
+        const pos = initialPos ? initialPos.clone() : new THREE.Vector3(0, 1.5, 0);
+        const vel = initialVel ? initialVel.clone() : new THREE.Vector3(1.5, 0.4, 0);
+        birdGroup.position.copy(pos);
+
+        if (!isPermanent) {
+          birdGroup.scale.set(0.15, 0.15, 0.15);
+        }
+
+        const targetWaypoint = new THREE.Vector3(
+          (Math.random() - 0.5) * 6,
+          (Math.random() - 0.5) * 3,
+          (Math.random() - 0.5) * 1.5
+        );
+
+        return {
+          id: ++birdIdCounter,
+          isPermanent,
+          group: birdGroup,
+          bodyMat,
+          bellyMat,
+          wingMat,
+          tailMat,
+          leftWingPivot,
+          rightWingPivot,
+          body,
+          colorIdx,
+          pos,
+          vel,
+          targetWaypoint,
+          waypointTimer: 0,
+          state: isPermanent ? "flying" : "spawning",
+          spawnProgress: isPermanent ? 1 : 0,
+          crashVy: 0,
+          crashVx: 0,
+          crashRotSpeed: 0,
+          createdAt: t,
+          lifetime: isPermanent ? Infinity : 10, // Auto-dismiss after 10 seconds!
+          dismissProgress: 0,
+          currentScreenX: -999,
+          currentScreenY: -999,
+        };
+      }
+
+      // ─── Active Birds Array ───
+      // 1 Permanent Bird that stays on the home page forever
+      const mainBird = createBird(0, true);
+      const birds: BirdInstance[] = [mainBird];
+
+      // ─── Spawn New Bird from Mascot on Click ───
+      const handleSpawnFromMascot = () => {
+        // Read mascot location on page
+        const mascotEl = document.querySelector('iframe[src*="mascot.html"]');
+        let spawnX = (visibleWidth / 2) * 0.42;
+        let spawnY = (visibleHeight / 2) * 0.25;
+
+        if (mascotEl) {
+          const rect = mascotEl.getBoundingClientRect();
+          const cx = rect.left + rect.width / 2;
+          const cy = rect.top + rect.height / 2;
+          spawnX = ((cx / window.innerWidth) * 2 - 1) * (visibleWidth / 2);
+          spawnY = -((cy / window.innerHeight) * 2 - 1) * (visibleHeight / 2);
+        }
+
+        // Guaranteed different color for each click!
+        nextColorIndex = (nextColorIndex + 1) % BIRD_COLORS.length;
+
+        // Upward burst launch velocity out from Wowie
+        const angle = (Math.random() - 0.5) * 1.3 - Math.PI / 2;
+        const speed = 3.6 + Math.random() * 2.4;
+        const initVel = new THREE.Vector3(
+          Math.cos(angle) * speed,
+          -Math.sin(angle) * speed * 0.8 + 1.8,
+          (Math.random() - 0.5) * 1.5
+        );
+
+        const newBird = createBird(
+          nextColorIndex,
+          false,
+          new THREE.Vector3(spawnX, spawnY, 0.3),
+          initVel
+        );
+        birds.push(newBird);
+
+        // Burst sparkle explosion out from mascot
+        for (let k = 0; k < 22; k++) {
+          const idx = (trailIdx++ % TRAIL_COUNT) * 3;
+          trailPositions[idx] = spawnX + (Math.random() - 0.5) * 0.7;
+          trailPositions[idx + 1] = spawnY + (Math.random() - 0.5) * 0.7;
+          trailPositions[idx + 2] = (Math.random() - 0.5) * 0.5;
+          const c = BIRD_COLORS[nextColorIndex];
+          const rgb = new THREE.Color(c.wing);
+          trailColors[idx] = rgb.r;
+          trailColors[idx + 1] = rgb.g;
+          trailColors[idx + 2] = rgb.b;
+        }
+        trailGeo.attributes.position.needsUpdate = true;
+        trailGeo.attributes.color.needsUpdate = true;
+      };
+
+      // Listen for mascot click from mascot iframe or custom event
+      const onWindowMessage = (e: MessageEvent) => {
+        if (e.data && e.data.type === "mascot-click") {
+          handleSpawnFromMascot();
+        }
+      };
+      const onCustomSpawn = () => {
+        handleSpawnFromMascot();
+      };
+      window.addEventListener("message", onWindowMessage);
+      window.addEventListener("spawn-flying-mascot-bird", onCustomSpawn);
+
+      // ─── Interaction & Cursor Hover ───
+      let hoveredBird: BirdInstance | null = null;
+
       const handlePointerMove = (e: MouseEvent) => {
-        if (birdState === "flying") {
-          const dist = Math.hypot(e.clientX - currentScreenX, e.clientY - currentScreenY);
-          const isNear = dist < 48;
+        let nearest: BirdInstance | null = null;
+        let minDist = 48;
 
-          if (isNear !== isHovering) {
-            isHovering = isNear;
-            if (canvasRef.current) {
-              canvasRef.current.style.pointerEvents = isNear ? "auto" : "none";
-              canvasRef.current.style.cursor = isNear ? "pointer" : "default";
+        for (const bird of birds) {
+          if (bird.state === "flying") {
+            const dist = Math.hypot(e.clientX - bird.currentScreenX, e.clientY - bird.currentScreenY);
+            if (dist < minDist) {
+              minDist = dist;
+              nearest = bird;
             }
-            if (isNear) {
-              setTooltip({
-                x: currentScreenX,
-                y: currentScreenY - 45,
-                text: "💥 Tap me to crash & surprise tool!",
-              });
-            } else {
-              setTooltip(null);
-            }
-          } else if (isNear) {
-            setTooltip((prev) =>
-              prev ? { ...prev, x: currentScreenX, y: currentScreenY - 45 } : null
-            );
           }
+        }
+
+        hoveredBird = nearest;
+        if (canvasRef.current) {
+          canvasRef.current.style.pointerEvents = nearest ? "auto" : "none";
+          canvasRef.current.style.cursor = nearest ? "pointer" : "default";
+        }
+
+        if (nearest) {
+          setTooltip({
+            x: nearest.currentScreenX,
+            y: nearest.currentScreenY - 45,
+            text: "💥 Tap me to crash & surprise tool!",
+          });
+        } else {
+          setTooltip(null);
         }
       };
 
-      // ─── Click / Crash Handler ───
+      // ─── Click / Crash on Bird ───
       const handleBirdClick = (e: MouseEvent) => {
-        if (birdState !== "flying") return;
-        const dist = Math.hypot(e.clientX - currentScreenX, e.clientY - currentScreenY);
-        if (dist >= 55) return;
+        if (!hoveredBird || hoveredBird.state !== "flying") return;
+        const targetBird = hoveredBird;
 
         e.stopPropagation();
         e.preventDefault();
 
         // 1. Crash and drop down!
-        birdState = "crashing";
-        crashVy = 3.5; // little upward recoil then falls with gravity
-        crashVx = (Math.random() - 0.5) * 6;
-        crashRotSpeed = (Math.random() > 0.5 ? 1 : -1) * (12 + Math.random() * 8);
+        targetBird.state = "crashing";
+        targetBird.crashVy = 3.5;
+        targetBird.crashVx = (Math.random() - 0.5) * 6;
+        targetBird.crashRotSpeed = (Math.random() > 0.5 ? 1 : -1) * (12 + Math.random() * 8);
 
-        // Burst explosion of particles
+        // Burst explosion
         for (let k = 0; k < 18; k++) {
           const idx = (trailIdx++ % TRAIL_COUNT) * 3;
-          trailPositions[idx] = birdPos.x + (Math.random() - 0.5) * 0.6;
-          trailPositions[idx + 1] = birdPos.y + (Math.random() - 0.5) * 0.6;
-          trailPositions[idx + 2] = birdPos.z + (Math.random() - 0.5) * 0.6;
+          trailPositions[idx] = targetBird.pos.x + (Math.random() - 0.5) * 0.6;
+          trailPositions[idx + 1] = targetBird.pos.y + (Math.random() - 0.5) * 0.6;
+          trailPositions[idx + 2] = targetBird.pos.z + (Math.random() - 0.5) * 0.6;
           trailColors[idx] = 1.0;
           trailColors[idx + 1] = 0.5 + Math.random() * 0.5;
           trailColors[idx + 2] = 0.1;
@@ -346,21 +465,18 @@ export function FlyingMascot() {
         trailGeo.attributes.position.needsUpdate = true;
         trailGeo.attributes.color.needsUpdate = true;
 
-        // Select random top tool / for-you tool
         const pick = TOP_TOOLS[Math.floor(Math.random() * TOP_TOOLS.length)];
         setTooltip({
-          x: currentScreenX,
-          y: currentScreenY - 45,
+          x: targetBird.currentScreenX,
+          y: targetBird.currentScreenY - 45,
           text: `💥 Crashed! Launching ${pick.name}!`,
         });
 
-        // Navigate to the chosen tool
         setTimeout(() => {
           router.push(`/tools/${pick.slug}`);
           setTooltip(null);
         }, 650);
 
-        // Turn off pointer events immediately while crashing
         if (canvasRef.current) {
           canvasRef.current.style.pointerEvents = "none";
           canvasRef.current.style.cursor = "default";
@@ -376,9 +492,7 @@ export function FlyingMascot() {
       };
       document.addEventListener("visibilitychange", handleVisibilityChange);
 
-      const clock = new THREE.Clock();
-      let t = 0;
-
+      // ─── Main Animation Loop ───
       const animate = () => {
         animId = requestAnimationFrame(animate);
         if (isPaused) return;
@@ -386,160 +500,188 @@ export function FlyingMascot() {
         const dt = Math.min(clock.getDelta(), 0.05);
         t += dt;
 
-        if (birdState === "flying") {
-          // ─── Autonomous Flight Physics (Free Roaming — No Cursor Tracking) ───
-          waypointTimer += dt;
-          const boundX = Math.max((visibleWidth / 2) * 0.78, 4);
-          const boundY = Math.max((visibleHeight / 2) * 0.68, 2.8);
+        const boundX = Math.max((visibleWidth / 2) * 0.78, 4);
+        const boundY = Math.max((visibleHeight / 2) * 0.68, 2.8);
 
-          const dx = targetWaypoint.x - birdPos.x;
-          const dy = targetWaypoint.y - birdPos.y;
-          const dz = targetWaypoint.z - birdPos.z;
-          const dist = Math.hypot(dx, dy, dz);
+        for (let i = birds.length - 1; i >= 0; i--) {
+          const bird = birds[i];
 
-          // Pick new waypoint when close or after roaming for 5-7s
-          if (dist < 1.6 || waypointTimer > 6.5) {
-            waypointTimer = 0;
-            targetWaypoint.set(
-              (Math.random() - 0.5) * boundX * 1.8,
-              (Math.random() - 0.5) * boundY * 1.6,
-              (Math.random() - 0.5) * 1.4
-            );
+          // Auto-dismiss temporary birds after 10 seconds
+          if (!bird.isPermanent && bird.state === "flying") {
+            const age = t - bird.createdAt;
+            if (age >= bird.lifetime) {
+              bird.state = "dismissing";
+              bird.dismissProgress = 0;
+            }
           }
 
-          // Smooth steering toward target waypoint
-          const cruiseSpeed = 2.4;
-          const desiredVx = (dx / (dist + 0.001)) * cruiseSpeed;
-          const desiredVy = (dy / (dist + 0.001)) * (cruiseSpeed * 0.75);
-          const desiredVz = (dz / (dist + 0.001)) * 1.1;
+          if (bird.state === "spawning") {
+            // Swoop in / burst outward
+            bird.spawnProgress = Math.min(1, bird.spawnProgress + dt * 2.2);
+            const scale = THREE.MathUtils.lerp(0.15, 1, bird.spawnProgress);
+            bird.group.scale.set(scale, scale, scale);
 
-          birdVel.x += (desiredVx - birdVel.x) * 1.8 * dt;
-          birdVel.y += (desiredVy - birdVel.y) * 1.8 * dt;
-          birdVel.z += (desiredVz - birdVel.z) * 1.8 * dt;
+            bird.pos.addScaledVector(bird.vel, dt);
+            bird.group.position.copy(bird.pos);
 
-          // Gentle organic bobbing
-          birdVel.y += Math.sin(t * 2.6) * 0.22 * dt;
+            const flapAngle = Math.sin(t * 22 + bird.id) * 0.48;
+            bird.leftWingPivot.rotation.z = flapAngle;
+            bird.rightWingPivot.rotation.z = -flapAngle;
 
-          // Soft boundary turn margin
-          if (Math.abs(birdPos.x) > boundX) birdVel.x -= Math.sign(birdPos.x) * 4.5 * dt;
-          if (Math.abs(birdPos.y) > boundY) birdVel.y -= Math.sign(birdPos.y) * 4.5 * dt;
+            if (bird.spawnProgress >= 1) {
+              bird.state = "flying";
+            }
+          } else if (bird.state === "flying") {
+            // Free roaming flight across screen
+            bird.waypointTimer += dt;
 
-          birdPos.addScaledVector(birdVel, dt * 2.6);
-          birdGroup.position.copy(birdPos);
+            const dx = bird.targetWaypoint.x - bird.pos.x;
+            const dy = bird.targetWaypoint.y - bird.pos.y;
+            const dz = bird.targetWaypoint.z - bird.pos.z;
+            const dist = Math.hypot(dx, dy, dz);
 
-          // Orientation towards movement direction
-          const speed = birdVel.length();
-          if (speed > 0.05) {
-            const targetRotY = Math.atan2(birdVel.x, birdVel.z + 0.001);
-            const targetRotX = -birdVel.y * 0.35;
-            const targetRotZ = -birdVel.x * 0.35; // banking into turns
-
-            birdGroup.rotation.y = THREE.MathUtils.lerp(birdGroup.rotation.y, targetRotY, 0.12);
-            birdGroup.rotation.x = THREE.MathUtils.lerp(birdGroup.rotation.x, targetRotX, 0.12);
-            birdGroup.rotation.z = THREE.MathUtils.lerp(birdGroup.rotation.z, targetRotZ, 0.12);
-          }
-
-          // Flapping wings
-          const flapSpeed = 12 + speed * 8;
-          const flapAngle = Math.sin(t * flapSpeed) * 0.45;
-          leftWingPivot.rotation.z = flapAngle;
-          rightWingPivot.rotation.z = -flapAngle;
-          body.position.y = Math.sin(t * flapSpeed * 0.5) * 0.02;
-
-          // Normal scale
-          birdGroup.scale.set(1, 1, 1);
-        } else if (birdState === "crashing") {
-          // ─── Crash & Drop Down Animation ───
-          // Gravity accelerates downward
-          crashVy -= 32 * dt;
-          birdPos.x += crashVx * dt;
-          birdPos.y += crashVy * dt;
-          birdGroup.position.copy(birdPos);
-
-          // Wild tumble spin
-          birdGroup.rotation.z += crashRotSpeed * dt;
-          birdGroup.rotation.x += crashRotSpeed * 0.7 * dt;
-
-          // Rapid panicked wing flail
-          const flapAngle = Math.sin(t * 40) * 0.65;
-          leftWingPivot.rotation.z = flapAngle;
-          rightWingPivot.rotation.z = -flapAngle;
-
-          // When it drops below the visible screen bottom, it vanishes!
-          if (birdPos.y < -visibleHeight / 2 - 1.5) {
-            birdState = "vanished";
-            birdGroup.scale.set(0.001, 0.001, 0.001);
-
-            // Exactly 1 second later, spawn a new bird with a DIFFERENT color!
-            setTimeout(() => {
-              if (isDisposed) return;
-              applyNewColor();
-
-              // Spawn swooping in from above/offscreen
-              const spawnSide = Math.random() > 0.5 ? 1 : -1;
-              birdPos.set(
-                spawnSide * (visibleWidth / 2 + 1.5),
-                visibleHeight / 2 + 1,
-                0
+            if (dist < 1.6 || bird.waypointTimer > 6.5) {
+              bird.waypointTimer = 0;
+              bird.targetWaypoint.set(
+                (Math.random() - 0.5) * boundX * 1.8,
+                (Math.random() - 0.5) * boundY * 1.6,
+                (Math.random() - 0.5) * 1.4
               );
-              birdVel.set(-spawnSide * 4, -3, 0);
-              birdGroup.position.copy(birdPos);
-              birdGroup.rotation.set(0, spawnSide > 0 ? -Math.PI / 2 : Math.PI / 2, 0);
+            }
 
-              // Target opposite side of screen
-              targetWaypoint.set(
-                -spawnSide * ((visibleWidth / 2) * 0.5),
-                (Math.random() - 0.5) * 3,
-                0
-              );
-              waypointTimer = 0;
+            const cruiseSpeed = 2.4;
+            const desiredVx = (dx / (dist + 0.001)) * cruiseSpeed;
+            const desiredVy = (dy / (dist + 0.001)) * (cruiseSpeed * 0.75);
+            const desiredVz = (dz / (dist + 0.001)) * 1.1;
 
-              birdState = "spawning";
-              spawnProgress = 0;
-            }, 1000);
+            bird.vel.x += (desiredVx - bird.vel.x) * 1.8 * dt;
+            bird.vel.y += (desiredVy - bird.vel.y) * 1.8 * dt;
+            bird.vel.z += (desiredVz - bird.vel.z) * 1.8 * dt;
+
+            bird.vel.y += Math.sin(t * 2.6 + bird.id) * 0.22 * dt;
+
+            // Boundaries
+            if (Math.abs(bird.pos.x) > boundX) bird.vel.x -= Math.sign(bird.pos.x) * 4.5 * dt;
+            if (Math.abs(bird.pos.y) > boundY) bird.vel.y -= Math.sign(bird.pos.y) * 4.5 * dt;
+
+            bird.pos.addScaledVector(bird.vel, dt * 2.6);
+            bird.group.position.copy(bird.pos);
+
+            const speed = bird.vel.length();
+            if (speed > 0.05) {
+              const targetRotY = Math.atan2(bird.vel.x, bird.vel.z + 0.001);
+              const targetRotX = -bird.vel.y * 0.35;
+              const targetRotZ = -bird.vel.x * 0.35;
+
+              bird.group.rotation.y = THREE.MathUtils.lerp(bird.group.rotation.y, targetRotY, 0.12);
+              bird.group.rotation.x = THREE.MathUtils.lerp(bird.group.rotation.x, targetRotX, 0.12);
+              bird.group.rotation.z = THREE.MathUtils.lerp(bird.group.rotation.z, targetRotZ, 0.12);
+            }
+
+            const flapSpeed = 12 + speed * 8;
+            const flapAngle = Math.sin(t * flapSpeed + bird.id) * 0.45;
+            bird.leftWingPivot.rotation.z = flapAngle;
+            bird.rightWingPivot.rotation.z = -flapAngle;
+            bird.body.position.y = Math.sin(t * flapSpeed * 0.5 + bird.id) * 0.02;
+
+            bird.group.scale.set(1, 1, 1);
+          } else if (bird.state === "dismissing") {
+            // ─── Auto-Dismissing After 10s: Swoop up into sky & vanish ───
+            bird.dismissProgress = Math.min(1, bird.dismissProgress + dt * 1.2);
+            const scale = Math.max(0.001, 1 - bird.dismissProgress);
+            bird.group.scale.set(scale, scale, scale);
+
+            bird.vel.y += 4 * dt;
+            bird.vel.x *= 0.98;
+            bird.pos.addScaledVector(bird.vel, dt * 2.5);
+            bird.group.position.copy(bird.pos);
+
+            const flapAngle = Math.sin(t * 30 + bird.id) * 0.5;
+            bird.leftWingPivot.rotation.z = flapAngle;
+            bird.rightWingPivot.rotation.z = -flapAngle;
+
+            if (bird.dismissProgress >= 1 || scale <= 0.01) {
+              bird.state = "vanished";
+              scene.remove(bird.group);
+              birds.splice(i, 1);
+              continue;
+            }
+          } else if (bird.state === "crashing") {
+            // Crash & tumble down
+            bird.crashVy -= 32 * dt;
+            bird.pos.x += bird.crashVx * dt;
+            bird.pos.y += bird.crashVy * dt;
+            bird.group.position.copy(bird.pos);
+
+            bird.group.rotation.z += bird.crashRotSpeed * dt;
+            bird.group.rotation.x += bird.crashRotSpeed * 0.7 * dt;
+
+            const flapAngle = Math.sin(t * 40 + bird.id) * 0.65;
+            bird.leftWingPivot.rotation.z = flapAngle;
+            bird.rightWingPivot.rotation.z = -flapAngle;
+
+            if (bird.pos.y < -visibleHeight / 2 - 1.5) {
+              bird.state = "vanished";
+              bird.group.scale.set(0.001, 0.001, 0.001);
+
+              if (bird.isPermanent) {
+                // Permanent bird respawns 1s later in a new color
+                setTimeout(() => {
+                  if (isDisposed) return;
+                  bird.colorIdx = (bird.colorIdx + 1) % BIRD_COLORS.length;
+                  const c = BIRD_COLORS[bird.colorIdx];
+                  bird.bodyMat.color.setHex(c.body);
+                  bird.bellyMat.color.setHex(c.belly);
+                  bird.wingMat.color.setHex(c.wing);
+                  bird.tailMat.color.setHex(c.wing);
+
+                  const spawnSide = Math.random() > 0.5 ? 1 : -1;
+                  bird.pos.set(spawnSide * (visibleWidth / 2 + 1.5), visibleHeight / 2 + 1, 0);
+                  bird.vel.set(-spawnSide * 4, -3, 0);
+                  bird.group.position.copy(bird.pos);
+                  bird.group.rotation.set(0, spawnSide > 0 ? -Math.PI / 2 : Math.PI / 2, 0);
+
+                  bird.targetWaypoint.set(
+                    -spawnSide * ((visibleWidth / 2) * 0.5),
+                    (Math.random() - 0.5) * 3,
+                    0
+                  );
+                  bird.waypointTimer = 0;
+                  bird.state = "spawning";
+                  bird.spawnProgress = 0;
+                }, 1000);
+              } else {
+                scene.remove(bird.group);
+                birds.splice(i, 1);
+                continue;
+              }
+            }
           }
-        } else if (birdState === "spawning") {
-          // Swoop in smoothly from offscreen
-          spawnProgress = Math.min(1, spawnProgress + dt * 2.2);
-          const scale = THREE.MathUtils.lerp(0.2, 1, spawnProgress);
-          birdGroup.scale.set(scale, scale, scale);
 
-          birdPos.x += birdVel.x * dt;
-          birdPos.y += birdVel.y * dt;
-          birdGroup.position.copy(birdPos);
+          // Project to 2D screen coordinates
+          const projected = new THREE.Vector3(bird.pos.x, bird.pos.y, bird.pos.z);
+          projected.project(camera);
+          bird.currentScreenX = ((projected.x + 1) / 2) * window.innerWidth;
+          bird.currentScreenY = ((-projected.y + 1) / 2) * window.innerHeight;
 
-          const flapAngle = Math.sin(t * 22) * 0.48;
-          leftWingPivot.rotation.z = flapAngle;
-          rightWingPivot.rotation.z = -flapAngle;
+          // Sparkle trail
+          if (bird.state !== "vanished" && t - lastTrailTime > 0.04) {
+            lastTrailTime = t;
+            const tailWorld = new THREE.Vector3(0, 0, -0.38).applyMatrix4(bird.group.matrixWorld);
+            const idx = (trailIdx++ % TRAIL_COUNT) * 3;
+            trailPositions[idx] = tailWorld.x + (Math.random() - 0.5) * 0.08;
+            trailPositions[idx + 1] = tailWorld.y + (Math.random() - 0.5) * 0.08;
+            trailPositions[idx + 2] = tailWorld.z + (Math.random() - 0.5) * 0.08;
 
-          if (spawnProgress >= 1) {
-            birdState = "flying";
+            const c = BIRD_COLORS[bird.colorIdx % BIRD_COLORS.length];
+            const rgb = new THREE.Color(c.wing);
+            trailColors[idx] = rgb.r;
+            trailColors[idx + 1] = rgb.g;
+            trailColors[idx + 2] = rgb.b;
+
+            trailGeo.attributes.position.needsUpdate = true;
+            trailGeo.attributes.color.needsUpdate = true;
           }
-        }
-
-        // Project 3D position to 2D viewport coordinates
-        const projected = new THREE.Vector3(birdPos.x, birdPos.y, birdPos.z);
-        projected.project(camera);
-        currentScreenX = ((projected.x + 1) / 2) * window.innerWidth;
-        currentScreenY = ((-projected.y + 1) / 2) * window.innerHeight;
-
-        // Sparkle trail
-        if (birdState !== "vanished" && t - lastTrailTime > 0.04) {
-          lastTrailTime = t;
-          const tailWorld = new THREE.Vector3(0, 0, -0.38).applyMatrix4(birdGroup.matrixWorld);
-          const i = (trailIdx++ % TRAIL_COUNT) * 3;
-          trailPositions[i] = tailWorld.x + (Math.random() - 0.5) * 0.08;
-          trailPositions[i + 1] = tailWorld.y + (Math.random() - 0.5) * 0.08;
-          trailPositions[i + 2] = tailWorld.z + (Math.random() - 0.5) * 0.08;
-
-          const c = BIRD_COLORS[colorIdx];
-          const rgb = new THREE.Color(c.wing);
-          trailColors[i] = rgb.r;
-          trailColors[i + 1] = rgb.g;
-          trailColors[i + 2] = rgb.b;
-
-          trailGeo.attributes.position.needsUpdate = true;
-          trailGeo.attributes.color.needsUpdate = true;
         }
 
         renderer.render(scene, camera);
@@ -550,6 +692,8 @@ export function FlyingMascot() {
       return () => {
         window.removeEventListener("resize", handleResize);
         window.removeEventListener("pointermove", handlePointerMove);
+        window.removeEventListener("message", onWindowMessage);
+        window.removeEventListener("spawn-flying-mascot-bird", onCustomSpawn);
         canvas.removeEventListener("click", handleBirdClick);
         document.removeEventListener("visibilitychange", handleVisibilityChange);
       };

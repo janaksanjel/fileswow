@@ -9,7 +9,6 @@ import { ToolIcon } from "@/components/icon";
 import { CATEGORY_MENUS, type CategoryMenu } from "@/lib/mega-menu";
 import { ALL_TOOLS } from "@/lib/catalog";
 import { getHeaderSmartTools, DEFAULT_HEADER_TOOLS, subscribeUsage } from "@/lib/usage";
-import { useI18n } from "@/lib/i18n";
 
 const TRANSFER_HREF = "/transfer";
 
@@ -114,10 +113,8 @@ export function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [allToolsOpen, setAllToolsOpen] = useState(false);
   const [openSection, setOpenSection] = useState<number | null>(0);
-  const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
   const { theme, toggle } = useTheme();
-  const { t } = useI18n();
   const [navTools, setNavTools] = useState(DEFAULT_HEADER_TOOLS);
 
   // Sync smart top 2 tools + 1 recommendation from local storage algorithm
@@ -137,12 +134,6 @@ export function Header() {
     setAllToolsOpen(false);
   }
 
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 4);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   // ⌘K / Ctrl+K toggles the palette; Esc closes drawer and popups
   useEffect(() => {

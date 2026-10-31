@@ -192,6 +192,7 @@ function wow(msg){
   if(y<.05){vy=6.2;}
   burst(46);mo=1;rayKick=1;spin=typeof msg==='string'?2:1;
   bubble.textContent=typeof msg==='string'?msg:phrases[pIdx++%phrases.length];bubble.classList.toggle('long',typeof msg==='string');bubble.classList.remove('show');void bubble.offsetWidth;bubble.classList.add('show');
+  try { window.parent.postMessage({ type: 'mascot-click' }, '*'); } catch(e){}
 }
 R.domElement.addEventListener('pointerdown',wow);
 
