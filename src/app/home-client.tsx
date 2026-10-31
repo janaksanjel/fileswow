@@ -14,6 +14,7 @@ import { AdSlot } from "@/components/ad-unit";
 import { useI18n, type MessageKey } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme-provider";
 import { BLOG_POSTS } from "@/lib/blog";
+import { FlyingMascot } from "@/components/flying-mascot";
 
 /* Curated popular order first, then everything else — the base list the
    filter chips slice. Never rendered in full on the homepage. */
@@ -532,6 +533,9 @@ export function HomeClient() {
           </div>
         </div>
       </section>
+
+      {/* Autonomous flying mascot bird — flies exclusively on the homepage */}
+      <FlyingMascot />
     </div>
   );
 }

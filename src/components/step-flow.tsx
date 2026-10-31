@@ -289,12 +289,12 @@ export function StepFlow({
               onInvalidated={onInvalidated}
             />
             {/* Continue & Preview Buttons */}
-            <div className="flex items-center gap-2.5 mt-5">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 mt-5">
               {hasFiles && currentFiles.length > 0 && isPreviewableFile(currentFiles[0]) && (
                 <button
                   type="button"
                   onClick={() => setActiveDrawerFile({ file: currentFiles[0], title: currentFiles[0].name })}
-                  className="btn-secondary px-4 py-3 text-[13px] font-semibold flex items-center justify-center gap-1.5 shrink-0 hover:border-accent hover:text-accent transition-colors"
+                  className="btn-secondary w-full sm:w-auto px-4 py-3 text-[13px] font-semibold flex items-center justify-center gap-1.5 shrink-0 hover:border-accent hover:text-accent transition-colors"
                   title="Preview uploaded file in right drawer"
                 >
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -307,7 +307,7 @@ export function StepFlow({
               <button
                 onClick={goToOperation}
                 disabled={!hasFiles || (minFiles ? currentFiles.length < minFiles : false)}
-                className="btn-primary flex-1 py-3 group"
+                className="btn-primary w-full sm:flex-1 py-3 group flex items-center justify-center gap-2"
               >
                 <span>Continue</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-200 group-hover:translate-x-0.5" aria-hidden="true">
@@ -329,29 +329,29 @@ export function StepFlow({
         {step === 2 && (
           <div key="operation" className="flow-panel-enter">
             {/* Selected files summary */}
-            <div className="flex items-center justify-between gap-3 mb-4 px-3.5 py-2.5 rounded-xl bg-bg-elevated/60 border border-border-base">
-              <span className="text-[12px] font-semibold text-text-secondary truncate">
+            <div className="flex items-center justify-between gap-2 sm:gap-3 mb-4 px-3 sm:px-3.5 py-2 sm:py-2.5 rounded-xl bg-bg-elevated/60 border border-border-base">
+              <span className="text-[11.5px] sm:text-[12px] font-semibold text-text-secondary truncate">
                 {fileCount} file{fileCount !== 1 ? "s" : ""} ready
               </span>
-              <div className="flex items-center gap-3 shrink-0">
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                 {!multiple && currentFiles.length === 1 && isPreviewableFile(currentFiles[0]) && (
                   <button
                     type="button"
                     onClick={() => setActiveDrawerFile({ file: currentFiles[0], title: currentFiles[0].name })}
-                    className="text-[11.5px] font-bold text-accent hover:underline flex items-center gap-1.5"
+                    className="text-[11px] sm:text-[11.5px] font-bold text-accent hover:underline flex items-center gap-1.5"
                     title="Preview uploaded document/image in right drawer"
                   >
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
                       <circle cx="12" cy="12" r="3" />
                     </svg>
-                    <span>Preview in Drawer</span>
+                    <span>Preview</span>
                   </button>
                 )}
                 <button
                   type="button"
                   onClick={goUpload}
-                  className="text-[11.5px] font-semibold text-text-secondary hover:underline underline-offset-2 shrink-0"
+                  className="text-[11px] sm:text-[11.5px] font-semibold text-text-secondary hover:underline underline-offset-2 shrink-0"
                 >
                   Change files
                 </button>
@@ -518,7 +518,7 @@ function OutputPanel({
         {outputs.map((o) => (
           <li
             key={o.name}
-            className="flow-row flex items-center gap-3 px-3 py-2.5 rounded-xl bg-bg-elevated/60 border border-border-base"
+            className="flow-row flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl bg-bg-elevated/60 border border-border-base"
           >
             <span className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 bg-success/10 text-success">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -527,10 +527,10 @@ function OutputPanel({
                 <line x1="12" y1="15" x2="12" y2="3" />
               </svg>
             </span>
-            <span className="flex-1 min-w-0 text-[13px] font-semibold text-text-primary truncate">
+            <span className="flex-1 min-w-0 text-[12.5px] sm:text-[13px] font-semibold text-text-primary truncate">
               {o.name}
             </span>
-            <span className="text-[11px] text-text-tertiary tabular-nums shrink-0">
+            <span className="text-[10.5px] sm:text-[11px] text-text-tertiary tabular-nums shrink-0 hidden xs:inline">
               {(o.blob.size / 1024).toFixed(0)} KB
             </span>
 
@@ -539,14 +539,14 @@ function OutputPanel({
               <button
                 type="button"
                 onClick={() => setPreviewOutput(o)}
-                className="btn-secondary px-2.5 py-1.5 text-[11.5px] font-semibold flex items-center gap-1.5 hover:border-accent hover:text-accent transition-colors shrink-0"
+                className="btn-secondary px-2 sm:px-2.5 py-1.5 text-[11px] sm:text-[11.5px] font-semibold flex items-center gap-1 hover:border-accent hover:text-accent transition-colors shrink-0"
                 title="Preview in right drawer before downloading"
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
                   <circle cx="12" cy="12" r="3" />
                 </svg>
-                <span>Preview</span>
+                <span className="hidden sm:inline">Preview</span>
               </button>
             )}
 

@@ -196,16 +196,27 @@ export function DropZone({
       />
 
       {/* Zone proper */}
-      <div className="flex flex-col items-center gap-4 px-6 py-12 sm:py-16">
+      <div className={`flex flex-col items-center gap-3.5 sm:gap-4 px-3 sm:px-6 ${isDragging ? "py-12 sm:py-16" : "py-8 sm:py-14"}`}>
         {/* Document tile — prominent iLovePDF-style badge */}
         <span
-          className={`w-16 h-16 rounded-2xl flex items-center justify-center ring-1 ring-inset transition-all duration-200 shadow-sm ${
+          className={`w-13 h-13 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center ring-1 ring-inset transition-all duration-200 shadow-sm ${
             isDragging
               ? "bg-accent text-text-on-accent ring-accent scale-110"
               : "bg-accent-subtle text-accent ring-accent/20 group-hover:scale-105"
           }`}
         >
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <svg
+            width="26"
+            height="26"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+            className="sm:w-[30px] sm:h-[30px]"
+          >
             <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
             <polyline points="14 3 14 8 19 8" />
             <line x1="12" y1="17.5" x2="12" y2="11.5" />
@@ -214,49 +225,55 @@ export function DropZone({
         </span>
 
         {/* Commanding solid select button (iLovePDF style) & paste */}
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <span className="btn-primary px-8 sm:px-12 py-3.5 sm:py-4 text-[16px] sm:text-[18px] font-bold rounded-2xl shadow-md hover:shadow-xl transition-all pointer-events-none flex items-center gap-2.5">
+        <div className="w-full flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-3 max-w-sm sm:max-w-none mx-auto">
+          <span className="btn-primary w-full sm:w-auto justify-center px-6 sm:px-12 py-3 sm:py-4 text-[15px] sm:text-[18px] font-bold rounded-xl sm:rounded-2xl shadow-md hover:shadow-xl transition-all pointer-events-none flex items-center gap-2.5">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="17 8 12 3 7 8" />
               <line x1="12" y1="3" x2="12" y2="15" />
             </svg>
-            {isDragging ? "Release to drop file" : selectLabel}
+            <span>{isDragging ? "Release to drop file" : selectLabel}</span>
           </span>
           <button
             type="button"
             onClick={handlePasteFromClipboard}
-            className="btn-secondary px-4 py-3 text-[13px] font-semibold rounded-xl flex items-center gap-1.5 hover:border-accent hover:text-accent transition-colors"
+            className="btn-secondary w-full sm:w-auto justify-center px-4 py-2.5 sm:py-3 text-[12.5px] sm:text-[13px] font-semibold rounded-xl flex items-center gap-1.5 hover:border-accent hover:text-accent transition-colors"
             title="Paste file or image from clipboard (Ctrl+V)"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
               <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
             </svg>
-            Paste
+            <span>Paste from clipboard</span>
           </button>
         </div>
 
-        <p className="text-[14px] sm:text-[15px] text-text-secondary font-medium text-center">
+        <p className="text-[13px] sm:text-[15px] text-text-secondary font-medium text-center px-2">
           {description || (
-            <span className="flex items-center justify-center gap-1.5">
-              or drop {accept.includes(".pdf") ? "PDF" : "files"} here — paste with <kbd className="kbd text-[11px] px-1.5 py-0.5 ml-0.5">Ctrl+V</kbd>
-            </span>
+            <>
+              <span className="hidden sm:inline">
+                or drop {accept.includes(".pdf") ? "PDF" : "files"} here — paste with{" "}
+                <kbd className="kbd text-[11px] px-1.5 py-0.5 ml-0.5">Ctrl+V</kbd>
+              </span>
+              <span className="sm:hidden text-text-secondary">
+                Tap anywhere to choose files from device or camera
+              </span>
+            </>
           )}
         </p>
 
         {formats.length > 0 && !isDragging && (
-          <ul className="flex flex-wrap items-center justify-center gap-1.5" aria-label="Accepted file formats">
+          <ul className="flex flex-wrap items-center justify-center gap-1 sm:gap-1.5 max-w-full px-2" aria-label="Accepted file formats">
             {formats.slice(0, 8).map((f) => (
               <li
                 key={f}
-                className="font-mono text-[10.5px] font-semibold text-text-secondary bg-bg-elevated border border-border-base rounded-md px-2 py-0.5 uppercase tracking-[0.06em]"
+                className="font-mono text-[9.5px] sm:text-[10.5px] font-semibold text-text-secondary bg-bg-elevated border border-border-base rounded-md px-2 py-0.5 uppercase tracking-[0.06em]"
               >
                 {f}
               </li>
             ))}
             {multiple && (
-              <li className="font-mono text-[10.5px] font-semibold text-text-tertiary px-1 uppercase tracking-[0.06em]">
+              <li className="font-mono text-[9.5px] sm:text-[10.5px] font-semibold text-text-tertiary px-1 uppercase tracking-[0.06em]">
                 + multiple
               </li>
             )}
@@ -265,8 +282,8 @@ export function DropZone({
       </div>
 
       {/* Trust strip — the one line every tool carries */}
-      <p className="flex items-center justify-center gap-1.5 border-t border-dashed border-border-base px-6 py-3 text-[11.5px] text-text-tertiary">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="text-success" aria-hidden="true">
+      <p className="flex items-center justify-center gap-1.5 border-t border-dashed border-border-base px-3 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-[11.5px] text-text-tertiary text-center">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="text-success shrink-0" aria-hidden="true">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
           <path d="M9 12l2 2 4-4" />
         </svg>

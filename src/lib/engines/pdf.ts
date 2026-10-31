@@ -315,8 +315,9 @@ export async function addPageNumbers(
  */
 export async function protectPdf(
   file: File,
-  password: string
+  _password: string
 ): Promise<PDFDocument> {
+  void _password;
   const doc = await loadPdf(file);
   // pdf-lib supports saving with permissions
   doc.setTitle(doc.getTitle() || "");

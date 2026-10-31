@@ -371,7 +371,7 @@ export async function convertPdfToWord(file: File): Promise<Blob> {
     AlignmentType,
   } = await import("docx");
 
-  const { lines, pageCount } = await extractStructuredLines(file);
+  const { lines } = await extractStructuredLines(file);
 
   if (lines.length === 0) {
     const emptyDoc = new Document({
@@ -472,7 +472,7 @@ export async function convertPdfToWord(file: File): Promise<Blob> {
   flushPara();
 
   // Rebuild into docx Paragraphs
-  const docxElements: any[] = [];
+  const docxElements: InstanceType<typeof Paragraph>[] = [];
 
   for (let idx = 0; idx < paragraphs.length; idx++) {
     const p = paragraphs[idx];

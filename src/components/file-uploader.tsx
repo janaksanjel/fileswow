@@ -384,16 +384,16 @@ export function FileUploader({
           transition-[background-color,border-color,transform] duration-150 ease-out
           ${dragging ? "flow-dropzone-dragging border-accent" : "border-border-strong hover:border-accent/70 hover:bg-accent/[0.03]"}`}
       >
-      <div className={`flex flex-col items-center justify-center gap-4 px-6 ${dragging ? "py-16" : "py-12 sm:py-16"}`}>
+      <div className={`flex flex-col items-center justify-center gap-3.5 sm:gap-4 px-3 sm:px-6 ${dragging ? "py-12 sm:py-16" : "py-8 sm:py-14"}`}>
 
         {/* Document tile — prominent iLovePDF-style upload badge */}
         <span
-          className={`w-16 h-16 rounded-2xl flex items-center justify-center ring-1 ring-inset transition-all duration-200 shadow-sm
+          className={`w-13 h-13 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center ring-1 ring-inset transition-all duration-200 shadow-sm
             ${dragging ? "bg-accent text-text-on-accent ring-accent scale-110" : "bg-accent-subtle text-accent ring-accent/20 group-hover:scale-105"}`}
         >
           <svg
-            width="30"
-            height="30"
+            width="26"
+            height="26"
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -401,6 +401,7 @@ export function FileUploader({
             strokeLinecap="round"
             strokeLinejoin="round"
             aria-hidden="true"
+            className="sm:w-[30px] sm:h-[30px]"
           >
             <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z" />
             <polyline points="14 3 14 8 19 8" />
@@ -410,42 +411,48 @@ export function FileUploader({
         </span>
 
         {/* Commanding iLovePDF-style Select Button & Paste */}
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <span className="btn-primary px-8 sm:px-12 py-3.5 sm:py-4.5 text-[16px] sm:text-[18px] font-bold rounded-2xl shadow-md hover:shadow-xl transition-all pointer-events-none flex items-center gap-2.5">
+        <div className="w-full flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-2.5 sm:gap-3 max-w-sm sm:max-w-none mx-auto">
+          <span className="btn-primary w-full sm:w-auto justify-center px-6 sm:px-12 py-3 sm:py-4 text-[15px] sm:text-[18px] font-bold rounded-xl sm:rounded-2xl shadow-md hover:shadow-xl transition-all pointer-events-none flex items-center gap-2.5">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="17 8 12 3 7 8" />
               <line x1="12" y1="3" x2="12" y2="15" />
             </svg>
-            {dragging ? "Release to drop files" : selectLabel}
+            <span>{dragging ? "Release to drop files" : selectLabel}</span>
           </span>
           <button
             type="button"
             onClick={handlePasteFromClipboard}
-            className="btn-secondary px-4 py-3 text-[13px] font-semibold rounded-xl flex items-center gap-1.5 hover:border-accent hover:text-accent transition-colors"
+            className="btn-secondary w-full sm:w-auto justify-center px-4 py-2.5 sm:py-3 text-[12.5px] sm:text-[13px] font-semibold rounded-xl flex items-center gap-1.5 hover:border-accent hover:text-accent transition-colors"
             title="Paste file or image from clipboard (Ctrl+V)"
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
               <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
             </svg>
-            Paste
+            <span>Paste from clipboard</span>
           </button>
         </div>
 
-        {/* Clear drop text & paste badge */}
-        <p className="text-[14px] sm:text-[15px] text-text-secondary font-medium text-center flex items-center justify-center gap-1.5">
-          {dragging
-            ? "Drop files to process on your device"
-            : (
-              <>
-                or drop {accept.includes(".pdf") ? "PDF" : "files"} here — paste with <kbd className="kbd text-[11px] px-1.5 py-0.5 ml-0.5">Ctrl+V</kbd>
-              </>
-            )}
+        {/* Clear drop text & touch-friendly notice */}
+        <p className="text-[13px] sm:text-[15px] text-text-secondary font-medium text-center px-2">
+          {dragging ? (
+            "Drop files to process on your device"
+          ) : (
+            <>
+              <span className="hidden sm:inline">
+                or drop {accept.includes(".pdf") ? "PDF" : "files"} here — paste with{" "}
+                <kbd className="kbd text-[11px] px-1.5 py-0.5 ml-0.5">Ctrl+V</kbd>
+              </span>
+              <span className="sm:hidden text-text-secondary">
+                Tap anywhere to choose files from device or camera
+              </span>
+            </>
+          )}
         </p>
 
         {!dragging && (acceptLabel || hint) && (
-          <p className="font-mono text-[10.5px] font-semibold text-text-secondary px-2.5 py-1 bg-bg-elevated border border-border-base rounded-md uppercase tracking-[0.06em]">
+          <p className="font-mono text-[10px] sm:text-[10.5px] font-semibold text-text-secondary px-2.5 py-1 bg-bg-elevated border border-border-base rounded-md uppercase tracking-[0.06em] max-w-full truncate text-center">
             {acceptLabel || hint}
           </p>
         )}
@@ -453,8 +460,8 @@ export function FileUploader({
 
       {/* Trust strip — the one line every tool carries */}
       {!dragging && (
-        <p className="flex items-center justify-center gap-1.5 border-t border-dashed border-border-base px-6 py-3 text-[11.5px] text-text-tertiary">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="text-success" aria-hidden="true">
+        <p className="flex items-center justify-center gap-1.5 border-t border-dashed border-border-base px-3 sm:px-6 py-2.5 sm:py-3 text-[11px] sm:text-[11.5px] text-text-tertiary text-center">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="text-success shrink-0" aria-hidden="true">
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
             <path d="M9 12l2 2 4-4" />
           </svg>
@@ -490,7 +497,7 @@ export function FileUploader({
               return (
                 <li
                   key={item.id}
-                  className={`flow-row flex items-center gap-3 px-3 py-2.5 rounded-xl bg-bg-elevated/60 border border-border-base
+                  className={`flow-row flex items-center gap-2.5 sm:gap-3 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl bg-bg-elevated/60 border border-border-base
                     ${isRemoving ? "flow-row-removing" : ""}`}
                   style={{ animationDelay: `${Math.min(i, 8) * 30}ms` }}
                 >
@@ -518,18 +525,18 @@ export function FileUploader({
 
                   {/* Name + size / progress */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-semibold text-text-primary truncate leading-tight">
+                    <p className="text-[12.5px] sm:text-[13px] font-semibold text-text-primary truncate leading-tight">
                       {item.file.name}
                     </p>
                     {isUploading ? (
                       <div className="mt-1.5 flex items-center gap-2">
                         <div className="flow-progress h-[3px] rounded-full flex-1 max-w-[160px]" />
-                        <span className="text-[10.5px] font-bold text-accent tabular-nums">
+                        <span className="text-[10px] sm:text-[10.5px] font-bold text-accent tabular-nums">
                           {Math.round(item.progress)}%
                         </span>
                       </div>
                     ) : (
-                      <p className="text-[11px] text-text-tertiary mt-0.5 leading-tight">
+                      <p className="text-[10.5px] sm:text-[11px] text-text-tertiary mt-0.5 leading-tight">
                         {formatSize(item.file.size)}
                         {item.status === "error" && <span className="text-danger font-semibold"> · failed</span>}
                       </p>
@@ -556,11 +563,11 @@ export function FileUploader({
                         e.stopPropagation();
                         setPreviewFile(item.file);
                       }}
-                      className="w-6 h-6 rounded-lg flex items-center justify-center text-text-tertiary hover:text-accent hover:bg-accent/10 transition-colors shrink-0"
+                      className="w-7 h-7 sm:w-6.5 sm:h-6.5 rounded-lg flex items-center justify-center text-text-tertiary hover:text-accent hover:bg-accent/10 transition-colors shrink-0"
                       title={`Preview ${item.file.name} in right drawer`}
                       aria-label={`Preview ${item.file.name}`}
                     >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                         <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
                         <circle cx="12" cy="12" r="3" />
                       </svg>
@@ -573,10 +580,10 @@ export function FileUploader({
                       e.stopPropagation();
                       removeFile(item.id);
                     }}
-                    className="w-6 h-6 rounded-lg flex items-center justify-center text-text-tertiary hover:text-danger hover:bg-danger/10 transition-colors shrink-0"
+                    className="w-7 h-7 sm:w-6.5 sm:h-6.5 rounded-lg flex items-center justify-center text-text-tertiary hover:text-danger hover:bg-danger/10 transition-colors shrink-0"
                     aria-label={`Remove ${item.file.name}`}
                   >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
                       <line x1="18" y1="6" x2="6" y2="18" />
                       <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>

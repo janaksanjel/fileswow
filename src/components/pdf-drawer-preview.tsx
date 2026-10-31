@@ -142,23 +142,23 @@ export function PdfDrawerPreview({
       {/* Slide-over Right Drawer */}
       <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-[540px] md:w-[680px] bg-bg-surface border-l border-white/80 dark:border-white/10 shadow-[-12px_0_48px_rgba(0,0,0,0.4)] flex flex-col animate-slide-left">
         {/* Drawer Header */}
-        <div className="flex items-center justify-between px-5 py-3.5 bg-bg-elevated/75 border-b border-border-base shrink-0">
-          <div className="min-w-0 pr-3">
-            <h3 className="text-[14px] font-bold text-text-primary truncate">{title}</h3>
-            <p className="text-[11.5px] text-text-tertiary">
+        <div className="flex items-center justify-between px-3.5 sm:px-5 py-2.5 sm:py-3.5 bg-bg-elevated/75 border-b border-border-base shrink-0">
+          <div className="min-w-0 pr-2 sm:pr-3">
+            <h3 className="text-[13px] sm:text-[14px] font-bold text-text-primary truncate">{title}</h3>
+            <p className="text-[11px] sm:text-[11.5px] text-text-tertiary">
               {isPdf && (totalPages > 0 ? `${totalPages} page${totalPages !== 1 ? "s" : ""} · ${fileSize}` : "Loading PDF...")}
               {isImage && `Image file · ${fileSize}`}
               {!isPdf && !isImage && fileSize}
             </p>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Zoom controls */}
             <div className="flex items-center rounded-lg bg-bg-input border border-border-base p-0.5">
               <button
                 type="button"
                 onClick={handleZoomOut}
-                className="w-6 h-6 rounded flex items-center justify-center text-text-secondary hover:text-text-primary text-xs font-bold transition-colors"
+                className="w-5.5 h-5.5 sm:w-6 sm:h-6 rounded flex items-center justify-center text-text-secondary hover:text-text-primary text-xs font-bold transition-colors"
                 title="Zoom out"
                 aria-label="Zoom out"
               >
@@ -167,7 +167,7 @@ export function PdfDrawerPreview({
               <button
                 type="button"
                 onClick={handleZoomReset}
-                className="text-[10.5px] font-mono px-1.5 text-text-secondary hover:text-accent tabular-nums transition-colors font-semibold"
+                className="text-[10px] sm:text-[10.5px] font-mono px-1 sm:px-1.5 text-text-secondary hover:text-accent tabular-nums transition-colors font-semibold hidden xs:inline"
                 title="Reset zoom to 100%"
               >
                 {Math.round(scale * 100)}%
@@ -175,7 +175,7 @@ export function PdfDrawerPreview({
               <button
                 type="button"
                 onClick={handleZoomIn}
-                className="w-6 h-6 rounded flex items-center justify-center text-text-secondary hover:text-text-primary text-xs font-bold transition-colors"
+                className="w-5.5 h-5.5 sm:w-6 sm:h-6 rounded flex items-center justify-center text-text-secondary hover:text-text-primary text-xs font-bold transition-colors"
                 title="Zoom in"
                 aria-label="Zoom in"
               >
@@ -187,7 +187,7 @@ export function PdfDrawerPreview({
             <button
               type="button"
               onClick={handleZoomFit}
-              className="px-2 py-1 rounded-md text-[11px] font-semibold bg-bg-surface hover:bg-bg-hover text-text-secondary border border-border-base transition-colors"
+              className="px-2 py-1 rounded-md text-[11px] font-semibold bg-bg-surface hover:bg-bg-hover text-text-secondary border border-border-base transition-colors hidden sm:inline-flex"
               title="Fit to drawer width"
             >
               Fit
@@ -195,24 +195,24 @@ export function PdfDrawerPreview({
 
             {/* Page navigation for PDF */}
             {isPdf && totalPages > 1 && (
-              <div className="flex items-center gap-1 text-xs">
+              <div className="flex items-center gap-0.5 sm:gap-1 text-xs">
                 <button
                   type="button"
                   disabled={currentPage <= 1}
                   onClick={() => scrollToPage(currentPage - 1)}
-                  className="w-7 h-7 rounded-lg flex items-center justify-center bg-bg-surface hover:bg-bg-hover disabled:opacity-30 border border-border-base text-text-secondary transition-colors"
+                  className="w-6.5 h-6.5 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center bg-bg-surface hover:bg-bg-hover disabled:opacity-30 border border-border-base text-text-secondary transition-colors"
                   aria-label="Previous page"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
                 </button>
-                <span className="font-mono text-[11px] text-text-secondary px-1 tabular-nums">
+                <span className="font-mono text-[10.5px] sm:text-[11px] text-text-secondary px-0.5 sm:px-1 tabular-nums">
                   {currentPage}/{totalPages}
                 </span>
                 <button
                   type="button"
                   disabled={currentPage >= totalPages}
                   onClick={() => scrollToPage(currentPage + 1)}
-                  className="w-7 h-7 rounded-lg flex items-center justify-center bg-bg-surface hover:bg-bg-hover disabled:opacity-30 border border-border-base text-text-secondary transition-colors"
+                  className="w-6.5 h-6.5 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center bg-bg-surface hover:bg-bg-hover disabled:opacity-30 border border-border-base text-text-secondary transition-colors"
                   aria-label="Next page"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
@@ -224,7 +224,7 @@ export function PdfDrawerPreview({
             <button
               type="button"
               onClick={onClose}
-              className="w-7 h-7 rounded-lg flex items-center justify-center bg-bg-surface hover:bg-danger/10 hover:text-danger text-text-secondary border border-border-base transition-colors"
+              className="w-6.5 h-6.5 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center bg-bg-surface hover:bg-danger/10 hover:text-danger text-text-secondary border border-border-base transition-colors shrink-0"
               aria-label="Close preview"
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -237,7 +237,7 @@ export function PdfDrawerPreview({
 
         {/* Multi-file switcher if a list of files is provided */}
         {filesList && filesList.length > 1 && typeof currentIndex === "number" && onSelectIndex && (
-          <div className="flex items-center justify-between px-4 py-2 bg-bg-surface border-b border-border-base text-xs shrink-0">
+          <div className="flex items-center justify-between px-3 sm:px-4 py-1.5 sm:py-2 bg-bg-surface border-b border-border-base text-xs shrink-0">
             <button
               type="button"
               disabled={currentIndex <= 0}
@@ -245,13 +245,14 @@ export function PdfDrawerPreview({
               className="flex items-center gap-1 font-semibold text-text-secondary hover:text-accent disabled:opacity-30 disabled:hover:text-text-secondary transition-colors"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
-              <span>Prev file</span>
+              <span className="hidden xs:inline">Prev file</span>
+              <span className="xs:hidden">Prev</span>
             </button>
             <div className="flex items-center gap-1.5 font-medium text-text-tertiary">
-              <span className="font-bold text-text-primary px-2 py-0.5 rounded bg-bg-elevated border border-border-base text-[11px]">
+              <span className="font-bold text-text-primary px-1.5 py-0.5 rounded bg-bg-elevated border border-border-base text-[10.5px] sm:text-[11px]">
                 {currentIndex + 1} / {filesList.length}
               </span>
-              <span className="truncate max-w-[140px] sm:max-w-[220px] text-text-secondary text-[11.5px] font-semibold">
+              <span className="truncate max-w-[90px] xs:max-w-[140px] sm:max-w-[220px] text-text-secondary text-[11px] sm:text-[11.5px] font-semibold">
                 {filesList[currentIndex]?.name}
               </span>
             </div>
@@ -261,7 +262,8 @@ export function PdfDrawerPreview({
               onClick={() => onSelectIndex(currentIndex + 1)}
               className="flex items-center gap-1 font-semibold text-text-secondary hover:text-accent disabled:opacity-30 disabled:hover:text-text-secondary transition-colors"
             >
-              <span>Next file</span>
+              <span className="hidden xs:inline">Next file</span>
+              <span className="xs:hidden">Next</span>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
             </button>
           </div>

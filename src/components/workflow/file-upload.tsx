@@ -259,9 +259,9 @@ export function FileUpload({
           onDragOver={handleDragOver}
           onDrop={handleDrop}
           className={`flow-dropzone w-full flex flex-col items-center justify-center gap-3
-            px-6 rounded-2xl border border-dashed cursor-pointer select-none
+            px-3 sm:px-6 rounded-2xl border border-dashed cursor-pointer select-none
             transition-[padding,background-color,border-color] duration-200
-            ${dragging ? "flow-dropzone-dragging border-transparent py-14" : "border-border-strong py-10 hover:border-accent/60 hover:bg-accent/[0.02]"}`}
+            ${dragging ? "flow-dropzone-dragging border-transparent py-10 sm:py-14" : "border-border-strong py-7 sm:py-10 hover:border-accent/60 hover:bg-accent/[0.02]"}`}
         >
           <span
             className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-200
@@ -285,20 +285,25 @@ export function FileUpload({
             </svg>
           </span>
 
-          <div className="text-center">
-            <p className="text-[14.5px] font-bold text-text-primary">
+          <div className="text-center px-2">
+            <p className="text-[14px] sm:text-[14.5px] font-bold text-text-primary">
               {dragging ? "Drop your files here" : `Add your ${CATEGORY_HINTS[category] ?? "files"}`}
             </p>
-            <p className="text-[12.5px] text-text-tertiary mt-1 flex items-center justify-center gap-1.5 flex-wrap">
+            <p className="text-[12px] sm:text-[12.5px] text-text-tertiary mt-1">
               {dragging ? (
                 "Release to add them"
               ) : (
                 <>
-                  Drag &amp; drop files here or{" "}
-                  <span className="text-accent font-semibold underline decoration-accent/40 decoration-2 underline-offset-4">
-                    Choose files
+                  <span className="hidden sm:inline">
+                    Drag &amp; drop files here or{" "}
+                    <span className="text-accent font-semibold underline decoration-accent/40 decoration-2 underline-offset-4">
+                      Choose files
+                    </span>
+                    <span> · paste with <kbd className="kbd text-[11px] px-1.5 py-0.5">Ctrl+V</kbd></span>
                   </span>
-                  <span>· paste with <kbd className="kbd text-[11px] px-1.5 py-0.5">Ctrl+V</kbd></span>
+                  <span className="sm:hidden text-accent font-semibold">
+                    Tap anywhere to choose files
+                  </span>
                 </>
               )}
             </p>

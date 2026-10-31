@@ -52,16 +52,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   // Read stored preference or system preference on mount
   useEffect(() => {
-    const stored = localStorage.getItem("theme") as Theme | null;
-    if (stored) {
-      setTheme(stored);
-    } else if (
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches
-    ) {
-      setTheme("dark");
-    }
-    setMounted(true);
+    queueMicrotask(() => {
+      const stored = localStorage.getItem("theme") as Theme | null;
+      if (stored) {
+        setTheme(stored);
+      } else if (
+        window.matchMedia &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches
+      ) {
+        setTheme("dark");
+      }
+      setMounted(true);
+    });
   }, []);
 
   // Apply theme to DOM

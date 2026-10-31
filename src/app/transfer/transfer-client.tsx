@@ -1588,7 +1588,7 @@ export function TransferClient() {
             <h2 id="send-heading" className="heading-md text-text-primary">Send files</h2>
           </div>
 
-          <div className="panel p-4 sm:p-6">
+          <div className="panel p-3 sm:p-6">
             <FileUploader
               accept="*/*"
               multiple={true}
@@ -1598,10 +1598,10 @@ export function TransferClient() {
             />
 
             {files.length > 0 && (
-              <div className="mt-5 pt-4 border-t border-border-base">
+              <div className="mt-4 sm:mt-5 pt-3 sm:pt-4 border-t border-border-base">
                 {totalSizeTooBig && (
-                  <p className="text-danger font-semibold text-sm mb-3 flex items-center gap-1.5">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <p className="text-danger font-semibold text-xs sm:text-sm mb-3 flex items-center gap-1.5">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="shrink-0">
                       <circle cx="12" cy="12" r="10" />
                       <line x1="12" y1="8" x2="12" y2="12" />
                       <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -1613,13 +1613,13 @@ export function TransferClient() {
                   type="button"
                   onClick={handleSendClick}
                   disabled={totalSizeTooBig}
-                  className="btn-primary w-full h-12 text-[15px] font-bold flex items-center justify-center gap-2.5 shadow-md hover:shadow-lg transition-all"
+                  className="btn-primary w-full min-h-[48px] py-3 px-4 text-[14px] sm:text-[15px] font-bold flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all text-center leading-snug"
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className="shrink-0">
                     <line x1="22" y1="2" x2="11" y2="13" />
                     <polygon points="22 2 15 22 11 13 2 9 22 2" />
                   </svg>
-                  Get transfer code ({files.length} file{files.length === 1 ? "" : "s"} · {formatBytes(totalSize)})
+                  <span>Get transfer code ({files.length} file{files.length === 1 ? "" : "s"} · {formatBytes(totalSize)})</span>
                 </button>
               </div>
             )}

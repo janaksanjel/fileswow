@@ -380,25 +380,27 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   // Initial language detection from URL pathname (/en, /es, /pt) or localStorage or browser
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const path = window.location.pathname;
-      const match = path.match(/^\/(en|es|pt)(?=\/|$)/);
-      if (match && isLocale(match[1])) {
-        setLocaleState(match[1]);
-        try {
-          window.localStorage.setItem(STORAGE_KEY, match[1]);
-        } catch {}
+    queueMicrotask(() => {
+      if (typeof window !== "undefined") {
+        const path = window.location.pathname;
+        const match = path.match(/^\/(en|es|pt)(?=\/|$)/);
+        if (match && isLocale(match[1])) {
+          setLocaleState(match[1]);
+          try {
+            window.localStorage.setItem(STORAGE_KEY, match[1]);
+          } catch {}
+          return;
+        }
+      }
+
+      const saved = window.localStorage.getItem(STORAGE_KEY);
+      if (isLocale(saved)) {
+        setLocaleState(saved);
         return;
       }
-    }
-
-    const saved = window.localStorage.getItem(STORAGE_KEY);
-    if (isLocale(saved)) {
-      setLocaleState(saved);
-      return;
-    }
-    const nav = navigator.language?.slice(0, 2);
-    if (nav === "es" || nav === "pt") setLocaleState(nav);
+      const nav = navigator.language?.slice(0, 2);
+      if (nav === "es" || nav === "pt") setLocaleState(nav);
+    });
   }, []);
 
   // Update document html lang attribute

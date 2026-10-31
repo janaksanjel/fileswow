@@ -201,7 +201,7 @@ export function FlyingMascot() {
       // Function to apply a new different color to the bird
       function applyNewColor() {
         // Pick guaranteed different color
-        let nextIdx = (colorIdx + 1 + Math.floor(Math.random() * (BIRD_COLORS.length - 1))) % BIRD_COLORS.length;
+        const nextIdx = (colorIdx + 1 + Math.floor(Math.random() * (BIRD_COLORS.length - 1))) % BIRD_COLORS.length;
         colorIdx = nextIdx;
         const c = BIRD_COLORS[colorIdx];
 
@@ -273,11 +273,11 @@ export function FlyingMascot() {
       let spawnProgress = 1;
 
       // Current bird world position & velocity
-      let birdPos = new THREE.Vector3(0, 1.5, 0);
-      let birdVel = new THREE.Vector3(1.5, 0.4, 0);
+      const birdPos = new THREE.Vector3(0, 1.5, 0);
+      const birdVel = new THREE.Vector3(1.5, 0.4, 0);
 
       // Autonomous flight target waypoint (never chases cursor)
-      let targetWaypoint = new THREE.Vector3(
+      const targetWaypoint = new THREE.Vector3(
         (Math.random() - 0.5) * 6,
         (Math.random() - 0.5) * 3,
         (Math.random() - 0.5) * 1.5
@@ -555,11 +555,12 @@ export function FlyingMascot() {
       };
     });
 
+    const currentCanvas = canvas;
     return () => {
       isDisposed = true;
       if (animId) cancelAnimationFrame(animId);
-      if (canvasRef.current) {
-        canvasRef.current.style.pointerEvents = "none";
+      if (currentCanvas) {
+        currentCanvas.style.pointerEvents = "none";
       }
     };
   }, [router]);
