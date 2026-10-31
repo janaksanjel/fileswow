@@ -272,3 +272,84 @@ export const POPULAR_DEFAULT_SLUGS: string[] = [
   "watermark-pdf",
   "resize-image",
 ];
+
+export interface HeaderToolItem {
+  slug: string;
+  name: string;
+  href: string;
+  isRecommendation?: boolean;
+}
+
+export const DEFAULT_HEADER_TOOLS: HeaderToolItem[] = [
+  { slug: "merge-pdf", name: "Merge PDF", href: "/tools/merge-pdf" },
+  { slug: "compress-pdf", name: "Compress PDF", href: "/tools/compress-pdf" },
+  { slug: "pdf-to-word", name: "PDF to Word", href: "/tools/pdf-to-word", isRecommendation: true },
+];
+
+/**
+ * Top 3 tools for the header:
+ * - 1st & 2nd: User's top 2 most-used/clicked tools from local storage (recency-weighted algorithm)
+ * - 3rd: Contextual match recommendation based on related tools & category
+ */
+export function getHeaderSmartTools(): HeaderToolItem[] {
+  if (typeof window === "undefined") return DEFAULT_HEADER_TOOLS;
+
+  const topTools = getTopTools(6);
+  if (!topTools || topTools.length === 0) return DEFAULT_HEADER_TOOLS;
+
+  const tool1 = topTools[0] || getToolBySlug("merge-pdf");
+  const tool2 = topTools[1] || getToolBySlug("compress-pdf");
+
+  const chosenSlugs = new Set<string>([tool1.slug, tool2.slug]);
+
+  // 3rd tool: Smart match recommendation based on relatedSlugs or category
+  let recTool: ToolDef | undefined;
+
+  // 1) Check relatedSlugs of top 2 tools
+  for (const t of [tool1, tool2]) {
+    if (t?.relatedSlugs) {
+      for (const relSlug of t.relatedSlugs) {
+        if (!chosenSlugs.has(relSlug)) {
+          const cand = getToolBySlug(relSlug);
+          if (cand) {
+            recTool = cand;
+            break;
+          }
+        }
+      }
+    }
+    if (recTool) break;
+  }
+
+  // 2) If none found from relatedSlugs, check subsequent top tools
+  if (!recTool) {
+    for (let i = 2; i < topTools.length; i++) {
+      if (!chosenSlugs.has(topTools[i].slug)) {
+        recTool = topTools[i];
+        break;
+      }
+    }
+  }
+
+  // 3) Fallback
+  if (!recTool) {
+    const fallbackSlugs = ["pdf-to-word", "word-to-pdf", "split-pdf", "background-remove-image"];
+    for (const fb of fallbackSlugs) {
+      if (!chosenSlugs.has(fb)) {
+        recTool = getToolBySlug(fb);
+        if (recTool) break;
+      }
+    }
+  }
+
+  return [
+    { slug: tool1.slug, name: tool1.name, href: `/tools/${tool1.slug}` },
+    { slug: tool2.slug, name: tool2.name, href: `/tools/${tool2.slug}` },
+    {
+      slug: recTool ? recTool.slug : "pdf-to-word",
+      name: recTool ? recTool.name : "PDF to Word",
+      href: `/tools/${recTool ? recTool.slug : "pdf-to-word"}`,
+      isRecommendation: true,
+    },
+  ];
+}

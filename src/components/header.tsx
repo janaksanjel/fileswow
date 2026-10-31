@@ -8,33 +8,12 @@ import { SearchModal } from "@/components/search-modal";
 import { ToolIcon } from "@/components/icon";
 import { CATEGORY_MENUS, type CategoryMenu } from "@/lib/mega-menu";
 import { ALL_TOOLS } from "@/lib/catalog";
+import { getHeaderSmartTools, DEFAULT_HEADER_TOOLS, subscribeUsage } from "@/lib/usage";
 import { useI18n } from "@/lib/i18n";
 
 const TRANSFER_HREF = "/transfer";
 
-const NAV_ITEMS = [
-  {
-    label: "Split PDF",
-    href: "/tools/split-pdf",
-    icon: (
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <line x1="2" y1="12" x2="22" y2="12" />
-      </svg>
-    ),
-  },
-  {
-    label: "Text to PDF",
-    href: "/tools/text-to-pdf",
-    icon: (
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <polyline points="4 7 4 4 20 4 20 7" />
-        <line x1="9" y1="20" x2="15" y2="20" />
-        <line x1="12" y1="4" x2="12" y2="20" />
-      </svg>
-    ),
-  },
-];
+// Smart dynamic tools loaded via getHeaderSmartTools()
 
 /* Structured sections matching the user's uploaded reference image */
 const ALL_TOOLS_COLUMNS = [
@@ -70,6 +49,66 @@ const ALL_TOOLS_COLUMNS = [
   },
 ];
 
+// Simple monochrome outline icon matching File Transfer navigation style
+function SimpleNavIcon({ slug }: { slug: string }) {
+  if (slug.includes("merge")) {
+    return (
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="12" y1="18" x2="12" y2="12" />
+        <line x1="9" y1="15" x2="15" y2="15" />
+      </svg>
+    );
+  }
+  if (slug.includes("compress")) {
+    return (
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <polyline points="7 14 12 18 17 14" />
+        <line x1="12" y1="9" x2="12" y2="18" />
+      </svg>
+    );
+  }
+  if (slug.includes("split")) {
+    return (
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <line x1="2" y1="12" x2="22" y2="12" />
+      </svg>
+    );
+  }
+  if (slug.includes("to-")) {
+    return (
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+      </svg>
+    );
+  }
+  if (slug.includes("sign")) {
+    return (
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+      </svg>
+    );
+  }
+  if (slug.includes("image") || slug.includes("jpg") || slug.includes("png")) {
+    return (
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+        <circle cx="8.5" cy="8.5" r="1.5" />
+        <polyline points="21 15 16 10 5 21" />
+      </svg>
+    );
+  }
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+    </svg>
+  );
+}
+
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -79,6 +118,15 @@ export function Header() {
   const pathname = usePathname();
   const { theme, toggle } = useTheme();
   const { t } = useI18n();
+  const [navTools, setNavTools] = useState(DEFAULT_HEADER_TOOLS);
+
+  // Sync smart top 2 tools + 1 recommendation from local storage algorithm
+  useEffect(() => {
+    setNavTools(getHeaderSmartTools());
+    return subscribeUsage(() => {
+      setNavTools(getHeaderSmartTools());
+    });
+  }, []);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Close mobile drawer and dropdown on navigation
@@ -161,9 +209,9 @@ export function Header() {
                 />
               </Link>
 
-              {/* Text navigation links */}
+              {/* Text navigation links: Top 2 most used + 1 match recommendation */}
               <nav className="hidden sm:flex items-center gap-1 lg:gap-1.5" aria-label="Main">
-                {NAV_ITEMS.map((item) => {
+                {navTools.map((item) => {
                   const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
                   return (
                     <Link
@@ -174,9 +222,15 @@ export function Header() {
                           ? "text-[#ff5500] font-bold bg-[#ff5500]/10"
                           : "font-semibold text-text-secondary hover:text-[#ff5500] hover:bg-black/5 dark:hover:bg-white/5"
                       }`}
+                      title={item.isRecommendation ? "Recommended match based on your activity" : undefined}
                     >
-                      {item.icon}
-                      <span>{item.label}</span>
+                      <SimpleNavIcon slug={item.slug} />
+                      <span>{item.name}</span>
+                      {item.isRecommendation && (
+                        <span className="hidden xl:inline-flex text-[8.5px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/25">
+                          For you
+                        </span>
+                      )}
                     </Link>
                   );
                 })}
@@ -384,15 +438,20 @@ export function Header() {
                   </svg>
                   <span>File Transfer</span>
                 </Link>
-                {NAV_ITEMS.map((item) => (
+                {navTools.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
                     className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-bg-elevated text-[12px] font-bold text-text-primary hover:text-[#ff5500] transition-colors text-center"
                   >
-                    {item.icon}
-                    <span>{item.label}</span>
+                    <SimpleNavIcon slug={item.slug} />
+                    <span>{item.name}</span>
+                    {item.isRecommendation && (
+                      <span className="text-[8.5px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-accent/15 text-accent">
+                        For you
+                      </span>
+                    )}
                   </Link>
                 ))}
               </div>

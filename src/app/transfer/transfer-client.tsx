@@ -25,6 +25,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Peer, { type DataConnection } from "peerjs";
 
 import { UiIcon, type UiIconName } from "@/components/ui-icon";
+import { FileUploader } from "@/components/file-uploader";
 // ─── Constants ───────────────────────────────────────────────────────────
 
 const CODE_LENGTH = 6;
@@ -1580,124 +1581,45 @@ export function TransferClient() {
           </div>
         )}
 
-        {/* ① Upload zone */}
+        {/* ① Upload zone — unified with all other tools */}
         <section id="send" aria-labelledby="send-heading" className="mb-10 scroll-mt-20">
           <div className="flex items-center gap-2.5 mb-3">
             <span className="flex items-center justify-center w-6 h-6 rounded-full bg-accent text-text-on-accent text-[11px] font-extrabold">1</span>
             <h2 id="send-heading" className="heading-md text-text-primary">Send files</h2>
           </div>
 
-          <div
-            className={`panel p-4 sm:p-6 transition-colors ${dragOver ? "dropzone-active" : ""}`}
-            onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={onDrop}
-          >
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              className="sr-only"
-              onChange={(e) => { if (e.target.files) addFiles(e.target.files); e.target.value = ""; }}
-              aria-label="Choose files to send"
+          <div className="panel p-4 sm:p-6">
+            <FileUploader
+              accept="*/*"
+              multiple={true}
+              hint="Any file type · up to 50 GB total · direct device-to-device"
+              onFilesChanged={(newFiles) => setFiles(newFiles)}
+              simulateUpload={true}
             />
-            {files.length === 0 ? (
-              <div className="w-full flex flex-col items-center justify-center gap-3 py-10 sm:py-14 rounded-2xl border-2 border-dashed border-border-strong hover:border-accent hover:bg-accent-subtle/20 transition-all">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="w-full flex flex-col items-center justify-center gap-2 cursor-pointer"
-                >
-                  <span className="w-16 h-16 rounded-2xl bg-accent-subtle flex items-center justify-center shadow-[var(--neu-icon)]">
-                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                      <polyline points="17 8 12 3 7 8" />
-                      <line x1="12" y1="3" x2="12" y2="15" />
-                    </svg>
-                  </span>
-                  <span className="text-base font-bold text-text-primary mt-1">Add files — click or drag & drop here</span>
-                  <span className="text-xs text-text-secondary flex items-center gap-1.5">
-                    or paste from clipboard with <kbd className="kbd text-[11px] px-1.5 py-0.5">Ctrl+V</kbd>
-                  </span>
-                  <span className="text-xs text-text-tertiary">Any file type · up to 50 GB total · direct device-to-device</span>
-                </button>
 
-                <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border/40">
-                  <button
-                    type="button"
-                    onClick={handlePasteFromClipboard}
-                    className="btn-secondary px-3.5 py-1.5 text-xs font-semibold flex items-center gap-1.5"
-                    title="Paste image, file, or text from clipboard"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                      <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-                      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+            {files.length > 0 && (
+              <div className="mt-5 pt-4 border-t border-border-base">
+                {totalSizeTooBig && (
+                  <p className="text-danger font-semibold text-sm mb-3 flex items-center gap-1.5">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="12" y1="8" x2="12" y2="12" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" />
                     </svg>
-                    Paste from clipboard
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <p className="text-[13px] font-semibold text-text-primary">
-                    {files.length} file{files.length === 1 ? "" : "s"} · {formatBytes(totalSize)}
-                    {totalSizeTooBig && <span className="text-danger font-semibold"> — over the 50 GB limit</span>}
+                    Total size exceeds 50 GB limit. Please remove some files.
                   </p>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={handlePasteFromClipboard}
-                      className="btn-ghost text-xs flex items-center gap-1"
-                      title="Paste from clipboard (Ctrl+V)"
-                    >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                      </svg>
-                      Paste
-                    </button>
-                    <button type="button" onClick={() => fileInputRef.current?.click()} className="btn-ghost text-xs">
-                      + Add more
-                    </button>
-                    <button type="button" onClick={clearFiles} className="btn-ghost text-xs text-danger hover:text-danger">
-                      Clear all
-                    </button>
-                  </div>
-                </div>
-                <ul className="divide-y divide-border-base max-h-56 overflow-y-auto -mx-1 px-1">
-                  {files.map((f, i) => (
-                    <li key={`${f.name}:${f.size}:${f.lastModified}:${i}`} className="flex items-center gap-3 py-2">
-                      <UiIcon name={fileIcon(f.name, f.type)} size={20} className="shrink-0" />
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-[13px] font-medium text-text-primary truncate">{f.name}</span>
-                        <span className="block text-[11px] text-text-tertiary">{formatBytes(f.size)}</span>
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => removeFile(i)}
-                        className="icon-btn w-7 h-7 shrink-0"
-                        aria-label={`Remove ${f.name}`}
-                      >
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                          <line x1="18" y1="6" x2="6" y2="18" />
-                          <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                      </button>
-                    </li>
-                  ))}
-                </ul>
+                )}
                 <button
                   type="button"
                   onClick={handleSendClick}
                   disabled={totalSizeTooBig}
-                  className="btn-primary w-full h-11 text-sm"
+                  className="btn-primary w-full h-12 text-[15px] font-bold flex items-center justify-center gap-2.5 shadow-md hover:shadow-lg transition-all"
                 >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                     <line x1="22" y1="2" x2="11" y2="13" />
                     <polygon points="22 2 15 22 11 13 2 9 22 2" />
                   </svg>
-                  Get transfer code
+                  Get transfer code ({files.length} file{files.length === 1 ? "" : "s"} · {formatBytes(totalSize)})
                 </button>
               </div>
             )}

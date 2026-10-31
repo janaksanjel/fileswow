@@ -38,7 +38,8 @@ const TOP_TOOLS = [
 ];
 
 /**
- * FlyingMascot — 3D bird that follows the user's cursor across the entire website.
+ * FlyingMascot — 3D bird that flies autonomously across the entire website.
+ * Roams independently across the screen (does NOT follow cursor).
  * When clicked, it crashes/drops down, vanishes with a sparkle burst,
  * and after 1 second a brand-new bird with a different color swoops in!
  */
@@ -264,35 +265,33 @@ export function FlyingMascot() {
       handleResize();
 
       // ─── State Management ───
-      // "following" | "crashing" | "vanished" | "spawning"
-      let birdState: "following" | "crashing" | "vanished" | "spawning" = "following";
+      // "flying" | "crashing" | "vanished" | "spawning"
+      let birdState: "flying" | "crashing" | "vanished" | "spawning" = "flying";
       let crashVy = 0;
       let crashVx = 0;
       let crashRotSpeed = 0;
       let spawnProgress = 1;
 
-      // Target mouse world coordinates (defaults to upper center)
-      let mouseWorldX = 0;
-      let mouseWorldY = 1.5;
-      let hasMouseMoved = false;
-
       // Current bird world position & velocity
-      let birdPos = new THREE.Vector3(0, 2, 0);
-      let birdVel = new THREE.Vector3(0, 0, 0);
+      let birdPos = new THREE.Vector3(0, 1.5, 0);
+      let birdVel = new THREE.Vector3(1.5, 0.4, 0);
+
+      // Autonomous flight target waypoint (never chases cursor)
+      let targetWaypoint = new THREE.Vector3(
+        (Math.random() - 0.5) * 6,
+        (Math.random() - 0.5) * 3,
+        (Math.random() - 0.5) * 1.5
+      );
+      let waypointTimer = 0;
 
       // Current 2D screen coordinates for click detection
       let currentScreenX = -999;
       let currentScreenY = -999;
       let isHovering = false;
 
-      // Track cursor in Three.js world space
+      // Check if cursor hovers over the bird (for tap/click interaction only — does NOT follow cursor)
       const handlePointerMove = (e: MouseEvent) => {
-        hasMouseMoved = true;
-        mouseWorldX = ((e.clientX / window.innerWidth) * 2 - 1) * (visibleWidth / 2);
-        mouseWorldY = -((e.clientY / window.innerHeight) * 2 - 1) * (visibleHeight / 2);
-
-        // Check if cursor is over the bird
-        if (birdState === "following") {
+        if (birdState === "flying") {
           const dist = Math.hypot(e.clientX - currentScreenX, e.clientY - currentScreenY);
           const isNear = dist < 48;
 
@@ -321,7 +320,7 @@ export function FlyingMascot() {
 
       // ─── Click / Crash Handler ───
       const handleBirdClick = (e: MouseEvent) => {
-        if (birdState !== "following") return;
+        if (birdState !== "flying") return;
         const dist = Math.hypot(e.clientX - currentScreenX, e.clientY - currentScreenY);
         if (dist >= 55) return;
 
@@ -387,48 +386,65 @@ export function FlyingMascot() {
         const dt = Math.min(clock.getDelta(), 0.05);
         t += dt;
 
-        if (birdState === "following") {
-          // ─── Following Cursor Physics ───
-          // Orbit offset so bird stays playfully near cursor without obscuring it
-          const orbitRadius = hasMouseMoved ? 1.6 : 3.2;
-          const orbitSpeed = 1.8;
-          const targetX = mouseWorldX + Math.cos(t * orbitSpeed) * orbitRadius;
-          const targetY = mouseWorldY + Math.sin(t * orbitSpeed) * 0.9;
-          const targetZ = Math.sin(t * 1.4) * 0.8;
+        if (birdState === "flying") {
+          // ─── Autonomous Flight Physics (Free Roaming — No Cursor Tracking) ───
+          waypointTimer += dt;
+          const boundX = Math.max((visibleWidth / 2) * 0.78, 4);
+          const boundY = Math.max((visibleHeight / 2) * 0.68, 2.8);
 
-          // Smooth spring-like chase towards target
-          const dx = targetX - birdPos.x;
-          const dy = targetY - birdPos.y;
-          const dz = targetZ - birdPos.z;
+          const dx = targetWaypoint.x - birdPos.x;
+          const dy = targetWaypoint.y - birdPos.y;
+          const dz = targetWaypoint.z - birdPos.z;
+          const dist = Math.hypot(dx, dy, dz);
 
-          birdVel.x += dx * 4.5 * dt;
-          birdVel.y += dy * 4.5 * dt;
-          birdVel.z += dz * 3.5 * dt;
+          // Pick new waypoint when close or after roaming for 5-7s
+          if (dist < 1.6 || waypointTimer > 6.5) {
+            waypointTimer = 0;
+            targetWaypoint.set(
+              (Math.random() - 0.5) * boundX * 1.8,
+              (Math.random() - 0.5) * boundY * 1.6,
+              (Math.random() - 0.5) * 1.4
+            );
+          }
 
-          // Drag / damping
-          birdVel.multiplyScalar(Math.pow(0.85, dt * 60));
+          // Smooth steering toward target waypoint
+          const cruiseSpeed = 2.4;
+          const desiredVx = (dx / (dist + 0.001)) * cruiseSpeed;
+          const desiredVy = (dy / (dist + 0.001)) * (cruiseSpeed * 0.75);
+          const desiredVz = (dz / (dist + 0.001)) * 1.1;
 
-          birdPos.addScaledVector(birdVel, dt * 4.5);
+          birdVel.x += (desiredVx - birdVel.x) * 1.8 * dt;
+          birdVel.y += (desiredVy - birdVel.y) * 1.8 * dt;
+          birdVel.z += (desiredVz - birdVel.z) * 1.8 * dt;
+
+          // Gentle organic bobbing
+          birdVel.y += Math.sin(t * 2.6) * 0.22 * dt;
+
+          // Soft boundary turn margin
+          if (Math.abs(birdPos.x) > boundX) birdVel.x -= Math.sign(birdPos.x) * 4.5 * dt;
+          if (Math.abs(birdPos.y) > boundY) birdVel.y -= Math.sign(birdPos.y) * 4.5 * dt;
+
+          birdPos.addScaledVector(birdVel, dt * 2.6);
           birdGroup.position.copy(birdPos);
 
           // Orientation towards movement direction
           const speed = birdVel.length();
           if (speed > 0.05) {
             const targetRotY = Math.atan2(birdVel.x, birdVel.z + 0.001);
-            const targetRotX = -birdVel.y * 0.45;
-            const targetRotZ = -birdVel.x * 0.4; // banking
+            const targetRotX = -birdVel.y * 0.35;
+            const targetRotZ = -birdVel.x * 0.35; // banking into turns
 
-            birdGroup.rotation.y = THREE.MathUtils.lerp(birdGroup.rotation.y, targetRotY, 0.15);
-            birdGroup.rotation.x = THREE.MathUtils.lerp(birdGroup.rotation.x, targetRotX, 0.15);
-            birdGroup.rotation.z = THREE.MathUtils.lerp(birdGroup.rotation.z, targetRotZ, 0.15);
+            birdGroup.rotation.y = THREE.MathUtils.lerp(birdGroup.rotation.y, targetRotY, 0.12);
+            birdGroup.rotation.x = THREE.MathUtils.lerp(birdGroup.rotation.x, targetRotX, 0.12);
+            birdGroup.rotation.z = THREE.MathUtils.lerp(birdGroup.rotation.z, targetRotZ, 0.12);
           }
 
           // Flapping wings
-          const flapSpeed = 14 + speed * 10;
-          const flapAngle = Math.sin(t * flapSpeed) * 0.48;
+          const flapSpeed = 12 + speed * 8;
+          const flapAngle = Math.sin(t * flapSpeed) * 0.45;
           leftWingPivot.rotation.z = flapAngle;
           rightWingPivot.rotation.z = -flapAngle;
-          body.position.y = Math.sin(t * flapSpeed * 0.5) * 0.025;
+          body.position.y = Math.sin(t * flapSpeed * 0.5) * 0.02;
 
           // Normal scale
           birdGroup.scale.set(1, 1, 1);
@@ -470,6 +486,14 @@ export function FlyingMascot() {
               birdGroup.position.copy(birdPos);
               birdGroup.rotation.set(0, spawnSide > 0 ? -Math.PI / 2 : Math.PI / 2, 0);
 
+              // Target opposite side of screen
+              targetWaypoint.set(
+                -spawnSide * ((visibleWidth / 2) * 0.5),
+                (Math.random() - 0.5) * 3,
+                0
+              );
+              waypointTimer = 0;
+
               birdState = "spawning";
               spawnProgress = 0;
             }, 1000);
@@ -489,7 +513,7 @@ export function FlyingMascot() {
           rightWingPivot.rotation.z = -flapAngle;
 
           if (spawnProgress >= 1) {
-            birdState = "following";
+            birdState = "flying";
           }
         }
 

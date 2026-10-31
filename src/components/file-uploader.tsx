@@ -322,29 +322,36 @@ export function FileUploader({
 
   const hasFiles = items.length > 0;
   const allDone = items.every((it) => it.status === "done");
-  const acceptLabel = accept
-    .split(",")
-    .map((s) => s.trim().replace(".", "").replace("/*", "").replace("*", "ANY"))
-    .filter(Boolean)
-    .join(" / ")
-    .toUpperCase();
+  const isAnyFile = accept === "*/*" || accept === "*";
+  const acceptLabel = isAnyFile
+    ? "ANY"
+    : accept
+        .split(",")
+        .map((s) => s.trim().replace(".", "").replace("/*", "").replace("*", "ANY"))
+        .filter(Boolean)
+        .join(" / ")
+        .toUpperCase();
 
   /* Contextual label for the solid select button (iLovePDF-style CTA) */
   const extList = accept.split(",").map((s) => s.trim()).filter((s) => s.startsWith("."));
-  const selectLabel = accept.includes("image/")
+  const selectLabel = isAnyFile
     ? multiple
-      ? "Select images"
-      : "Select an image"
-    : extList.length === 1
-      ? `Select ${extList[0].slice(1).toUpperCase()} file${multiple ? "s" : ""}`
-      : `Select file${multiple ? "s" : ""}`;
+      ? "Select files"
+      : "Select a file"
+    : accept.includes("image/")
+      ? multiple
+        ? "Select images"
+        : "Select an image"
+      : extList.length === 1
+        ? `Select ${extList[0].slice(1).toUpperCase()} file${multiple ? "s" : ""}`
+        : `Select file${multiple ? "s" : ""}`;
 
   /* Hidden shared <input> used by both the big zone and "Add more" */
   const hiddenInput = (
     <input
       ref={inputRef}
       type="file"
-      accept={accept}
+      accept={isAnyFile ? undefined : accept}
       multiple={multiple}
       onChange={handleInputChange}
       className="sr-only"
