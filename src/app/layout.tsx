@@ -8,6 +8,7 @@ import { Footer } from "@/components/footer";
 import { CookieConsentBanner } from "@/components/cookie-consent";
 import { AnalyticsConsentGate } from "@/components/analytics-consent-gate";
 import { SupportBot } from "@/components/support-bot";
+import { FlyingMascot } from "@/components/flying-mascot";
 import { SITE_URL, SITE_NAME, absoluteUrl, jsonLdProps, TOOL_COUNT } from "@/lib/site";
 
 const geistSans = Geist({
@@ -240,6 +241,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Footer />
             <CookieConsentBanner />
             <SupportBot />
+            <FlyingMascot />
           </I18nProvider>
         </ThemeProvider>
       </body>

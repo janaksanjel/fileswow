@@ -143,6 +143,56 @@ export function HomeClient() {
     }
   }, [theme]);
 
+  // Forward tool hover to mascot speech bubble
+  useEffect(() => {
+    let lastReported = "";
+    let timeout: NodeJS.Timeout | null = null;
+
+    const handleMouseOver = (e: MouseEvent) => {
+      const target = (e.target as HTMLElement | null)?.closest(
+        'a[href^="/tools/"], button[data-tool], .hero-chip, [data-tool-name]'
+      );
+      if (!target) return;
+
+      let toolName = target.getAttribute("data-tool-name");
+      if (!toolName) {
+        const href = target.getAttribute("href");
+        if (href && href.startsWith("/tools/")) {
+          const slug = href.replace("/tools/", "").split("/")[0];
+          const tool = TOOL_BY_SLUG.get(slug);
+          if (tool) toolName = tool.name;
+        }
+      }
+      if (!toolName) {
+        const text = target.textContent?.trim();
+        if (text && text.length < 35) toolName = text;
+      }
+
+      if (toolName && toolName !== lastReported) {
+        lastReported = toolName;
+        if (timeout) clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          lastReported = "";
+        }, 3000);
+
+        const iframe = mascotIframeRef.current;
+        iframe?.contentWindow?.postMessage(
+          {
+            type: "tool-hover",
+            name: toolName,
+          },
+          "*"
+        );
+      }
+    };
+
+    document.addEventListener("mouseover", handleMouseOver, { passive: true });
+    return () => {
+      document.removeEventListener("mouseover", handleMouseOver);
+      if (timeout) clearTimeout(timeout);
+    };
+  }, []);
+
   // Forward pointermove across full website to mascot so Wowie looks at user's cursor anywhere
   useEffect(() => {
     const handleGlobalPointerMove = (e: MouseEvent) => {
