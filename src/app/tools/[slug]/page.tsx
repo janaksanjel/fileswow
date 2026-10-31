@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { ALL_TOOLS, getToolBySlug, getRelatedTools, SUB_CATEGORY_LABELS } from "@/lib/catalog";
+import { ALL_TOOLS, getToolBySlug, getRelatedTools } from "@/lib/catalog";
 import { absoluteUrl, toolUrl, categoryUrl, jsonLdProps } from "@/lib/site";
 import { getToolGuide, getToolFaq } from "@/lib/content";
 import { getBlogPostForTool } from "@/lib/blog";
