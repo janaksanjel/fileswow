@@ -1,199 +1,542 @@
 // lib/engines/pdf-to-word.ts
 //
-// Pipeline: pdf.js → extract lines with bold/size → group into paragraphs
-// → build .docx using only the docx API patterns proven to work in this project.
+// High-fidelity PDF to DOCX converter engine
+// Supports all languages (Devanagari, Arabic/Persian/Urdu RTL, CJK, Cyrillic, Thai, Latin, etc.)
+// Reconstructs horizontal word spacing, multi-run styling, headings, alignments, and true page breaks.
 
-export type PdfLine = {
-  page: number;
-  y: number;
-  fontSize: number;
-  bold: boolean;
-  text: string;
-};
+export interface ScriptInfo {
+  font: string;
+  isRtl?: boolean;
+  scriptName?: string;
+}
 
-// Script detection — returns a font name for non-Latin scripts only.
-// Latin text returns undefined so Word uses its own default (no interference).
-const SCRIPT_FONTS: Array<{ ranges: [number, number][]; font: string }> = [
-  { ranges: [[0x0900, 0x097f]], font: "Noto Sans Devanagari" }, // Nepali/Hindi
-  { ranges: [[0x0980, 0x09ff]], font: "Noto Sans Bengali" },
-  { ranges: [[0x0a80, 0x0aff]], font: "Noto Sans Gujarati" },
-  { ranges: [[0x0b80, 0x0bff]], font: "Noto Sans Tamil" },
-  { ranges: [[0x0c00, 0x0c7f]], font: "Noto Sans Telugu" },
-  { ranges: [[0x0c80, 0x0cff]], font: "Noto Sans Kannada" },
-  { ranges: [[0x0d00, 0x0d7f]], font: "Noto Sans Malayalam" },
-  { ranges: [[0x0e00, 0x0e7f]], font: "Noto Sans Thai" },
-  { ranges: [[0x1000, 0x109f]], font: "Noto Sans Myanmar" },
-  { ranges: [[0x0600, 0x06ff], [0xfb50, 0xfdff], [0xfe70, 0xfeff]], font: "Arial" },
-  { ranges: [[0x0590, 0x05ff]], font: "Arial" },
-  { ranges: [[0x4e00, 0x9fff], [0x3040, 0x30ff], [0xac00, 0xd7af]], font: "Microsoft YaHei" },
+// Comprehensive Unicode Script Table for All World Languages
+const UNICODE_SCRIPTS: Array<{ ranges: [number, number][]; font: string; isRtl?: boolean; name: string }> = [
+  // Devanagari (Hindi, Nepali, Sanskrit, Marathi)
+  { ranges: [[0x0900, 0x097f], [0xa8e0, 0xa8ff]], font: "Noto Sans Devanagari", name: "Devanagari" },
+  // Bengali & Assamese
+  { ranges: [[0x0980, 0x09ff]], font: "Noto Sans Bengali", name: "Bengali" },
+  // Gurmukhi (Punjabi)
+  { ranges: [[0x0a00, 0x0a7f]], font: "Noto Sans Gurmukhi", name: "Gurmukhi" },
+  // Gujarati
+  { ranges: [[0x0a80, 0x0aff]], font: "Noto Sans Gujarati", name: "Gujarati" },
+  // Oriya / Odia
+  { ranges: [[0x0b00, 0x0b7f]], font: "Noto Sans Oriya", name: "Odia" },
+  // Tamil
+  { ranges: [[0x0b80, 0x0bff]], font: "Noto Sans Tamil", name: "Tamil" },
+  // Telugu
+  { ranges: [[0x0c00, 0x0c7f]], font: "Noto Sans Telugu", name: "Telugu" },
+  // Kannada
+  { ranges: [[0x0c80, 0x0cff]], font: "Noto Sans Kannada", name: "Kannada" },
+  // Malayalam
+  { ranges: [[0x0d00, 0x0d7f]], font: "Noto Sans Malayalam", name: "Malayalam" },
+  // Sinhala
+  { ranges: [[0x0d80, 0x0dff]], font: "Noto Sans Sinhala", name: "Sinhala" },
+  // Thai
+  { ranges: [[0x0e00, 0x0e7f]], font: "Noto Sans Thai", name: "Thai" },
+  // Lao
+  { ranges: [[0x0e80, 0x0eff]], font: "Noto Sans Lao", name: "Lao" },
+  // Tibetan
+  { ranges: [[0x0f00, 0x0fff]], font: "Microsoft Himalaya", name: "Tibetan" },
+  // Myanmar (Burmese)
+  { ranges: [[0x1000, 0x109f], [0xa9e0, 0xa9ff]], font: "Noto Sans Myanmar", name: "Myanmar" },
+  // Georgian
+  { ranges: [[0x10a0, 0x10ff]], font: "Sylfaen", name: "Georgian" },
+  // Ethiopic (Amharic, Tigrinya)
+  { ranges: [[0x1200, 0x137f]], font: "Nyala", name: "Ethiopic" },
+  // Arabic, Persian/Farsi, Urdu, Pashto, Kurdish (RTL)
+  {
+    ranges: [
+      [0x0600, 0x06ff],
+      [0x0750, 0x077f],
+      [0x08a0, 0x08ff],
+      [0xfb50, 0xfdff],
+      [0xfe70, 0xfeff],
+    ],
+    font: "Arial",
+    isRtl: true,
+    name: "Arabic",
+  },
+  // Hebrew & Yiddish (RTL)
+  { ranges: [[0x0590, 0x05ff], [0xfb1d, 0xfb4f]], font: "Arial", isRtl: true, name: "Hebrew" },
+  // Chinese (Simplified & Traditional)
+  { ranges: [[0x4e00, 0x9fff], [0x3400, 0x4dbf], [0x20000, 0x2a6df]], font: "Microsoft YaHei", name: "Chinese" },
+  // Japanese (Hiragana & Katakana & Kanji)
+  { ranges: [[0x3040, 0x309f], [0x30a0, 0x30ff], [0x31f0, 0x31ff]], font: "Yu Gothic", name: "Japanese" },
+  // Korean (Hangul Syllables & Jamo)
+  { ranges: [[0xac00, 0xd7af], [0x1100, 0x11ff], [0x3130, 0x318f]], font: "Malgun Gothic", name: "Korean" },
+  // Cyrillic (Russian, Ukrainian, etc.)
+  { ranges: [[0x0400, 0x04ff], [0x0500, 0x052f]], font: "Calibri", name: "Cyrillic" },
+  // Greek
+  { ranges: [[0x0370, 0x03ff]], font: "Calibri", name: "Greek" },
 ];
 
-function scriptFont(text: string): string | undefined {
+export function detectScriptInfo(text: string): ScriptInfo {
+  let isRtl = false;
+  let font: string | undefined;
+  let scriptName: string | undefined;
+
   for (const ch of text) {
-    const cp = ch.codePointAt(0)!;
-    for (const { ranges, font } of SCRIPT_FONTS) {
-      for (const [lo, hi] of ranges) {
-        if (cp >= lo && cp <= hi) return font;
+    const cp = ch.codePointAt(0);
+    if (!cp) continue;
+    for (const item of UNICODE_SCRIPTS) {
+      for (const [lo, hi] of item.ranges) {
+        if (cp >= lo && cp <= hi) {
+          if (!font) {
+            font = item.font;
+            scriptName = item.name;
+          }
+          if (item.isRtl) isRtl = true;
+          break;
+        }
       }
     }
   }
-  return undefined;
+
+  return {
+    font: font || "Calibri",
+    isRtl,
+    scriptName: scriptName || "Latin",
+  };
 }
 
-// ── Text extraction ─────────────────────────────────────────────────────────
+export interface ExtractedRun {
+  text: string;
+  fontSize: number;
+  bold: boolean;
+  italic: boolean;
+  font: string;
+  isRtl?: boolean;
+}
 
-export async function extractLines(file: File): Promise<PdfLine[]> {
+export interface ExtractedLine {
+  page: number;
+  y: number;
+  minX: number;
+  maxX: number;
+  pageWidth: number;
+  runs: ExtractedRun[];
+  fullText: string;
+  avgFontSize: number;
+  hasBold: boolean;
+  isRtl: boolean;
+  alignment: "left" | "center" | "right";
+}
+
+interface RawPdfItem {
+  str: string;
+  dir?: string;
+  transform: number[]; // [scaleX, skewY, skewX, scaleY, x, y]
+  width: number;
+  height: number;
+  fontName?: string;
+  hasEOL?: boolean;
+}
+
+/**
+ * Extract structured, layout-aware lines from a PDF file.
+ * Accurately calculates horizontal spacing and word separation.
+ */
+export async function extractStructuredLines(file: File): Promise<{
+  lines: ExtractedLine[];
+  pageCount: number;
+  detectedScripts: Set<string>;
+}> {
   const pdfjsLib = await import("pdfjs-dist");
   pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+
   const buffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
 
-  const lines: PdfLine[] = [];
+  const lines: ExtractedLine[] = [];
+  const detectedScripts = new Set<string>();
 
   for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
     const page = await pdf.getPage(pageNum);
+    const viewport = page.getViewport({ scale: 1.0 });
+    const pageWidth = viewport.width;
+
     const textContent = await page.getTextContent();
-    const items = textContent.items as Array<{
-      str: string; transform: number[]; height: number;
-      hasEOL?: boolean; fontName?: string;
-    }>;
+    const rawItems = (textContent.items || []) as RawPdfItem[];
+    if (rawItems.length === 0) continue;
 
-    type Cur = { y: number; parts: string[]; fontSize: number; bold: boolean };
-    let cur: Cur | null = null;
+    // Filter and normalize items
+    interface ProcessedItem {
+      text: string;
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+      fontSize: number;
+      bold: boolean;
+      italic: boolean;
+      hasEOL?: boolean;
+    }
 
-    const flush = () => {
-      if (!cur) return;
-      const text = cur.parts.join("").trim();
-      if (text) lines.push({ page: pageNum, y: cur.y, fontSize: cur.fontSize, bold: cur.bold, text });
-      cur = null;
+    const items: ProcessedItem[] = [];
+
+    for (const it of rawItems) {
+      if (!it.str && !it.hasEOL) continue;
+      const normText = (it.str || "").normalize("NFC");
+      const x = it.transform[4];
+      const y = it.transform[5];
+      const fontSize = Math.hypot(it.transform[1], it.transform[3]) || it.height || 10;
+      const fn = (it.fontName || "").toLowerCase();
+      const bold = /bold|heavy|black|semibold|bolder/i.test(fn);
+      const italic = /italic|oblique/i.test(fn);
+
+      items.push({
+        text: normText,
+        x,
+        y,
+        width: it.width || 0,
+        height: it.height || fontSize,
+        fontSize,
+        bold,
+        italic,
+        hasEOL: it.hasEOL,
+      });
+    }
+
+    // Sort items vertically (top-to-bottom: higher Y in PDF coordinate space means higher on page)
+    // For items on the same line (similar Y), sort horizontally (left-to-right)
+    items.sort((a, b) => {
+      const yDiff = b.y - a.y;
+      if (Math.abs(yDiff) > Math.min(a.fontSize, b.fontSize) * 0.45) {
+        return yDiff;
+      }
+      return a.x - b.x;
+    });
+
+    // Group items into horizontal lines
+    let currentLineItems: ProcessedItem[] = [];
+    let currentLineY: number | null = null;
+    let currentLineFontSize = 10;
+
+    const flushLine = () => {
+      if (currentLineItems.length === 0) return;
+
+      // Sort current line strictly left to right
+      currentLineItems.sort((a, b) => a.x - b.x);
+
+      // Reconstruct words with proper spacing
+      const runs: ExtractedRun[] = [];
+      let minX = Infinity;
+      let maxX = -Infinity;
+      let lineText = "";
+      let totalFontSize = 0;
+      let anyBold = false;
+      let anyRtl = false;
+
+      let prevRight: number | null = null;
+
+      for (let i = 0; i < currentLineItems.length; i++) {
+        const item = currentLineItems[i];
+        if (!item.text.trim() && item.text !== " ") continue;
+
+        minX = Math.min(minX, item.x);
+        maxX = Math.max(maxX, item.x + item.width);
+        totalFontSize += item.fontSize;
+        if (item.bold) anyBold = true;
+
+        const script = detectScriptInfo(item.text);
+        if (script.scriptName) detectedScripts.add(script.scriptName);
+        if (script.isRtl) anyRtl = true;
+
+        // Space insertion logic: if there is a visible gap between this item and the previous one
+        let wordPrefix = "";
+        if (prevRight !== null) {
+          const gap = item.x - prevRight;
+          // Typical space threshold in PDF: ~20% of font size
+          if (gap > item.fontSize * 0.22 && !lineText.endsWith(" ") && !item.text.startsWith(" ")) {
+            wordPrefix = " ";
+          }
+        }
+
+        const runText = wordPrefix + item.text;
+        lineText += runText;
+        prevRight = item.x + item.width;
+
+        // Group into runs with identical formatting
+        const lastRun = runs[runs.length - 1];
+        if (
+          lastRun &&
+          lastRun.bold === item.bold &&
+          lastRun.italic === item.italic &&
+          Math.abs(lastRun.fontSize - item.fontSize) < 1.0 &&
+          lastRun.font === script.font
+        ) {
+          lastRun.text += runText;
+        } else {
+          runs.push({
+            text: runText,
+            fontSize: item.fontSize,
+            bold: item.bold,
+            italic: item.italic,
+            font: script.font,
+            isRtl: script.isRtl,
+          });
+        }
+      }
+
+      if (runs.length > 0 && lineText.trim().length > 0) {
+        const avgFontSize = totalFontSize / currentLineItems.length;
+        const lineWidth = maxX - minX;
+        const lineMid = (minX + maxX) / 2;
+        const pageMid = pageWidth / 2;
+
+        let alignment: "left" | "center" | "right" = "left";
+        if (anyRtl) {
+          alignment = "right";
+        } else if (Math.abs(lineMid - pageMid) < pageWidth * 0.06 && lineWidth < pageWidth * 0.8) {
+          alignment = "center";
+        } else if (minX > pageWidth * 0.55 && maxX > pageWidth * 0.8) {
+          alignment = "right";
+        }
+
+        lines.push({
+          page: pageNum,
+          y: currentLineY ?? 0,
+          minX: minX === Infinity ? 0 : minX,
+          maxX: maxX === -Infinity ? pageWidth : maxX,
+          pageWidth,
+          runs,
+          fullText: lineText.trim(),
+          avgFontSize,
+          hasBold: anyBold,
+          isRtl: anyRtl,
+          alignment,
+        });
+      }
+
+      currentLineItems = [];
+      currentLineY = null;
     };
 
     for (const item of items) {
-      const y = item.transform[5];
-      const fontSize = Math.hypot(item.transform[1], item.transform[3]) || item.height || 10;
-      const isBold = /bold|heavy|black/i.test(item.fontName ?? "");
-
-      if (!item.str) { if (item.hasEOL) flush(); continue; }
-
-      if (cur && Math.abs(cur.y - y) <= Math.max(2, fontSize * 0.4)) {
-        cur.parts.push(item.str);
-        cur.fontSize = Math.max(cur.fontSize, fontSize);
-        if (isBold) cur.bold = true;
+      if (currentLineY === null) {
+        currentLineY = item.y;
+        currentLineFontSize = item.fontSize;
+        currentLineItems.push(item);
       } else {
-        flush();
-        cur = { y, parts: [item.str], fontSize, bold: isBold };
+        const yDiff = Math.abs(item.y - currentLineY);
+        const yTolerance = Math.max(2.5, Math.min(currentLineFontSize, item.fontSize) * 0.45);
+        if (yDiff <= yTolerance) {
+          currentLineItems.push(item);
+          currentLineFontSize = Math.max(currentLineFontSize, item.fontSize);
+        } else {
+          flushLine();
+          currentLineY = item.y;
+          currentLineFontSize = item.fontSize;
+          currentLineItems.push(item);
+        }
       }
-      if (item.hasEOL) flush();
+      if (item.hasEOL) {
+        flushLine();
+      }
     }
-    flush();
+    flushLine();
   }
 
-  return lines.filter((l) => l.text.length > 0);
+  return {
+    lines,
+    pageCount: pdf.numPages,
+    detectedScripts,
+  };
 }
 
-// ── Paragraph grouping ──────────────────────────────────────────────────────
+export interface WordParagraphModel {
+  page: number;
+  runs: ExtractedRun[];
+  isHeading: boolean;
+  headingLevel?: 1 | 2;
+  alignment: "left" | "center" | "right";
+  isRtl?: boolean;
+  isPageBreakBefore?: boolean;
+  isListItem?: boolean;
+}
 
-export type WordPara = {
-  text: string;
-  fontSize: number;
-  bold: boolean;
-  isPageMarker?: boolean;
-};
+/**
+ * Converts a PDF file into a Microsoft Word (.docx) document.
+ * Matches iLovePDF formatting quality: proper page breaks, alignment, font sizes, and scripts.
+ */
+export async function convertPdfToWord(file: File): Promise<Blob> {
+  const {
+    Document,
+    Packer,
+    Paragraph,
+    TextRun,
+    PageBreak,
+    HeadingLevel,
+    AlignmentType,
+  } = await import("docx");
 
-export function groupIntoParagraphs(lines: PdfLine[]): WordPara[] {
-  const sw = new Map<number, number>();
-  for (const l of lines) {
-    const s = Math.round(l.fontSize * 2) / 2;
-    sw.set(s, (sw.get(s) ?? 0) + l.text.length);
+  const { lines, pageCount } = await extractStructuredLines(file);
+
+  if (lines.length === 0) {
+    const emptyDoc = new Document({
+      sections: [
+        {
+          children: [
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: "No selectable text was found in this document. It may consist of scanned images. Please run OCR before converting to Word.",
+                  italics: true,
+                  size: 24,
+                  font: "Calibri",
+                }),
+              ],
+            }),
+          ],
+        },
+      ],
+    });
+    return Packer.toBlob(emptyDoc);
   }
-  let bodySize = 10, bestW = 0;
-  for (const [s, w] of sw) { if (w > bestW) { bestW = w; bodySize = s; } }
 
-  const paras: WordPara[] = [];
-  const multiPage = new Set(lines.map((l) => l.page)).size > 1;
-  let lastPage = 0, lastY: number | null = null, cur: WordPara | null = null;
+  // Calculate body font size by weighted character frequency
+  const sizeWeights = new Map<number, number>();
+  for (const line of lines) {
+    const s = Math.round(line.avgFontSize);
+    sizeWeights.set(s, (sizeWeights.get(s) || 0) + line.fullText.length);
+  }
+  let bodyFontSize = 11;
+  let maxWeight = 0;
+  for (const [s, w] of sizeWeights) {
+    if (w > maxWeight) {
+      maxWeight = w;
+      bodyFontSize = s;
+    }
+  }
 
-  const flush = () => {
-    if (!cur) return;
-    const text = cur.text.replace(/\s+/g, " ").trim();
-    if (text) paras.push({ ...cur, text });
-    cur = null;
+  // Group lines into paragraphs
+  const paragraphs: WordParagraphModel[] = [];
+  let currentPara: WordParagraphModel | null = null;
+  let lastPage = 0;
+  let lastY: number | null = null;
+
+  const flushPara = () => {
+    if (currentPara && currentPara.runs.length > 0) {
+      paragraphs.push(currentPara);
+    }
+    currentPara = null;
   };
 
-  for (const line of lines) {
-    const text = line.text.trim();
-    if (!text) continue;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const isNewPage = line.page !== lastPage;
+    const isBig = line.avgFontSize >= bodyFontSize * 1.35;
+    const isHeading = isBig && line.fullText.length < 160;
 
-    if (line.page !== lastPage) {
-      flush();
-      if (multiPage) paras.push({ text: `— Page ${line.page} —`, fontSize: bodySize, bold: false, isPageMarker: true });
-      lastPage = line.page;
-      lastY = null;
-    } else if (lastY !== null && lastY - line.y > line.fontSize * 1.8) {
-      flush();
+    const yGap = lastY !== null && !isNewPage ? lastY - line.y : 0;
+    const isParagraphBreak =
+      isNewPage ||
+      isHeading ||
+      (currentPara && currentPara.isHeading) ||
+      line.alignment !== currentPara?.alignment ||
+      yGap > line.avgFontSize * 1.75;
+
+    if (isParagraphBreak) {
+      flushPara();
     }
 
-    if (cur && cur.bold === line.bold && Math.abs(cur.fontSize - line.fontSize) < 1.5) {
-      cur.text += " " + text;
+    if (!currentPara) {
+      currentPara = {
+        page: line.page,
+        runs: [...line.runs],
+        isHeading,
+        headingLevel: line.avgFontSize >= bodyFontSize * 1.7 ? 1 : 2,
+        alignment: line.alignment,
+        isRtl: line.isRtl,
+        isPageBreakBefore: isNewPage && line.page > 1,
+      };
     } else {
-      flush();
-      cur = { text, fontSize: line.fontSize, bold: line.bold };
+      // Append line runs to existing paragraph with space between lines
+      if (currentPara.runs.length > 0 && !currentPara.runs[currentPara.runs.length - 1].text.endsWith(" ")) {
+        currentPara.runs.push({
+          text: " ",
+          fontSize: line.avgFontSize,
+          bold: false,
+          italic: false,
+          font: line.runs[0]?.font || "Calibri",
+          isRtl: line.isRtl,
+        });
+      }
+      currentPara.runs.push(...line.runs);
     }
+
+    lastPage = line.page;
     lastY = line.y;
   }
-  flush();
-  return paras;
-}
+  flushPara();
 
-// ── DOCX builder ────────────────────────────────────────────────────────────
+  // Rebuild into docx Paragraphs
+  const docxElements: any[] = [];
 
-export async function convertPdfToWord(file: File): Promise<Blob> {
-  const { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } =
-    await import("docx");
+  for (let idx = 0; idx < paragraphs.length; idx++) {
+    const p = paragraphs[idx];
 
-  const lines = await extractLines(file);
-  const paras = groupIntoParagraphs(lines);
+    // If starting a new page from the PDF, insert an authentic Word PageBreak
+    if (p.isPageBreakBefore) {
+      docxElements.push(
+        new Paragraph({
+          children: [new PageBreak()],
+        })
+      );
+    }
 
-  const sw = new Map<number, number>();
-  for (const p of paras) { const s = Math.round(p.fontSize); sw.set(s, (sw.get(s) ?? 0) + p.text.length); }
-  let bodySize = 10, bw = 0;
-  for (const [s, w] of sw) { if (w > bw) { bw = w; bodySize = s; } }
-
-  const children = paras.map((p) => {
-    const isHeading = !p.isPageMarker && p.fontSize > bodySize * 1.2 && p.text.length < 150;
-    const halfPts = p.isPageMarker ? 20 : Math.min(Math.round(p.fontSize * 2), 72);
-    const detectedFont = scriptFont(p.text);
-
-    // Build run options the same way working tools do — plain object, no cast
-    const runOpts = {
-      text: p.text,
-      bold: p.bold || isHeading,
-      italics: !!p.isPageMarker,
-      size: halfPts,
-    };
-
-    return new Paragraph({
-      children: [
-        detectedFont
-          ? new TextRun({ ...runOpts, font: detectedFont })
-          : new TextRun(runOpts),
-      ],
-      heading: isHeading ? HeadingLevel.HEADING_2 : undefined,
-      alignment: p.isPageMarker ? AlignmentType.CENTER : undefined,
-      spacing: { after: 80 },
+    const runs = p.runs.map((r) => {
+      const halfPts = Math.min(Math.max(Math.round(r.fontSize * 2), 16), 72);
+      return new TextRun({
+        text: r.text,
+        bold: r.bold || p.isHeading,
+        italics: r.italic,
+        size: halfPts,
+        font: r.font ? { name: r.font } : { name: "Calibri" },
+        rightToLeft: r.isRtl,
+      });
     });
-  });
 
-  if (children.length === 0) {
-    children.push(new Paragraph({
-      children: [new TextRun({
-        text: "No selectable text found. This PDF may be scanned — run OCR first, then convert.",
-        italics: true,
-        size: 22,
-      })],
-    }));
+    let alignment: (typeof AlignmentType)[keyof typeof AlignmentType] = AlignmentType.LEFT;
+    if (p.alignment === "center") alignment = AlignmentType.CENTER;
+    else if (p.alignment === "right" || p.isRtl) alignment = AlignmentType.RIGHT;
+
+    docxElements.push(
+      new Paragraph({
+        children: runs,
+        alignment,
+        bidirectional: p.isRtl,
+        heading: p.isHeading
+          ? p.headingLevel === 1
+            ? HeadingLevel.HEADING_1
+            : HeadingLevel.HEADING_2
+          : undefined,
+        spacing: {
+          after: p.isHeading ? 160 : 90,
+          line: 276, // 1.15 line spacing
+        },
+      })
+    );
   }
 
-  const doc = new Document({ sections: [{ children }] });
+  const doc = new Document({
+    sections: [
+      {
+        properties: {
+          page: {
+            margin: {
+              top: 1000,
+              right: 1000,
+              bottom: 1000,
+              left: 1000,
+            },
+          },
+        },
+        children: docxElements,
+      },
+    ],
+  });
+
   return Packer.toBlob(doc);
 }

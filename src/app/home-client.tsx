@@ -131,6 +131,36 @@ export function HomeClient() {
   const router = useRouter();
 
   // Debounced live search over the catalog
+  const mascotIframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Forward pointermove across full website to mascot so Wowie looks at user's cursor anywhere
+  useEffect(() => {
+    const handleGlobalPointerMove = (e: MouseEvent) => {
+      const iframe = mascotIframeRef.current;
+      if (!iframe || !iframe.contentWindow) return;
+      const rect = iframe.getBoundingClientRect();
+      iframe.contentWindow.postMessage(
+        {
+          type: "pointermove",
+          clientX: e.clientX,
+          clientY: e.clientY,
+          rect: {
+            left: rect.left,
+            top: rect.top,
+            width: rect.width,
+            height: rect.height,
+          },
+          winW: window.innerWidth,
+          winH: window.innerHeight,
+        },
+        "*"
+      );
+    };
+
+    window.addEventListener("pointermove", handleGlobalPointerMove, { passive: true });
+    return () => window.removeEventListener("pointermove", handleGlobalPointerMove);
+  }, []);
+
   const heroQueryEmpty = heroQuery.trim() === "";
   useEffect(() => {
     if (heroQueryEmpty) return;
@@ -145,9 +175,10 @@ export function HomeClient() {
     <div ref={rootRef}>
       {/* ─── 1. Hero — search-first, left-aligned ─────────────────
            Brand warm-white band (#FFF7ED via --bg-warm) */}
-      <section className="bg-bg-warm border-b border-border-base pt-12 sm:pt-20 pb-12 sm:pb-16">
+      <section className="bg-bg-warm border-b border-border-base pt-10 sm:pt-16 pb-12 sm:pb-16 overflow-hidden">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="max-w-2xl">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
+            <div className="lg:col-span-7 max-w-2xl">
             <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-accent mb-4">
               {t("home.heroEyebrow")}
             </p>
@@ -240,8 +271,22 @@ export function HomeClient() {
               })}
             </nav>
           </div>
+
+          {/* Right Column: Wowie Mascot */}
+          <div className="lg:col-span-5 flex justify-center lg:justify-end">
+            <div className="w-full max-w-[360px] sm:max-w-[420px] lg:max-w-[440px] h-[380px] sm:h-[430px] relative">
+              <iframe
+                ref={mascotIframeRef}
+                src="/mascot.html"
+                title="Wowie — FilesWow mascot"
+                className="w-full h-full border-0 block bg-transparent"
+                loading="lazy"
+              />
+            </div>
+          </div>
         </div>
-      </section>
+      </div>
+    </section>
 
       {/* ─── 2. Category cards — real counts, one card wider ─────── */}
       <section className="pb-14 sm:pb-20" aria-labelledby="categories-heading">

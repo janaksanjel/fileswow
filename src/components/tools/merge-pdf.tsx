@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useRef } from "react";
 import { StepFlow, type StepOutput } from "@/components/step-flow";
 import type { ToolUIProps } from "@/components/tool-registry";
 import { PdfDrawerPreview } from "@/components/pdf-drawer-preview";
@@ -17,6 +17,9 @@ export default function MergePdfTool({ onProcessing, onError }: ToolUIProps) {
   const [outputs, setOutputs] = useState<StepOutput[]>([]);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Hidden input for adding more files directly from Step 2
+  const addMoreInputRef = useRef<HTMLInputElement>(null);
 
   // Drawer preview state
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -63,6 +66,16 @@ export default function MergePdfTool({ onProcessing, onError }: ToolUIProps) {
     setOutputs([]);
     inspectFiles(next);
   }, [inspectFiles]);
+
+  const handleAddMoreFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const additional = Array.from(e.target.files || []);
+    if (additional.length === 0) return;
+    const combined = [...files, ...additional];
+    setFiles(combined);
+    setOutputs([]);
+    inspectFiles(combined);
+    if (addMoreInputRef.current) addMoreInputRef.current.value = "";
+  };
 
   const moveUp = (index: number) => {
     if (index <= 0) return;
@@ -154,12 +167,24 @@ export default function MergePdfTool({ onProcessing, onError }: ToolUIProps) {
 
   return (
     <>
+      <input
+        ref={addMoreInputRef}
+        type="file"
+        accept=".pdf"
+        multiple
+        onChange={handleAddMoreFiles}
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden="true"
+      />
+
       <StepFlow
         accept=".pdf"
         multiple
-        hint="PDF files · 2 or more"
-        actionLabel={`Merge ${files.length || ""} PDFs`.trim()}
-        processingLabel="Merging..."
+        minFiles={2}
+        hint="PDF documents · Select 2 or more files"
+        actionLabel={files.length >= 2 ? `Merge ${files.length} PDFs` : "Add 2+ PDFs to Merge"}
+        processingLabel="Merging PDFs..."
         outputs={outputs}
         canRun={files.length >= 2}
         processing={processing}
@@ -213,12 +238,26 @@ export default function MergePdfTool({ onProcessing, onError }: ToolUIProps) {
               </button>
             </div>
 
-            {/* List Header */}
+            {/* List Header with Add More PDFs button */}
             <div className="flex items-center justify-between px-1 text-[12px] font-semibold text-text-secondary">
-              <span>Merge order (files combine top to bottom):</span>
-              <span className="text-[11px] font-mono text-text-tertiary">
-                {files.length} file{files.length !== 1 ? "s" : ""}
-              </span>
+              <div className="flex items-center gap-2">
+                <span>Merge order (top to bottom):</span>
+                <span className="text-[11px] font-mono text-text-tertiary">
+                  {files.length} file{files.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => addMoreInputRef.current?.click()}
+                className="btn-secondary px-3 py-1.5 text-[12px] font-bold flex items-center gap-1.5 hover:border-accent hover:text-accent transition-colors shadow-xs"
+                title="Add more PDF files to the merge list"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                <span>Add more PDFs</span>
+              </button>
             </div>
 
             {/* Interactive File Cards */}

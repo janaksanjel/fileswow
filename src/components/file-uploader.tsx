@@ -540,6 +540,25 @@ export function FileUploader({
                     <span className="w-4 h-4 rounded-full border-2 border-border-strong border-t-accent animate-spin-slow shrink-0" />
                   )}
 
+                  {/* Preview button */}
+                  {isPreviewableFile(item.file) && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPreviewFile(item.file);
+                      }}
+                      className="w-6 h-6 rounded-lg flex items-center justify-center text-text-tertiary hover:text-accent hover:bg-accent/10 transition-colors shrink-0"
+                      title={`Preview ${item.file.name} in right drawer`}
+                      aria-label={`Preview ${item.file.name}`}
+                    >
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                        <circle cx="12" cy="12" r="3" />
+                      </svg>
+                    </button>
+                  )}
+
                   {/* Remove */}
                   <button
                     onClick={(e) => {

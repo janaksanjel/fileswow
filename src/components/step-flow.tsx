@@ -27,6 +27,7 @@ export interface StepFlowProps {
   accept: string;
   multiple?: boolean;
   maxFiles?: number;
+  minFiles?: number;
   hint?: string;
   /** Renders the operation UI for step 2 (options + action button) */
   renderOperation: (ctx: StepFlowOperationContext) => React.ReactNode;
@@ -148,6 +149,7 @@ export function StepFlow({
   accept,
   multiple = false,
   maxFiles,
+  minFiles,
   hint,
   renderOperation,
   outputs,
@@ -304,7 +306,7 @@ export function StepFlow({
               )}
               <button
                 onClick={goToOperation}
-                disabled={!hasFiles}
+                disabled={!hasFiles || (minFiles ? currentFiles.length < minFiles : false)}
                 className="btn-primary flex-1 py-3 group"
               >
                 <span>Continue</span>
@@ -314,9 +316,11 @@ export function StepFlow({
                 </svg>
               </button>
             </div>
-            {!hasFiles && (
+            {(!hasFiles || (minFiles && currentFiles.length < minFiles)) && (
               <p className="text-center text-[11.5px] text-text-tertiary mt-2.5">
-                Add at least one file to continue
+                {minFiles && minFiles > 1
+                  ? `Add at least ${minFiles} files to continue (${currentFiles.length}/${minFiles} added)`
+                  : "Add at least one file to continue"}
               </p>
             )}
           </div>
@@ -330,7 +334,7 @@ export function StepFlow({
                 {fileCount} file{fileCount !== 1 ? "s" : ""} ready
               </span>
               <div className="flex items-center gap-3 shrink-0">
-                {currentFiles.length > 0 && isPreviewableFile(currentFiles[0]) && (
+                {!multiple && currentFiles.length === 1 && isPreviewableFile(currentFiles[0]) && (
                   <button
                     type="button"
                     onClick={() => setActiveDrawerFile({ file: currentFiles[0], title: currentFiles[0].name })}
@@ -345,6 +349,7 @@ export function StepFlow({
                   </button>
                 )}
                 <button
+                  type="button"
                   onClick={goUpload}
                   className="text-[11.5px] font-semibold text-text-secondary hover:underline underline-offset-2 shrink-0"
                 >
@@ -422,6 +427,9 @@ function OutputPanel({
   onBack: () => void;
 }) {
   const [previewOutput, setPreviewOutput] = useState<StepOutput | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const currentOutput = outputs[activeIndex] || outputs[0];
 
   const isPreviewableOutput = (name: string, blob: Blob) => {
     const n = name.toLowerCase();
@@ -435,9 +443,9 @@ function OutputPanel({
   };
 
   return (
-    <div>
+    <div className="space-y-4">
       {/* Success banner */}
-      <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-success/[0.05] border border-success/20 mb-4">
+      <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-success/[0.05] border border-success/20">
         <span className="flow-check w-7 h-7 rounded-full bg-success/15 text-success flex items-center justify-center shrink-0">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <polyline points="20 6 9 17 4 12" />
@@ -452,6 +460,58 @@ function OutputPanel({
           </p>
         </div>
       </div>
+
+      {/* Top drawer preview callout banner — matches Step 2 Operation */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-accent/[0.06] border border-accent/20">
+        <div className="flex items-center gap-2.5">
+          <span className="w-8 h-8 rounded-lg bg-accent/15 text-accent flex items-center justify-center shrink-0">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+              <circle cx="12" cy="12" r="3" />
+            </svg>
+          </span>
+          <div>
+            <p className="text-[13px] font-bold text-text-primary">
+              {outputs.length === 1 ? outputs[0].name : `${outputs.length} output files ready`}
+            </p>
+            <p className="text-[11.5px] text-text-secondary">
+              Inspect high-res documents and pages before downloading
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => setPreviewOutput(currentOutput)}
+          className="btn-primary py-2 px-4 text-[12.5px] shrink-0 flex items-center justify-center gap-1.5 shadow-sm"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          <span>Preview in Right Drawer</span>
+        </button>
+      </div>
+
+      {/* Multi-output switcher if > 1 output */}
+      {outputs.length > 1 && (
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+          {outputs.map((o, idx) => (
+            <button
+              key={`${o.name}-${idx}`}
+              type="button"
+              onClick={() => setActiveIndex(idx)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+                activeIndex === idx
+                  ? "bg-accent text-white shadow-xs"
+                  : "bg-bg-elevated text-text-secondary hover:text-text-primary border border-border-base"
+              }`}
+            >
+              <span>{idx + 1}.</span>
+              <span className="truncate max-w-[150px]">{o.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Download list */}
       <ul className="space-y-1.5">
@@ -515,12 +575,18 @@ function OutputPanel({
         </button>
       </div>
 
-      {/* Slide-over Right Drawer Preview */}
+      {/* Slide-over Right Drawer Preview — identical to Step 2 Operation */}
       <PdfDrawerPreview
         open={previewOutput !== null}
         onClose={() => setPreviewOutput(null)}
         fileOrBlob={previewOutput?.blob ?? null}
-        title={previewOutput ? `Preview: ${previewOutput.name}` : "PDF Preview"}
+        title={previewOutput ? `Preview: ${previewOutput.name}` : "Document Preview"}
+        filesList={outputs}
+        currentIndex={activeIndex}
+        onSelectIndex={(idx) => {
+          setActiveIndex(idx);
+          setPreviewOutput(outputs[idx]);
+        }}
       />
     </div>
   );

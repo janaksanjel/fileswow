@@ -8,7 +8,7 @@ interface PdfDrawerPreviewProps {
   fileOrBlob: File | Blob | null;
   title?: string;
   initialPage?: number;
-  filesList?: File[];
+  filesList?: Array<{ name: string; size?: number; type?: string } | any>;
   currentIndex?: number;
   onSelectIndex?: (index: number) => void;
 }
