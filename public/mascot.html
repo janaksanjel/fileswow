@@ -7,12 +7,16 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&display=swap">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;overflow:hidden;background:transparent;font-family:"Baloo 2",system-ui,sans-serif}
-#stage{position:absolute;inset:0}
-#stage canvas{display:block;width:100%;height:100%;cursor:pointer;touch-action:none}
-#bubble{position:absolute;left:50%;top:12%;transform:translate(-50%,0) scale(0);transform-origin:50% 100%;background:#fff;color:#0a0f1c;font-weight:800;
-font-size:clamp(16px,2.4vw,22px);padding:8px 18px;border-radius:20px;box-shadow:0 8px 24px rgba(0,0,0,.15);pointer-events:none;white-space:nowrap;z-index:10}
-#bubble::after{content:"";position:absolute;left:50%;bottom:-8px;width:16px;height:16px;background:#fff;transform:translateX(-50%) rotate(45deg);border-radius:2px}
+:root{color-scheme:light;background:transparent}
+:root[data-theme="dark"],body.dark{color-scheme:dark}
+html,body{width:100%;height:100%;overflow:hidden;background:transparent !important;font-family:"Baloo 2",system-ui,sans-serif}
+#stage{position:absolute;inset:0;background:transparent !important}
+#stage canvas{display:block;width:100%;height:100%;cursor:pointer;touch-action:none;background:transparent !important}
+#bubble{position:absolute;left:50%;top:12%;transform:translate(-50%,0) scale(0);transform-origin:50% 100%;background:#ffffff;color:#0a0f1c;font-weight:800;
+font-size:clamp(16px,2.4vw,22px);padding:8px 18px;border-radius:20px;box-shadow:0 8px 24px rgba(0,0,0,.15);pointer-events:none;white-space:nowrap;z-index:10;transition:background-color .2s,color .2s,border-color .2s}
+#bubble::after{content:"";position:absolute;left:50%;bottom:-8px;width:16px;height:16px;background:#ffffff;transform:translateX(-50%) rotate(45deg);border-radius:2px;transition:background-color .2s}
+:root[data-theme="dark"] #bubble,body.dark #bubble{background:#171a22;color:#f1f4f9;border:1px solid rgba(255,255,255,.12);box-shadow:0 8px 24px rgba(0,0,0,.6)}
+:root[data-theme="dark"] #bubble::after,body.dark #bubble::after{background:#171a22;border-right:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.12)}
 #bubble.show{animation:pop 1.6s cubic-bezier(.2,1.4,.4,1) both}
 #bubble.show.long{animation:popLong 4.5s cubic-bezier(.2,1.4,.4,1) both}
 @keyframes pop{0%{transform:translate(-50%,10px) scale(0)}15%{transform:translate(-50%,0) scale(1)}80%{transform:translate(-50%,0) scale(1);opacity:1}100%{transform:translate(-50%,-8px) scale(.9);opacity:0}}
@@ -29,7 +33,19 @@ font-size:clamp(16px,2.4vw,22px);padding:8px 18px;border-radius:20px;box-shadow:
 (function(){
 const wrap=document.getElementById('stage');
 const R=new THREE.WebGLRenderer({antialias:true,alpha:true});
+R.setClearColor(0x000000, 0);
 R.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+
+// Theme handling
+function applyTheme(theme) {
+  const isDark = theme === 'dark';
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+  document.body.className = isDark ? 'dark' : 'light';
+}
+const urlParams = new URLSearchParams(window.location.search);
+const initTheme = urlParams.get('theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+applyTheme(initTheme);
 wrap.appendChild(R.domElement);
 const S=new THREE.Scene();
 const C=new THREE.PerspectiveCamera(35,1,.1,60);
@@ -173,9 +189,13 @@ window.addEventListener('pointermove',e=>{
   mouse.y = Math.max(-1.5, Math.min(1.5, -(e.clientY - cy) / (rect.height * 0.7)));
 });
 
-// Global pointermove sent from main parent page across full website
+// Global message listener: pointermove and theme sync from parent
 window.addEventListener('message', e => {
-  if (e.data && e.data.type === 'pointermove') {
+  if (!e.data) return;
+  if (e.data.type === 'theme') {
+    applyTheme(e.data.theme);
+  }
+  if (e.data.type === 'pointermove') {
     const { clientX, clientY, rect, winW, winH } = e.data;
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;

@@ -1,5 +1,6 @@
-import { PdfDrawerPreview } from "./pdf-drawer-preview";
 "use client";
+
+import { PdfDrawerPreview } from "./pdf-drawer-preview";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 

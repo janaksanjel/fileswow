@@ -1,5 +1,6 @@
-import { FilePreviewButton } from "@/components/file-preview-button";
 "use client";
+
+import { FilePreviewButton } from "@/components/file-preview-button";
 
 import { useState, useCallback, useEffect } from "react";
 import { DropZone } from "@/components/drop-zone";

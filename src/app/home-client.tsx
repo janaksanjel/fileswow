@@ -12,6 +12,7 @@ import { POPULAR_DEFAULT_SLUGS } from "@/lib/usage";
 import { useReveal } from "@/lib/use-reveal";
 import { AdSlot } from "@/components/ad-unit";
 import { useI18n, type MessageKey } from "@/lib/i18n";
+import { useTheme } from "@/lib/theme-provider";
 import { BLOG_POSTS } from "@/lib/blog";
 
 /* Curated popular order first, then everything else — the base list the
@@ -124,6 +125,7 @@ export function HomeClient() {
   const rootRef = useRef<HTMLDivElement>(null);
   useReveal(rootRef);
   const { t } = useI18n();
+  const { theme } = useTheme();
 
   const [heroQuery, setHeroQuery] = useState("");
   const [heroResults, setHeroResults] = useState<ToolDef[]>([]);
@@ -132,6 +134,14 @@ export function HomeClient() {
 
   // Debounced live search over the catalog
   const mascotIframeRef = useRef<HTMLIFrameElement>(null);
+
+  // Sync theme changes with mascot iframe for dark mode
+  useEffect(() => {
+    const iframe = mascotIframeRef.current;
+    if (iframe?.contentWindow) {
+      iframe.contentWindow.postMessage({ type: "theme", theme }, "*");
+    }
+  }, [theme]);
 
   // Forward pointermove across full website to mascot so Wowie looks at user's cursor anywhere
   useEffect(() => {
@@ -277,9 +287,10 @@ export function HomeClient() {
             <div className="w-full max-w-[360px] sm:max-w-[420px] lg:max-w-[440px] h-[380px] sm:h-[430px] relative">
               <iframe
                 ref={mascotIframeRef}
-                src="/mascot.html"
+                src={`/mascot.html?theme=${theme}`}
                 title="Wowie — FilesWow mascot"
                 className="w-full h-full border-0 block bg-transparent"
+                style={{ background: "transparent", colorScheme: theme }}
                 loading="lazy"
               />
             </div>
