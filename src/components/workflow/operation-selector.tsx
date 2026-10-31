@@ -168,7 +168,7 @@ export function OperationSelector({
         </div>
       ) : (
         <div className="p-8 text-center rounded-2xl bg-bg-surface border border-border-base text-text-secondary">
-          <p className="text-sm font-semibold mb-1">No operations found matching "{searchQuery}"</p>
+          <p className="text-sm font-semibold mb-1">No operations found matching &ldquo;{searchQuery}&rdquo;</p>
           <button
             type="button"
             onClick={() => setSearchQuery("")}

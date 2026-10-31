@@ -23,7 +23,6 @@ interface WorkflowStepProps {
 
 export function WorkflowStep({
   step,
-  state,
   isActive,
   isCompleted,
   onClick,

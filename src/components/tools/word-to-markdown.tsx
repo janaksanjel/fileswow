@@ -24,7 +24,7 @@ export default function WordToMarkdownTool({ onProcessing, onError }: ToolUIProp
       const arrayBuffer = await f.arrayBuffer();
       const result = await mammoth.convertToHtml({ arrayBuffer });
       // Convert HTML to simple markdown
-      let md = result.value
+      const md = result.value
         .replace(/<h1[^>]*>(.*?)<\/h1>/gi, "# $1\n\n")
         .replace(/<h2[^>]*>(.*?)<\/h2>/gi, "## $1\n\n")
         .replace(/<h3[^>]*>(.*?)<\/h3>/gi, "### $1\n\n")
@@ -58,6 +58,7 @@ export default function WordToMarkdownTool({ onProcessing, onError }: ToolUIProp
           <div className="flex items-center gap-3 p-3 rounded-lg bg-bg-elevated border border-border-base">
             <span className="w-8 h-8 rounded flex items-center justify-center text-xs font-bold bg-accent-start/10 text-accent-end">DOCX</span>
             <span className="text-sm text-text-primary truncate flex-1">{file.name}</span>
+            {processing && <span className="text-xs text-text-tertiary animate-pulse">Converting...</span>}
             <FilePreviewButton file={file} />
             <button onClick={() => { setFile(null); setMarkdown(""); }} className="text-xs text-text-tertiary hover:text-danger">Remove</button>
           </div>

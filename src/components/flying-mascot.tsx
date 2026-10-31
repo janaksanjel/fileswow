@@ -67,6 +67,178 @@ interface BirdInstance {
   currentScreenY: number;
 }
 
+// ─── Avian Web Audio Synthesizer (Realistic Procedural Birdsong) ───
+// Zero network assets, zero latency, spatial stereo panning
+let sharedAudioCtx: AudioContext | null = null;
+function getAudioCtx(): AudioContext | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtxClass) return null;
+    if (!sharedAudioCtx) {
+      sharedAudioCtx = new AudioCtxClass();
+    }
+    if (sharedAudioCtx.state === "suspended") {
+      sharedAudioCtx.resume().catch(() => {});
+    }
+    return sharedAudioCtx;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Natural songbird chirp / tweet:
+ * Generates sweet authentic avian warbles with frequency modulation,
+ * organic envelope, and spatial stereo panning.
+ */
+function playBirdSong(pan = 0, pitchMod = 1.0) {
+  const ctx = getAudioCtx();
+  if (!ctx || ctx.state !== "running") return;
+  const now = ctx.currentTime;
+
+  const pulses = Math.random() > 0.4 ? (Math.random() > 0.55 ? 2 : 3) : 1;
+  const baseFreq = (3100 + (Math.random() - 0.5) * 500) * pitchMod;
+
+  for (let i = 0; i < pulses; i++) {
+    const t0 = now + i * (0.07 + Math.random() * 0.02);
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = "sine";
+    const startF = baseFreq * (0.88 + Math.random() * 0.15);
+    const peakF = baseFreq * (1.35 + Math.random() * 0.25);
+    const endF = baseFreq * (0.8 + Math.random() * 0.2);
+
+    osc.frequency.setValueAtTime(startF, t0);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(200, peakF), t0 + 0.03);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(200, endF), t0 + 0.065);
+
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.linearRampToValueAtTime(0.055, t0 + 0.009);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.068);
+
+    if (typeof ctx.createStereoPanner === "function") {
+      const panner = ctx.createStereoPanner();
+      panner.pan.setValueAtTime(Math.max(-0.85, Math.min(0.85, pan)), t0);
+      osc.connect(gain);
+      gain.connect(panner);
+      panner.connect(ctx.destination);
+    } else {
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+    }
+
+    osc.start(t0);
+    osc.stop(t0 + 0.075);
+  }
+}
+
+/**
+ * Bird spawn sound: Joyful ascending warble when bursting out from Wowie
+ */
+function playSpawnSound(pan = 0) {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+
+  [0, 0.055, 0.11].forEach((delay, idx) => {
+    const t0 = now + delay;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    const f0 = 2600 + idx * 550;
+
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(f0, t0);
+    osc.frequency.exponentialRampToValueAtTime(f0 * 1.45, t0 + 0.04);
+    osc.frequency.exponentialRampToValueAtTime(f0 * 1.15, t0 + 0.08);
+
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.linearRampToValueAtTime(0.07, t0 + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.08);
+
+    if (typeof ctx.createStereoPanner === "function") {
+      const panner = ctx.createStereoPanner();
+      panner.pan.setValueAtTime(Math.max(-0.85, Math.min(0.85, pan)), t0);
+      osc.connect(gain);
+      gain.connect(panner);
+      panner.connect(ctx.destination);
+    } else {
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+    }
+
+    osc.start(t0);
+    osc.stop(t0 + 0.085);
+  });
+}
+
+/**
+ * Bird crash sound: playful tumbling downward slide
+ */
+function playCrashSound(pan = 0) {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.type = "triangle";
+  osc.frequency.setValueAtTime(3200, now);
+  osc.frequency.exponentialRampToValueAtTime(500, now + 0.22);
+
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.linearRampToValueAtTime(0.08, now + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.22);
+
+  if (typeof ctx.createStereoPanner === "function") {
+    const panner = ctx.createStereoPanner();
+    panner.pan.setValueAtTime(Math.max(-0.85, Math.min(0.85, pan)), now);
+    osc.connect(gain);
+    gain.connect(panner);
+    panner.connect(ctx.destination);
+  } else {
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+  }
+
+  osc.start(now);
+  osc.stop(now + 0.23);
+}
+
+/**
+ * Bird auto-dismiss sound: sweet gentle ascending goodbye tweet into sky
+ */
+function playDismissSound(pan = 0) {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(3000, now);
+  osc.frequency.exponentialRampToValueAtTime(5400, now + 0.14);
+
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.linearRampToValueAtTime(0.045, now + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+
+  if (typeof ctx.createStereoPanner === "function") {
+    const panner = ctx.createStereoPanner();
+    panner.pan.setValueAtTime(Math.max(-0.85, Math.min(0.85, pan)), now);
+    osc.connect(gain);
+    gain.connect(panner);
+    panner.connect(ctx.destination);
+  } else {
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+  }
+
+  osc.start(now);
+  osc.stop(now + 0.15);
+}
+
 /**
  * FlyingMascot — 3D bird that flies autonomously across the homepage.
  * - One main permanent bird always soars around.
@@ -390,6 +562,10 @@ export function FlyingMascot() {
         }
         trailGeo.attributes.position.needsUpdate = true;
         trailGeo.attributes.color.needsUpdate = true;
+
+        // Joyful chirp on birth / launch out from mascot
+        const pan = spawnX / (visibleWidth / 2 || 1);
+        playSpawnSound(Math.max(-0.85, Math.min(0.85, pan)));
       };
 
       // Listen for mascot click from mascot iframe or custom event
@@ -452,6 +628,12 @@ export function FlyingMascot() {
         targetBird.crashVx = (Math.random() - 0.5) * 6;
         targetBird.crashRotSpeed = (Math.random() > 0.5 ? 1 : -1) * (12 + Math.random() * 8);
 
+        // Play tumbling crash sound
+        const crashPan = targetBird.currentScreenX > -900
+          ? (targetBird.currentScreenX / (window.innerWidth || 1)) * 2 - 1
+          : 0;
+        playCrashSound(Math.max(-0.85, Math.min(0.85, crashPan)));
+
         // Burst explosion
         for (let k = 0; k < 18; k++) {
           const idx = (trailIdx++ % TRAIL_COUNT) * 3;
@@ -483,6 +665,10 @@ export function FlyingMascot() {
         }
       };
 
+      const unlockAudio = () => {
+        getAudioCtx();
+      };
+      window.addEventListener("pointerdown", unlockAudio, { passive: true });
       window.addEventListener("pointermove", handlePointerMove, { passive: true });
       canvas.addEventListener("click", handleBirdClick);
 
@@ -492,6 +678,9 @@ export function FlyingMascot() {
       };
       document.addEventListener("visibilitychange", handleVisibilityChange);
 
+      // ─── Dynamic Flock Song ("More Birds = More Bird Sound") ───
+      let flockChirpTimer = 2.5;
+
       // ─── Main Animation Loop ───
       const animate = () => {
         animId = requestAnimationFrame(animate);
@@ -499,6 +688,33 @@ export function FlyingMascot() {
 
         const dt = Math.min(clock.getDelta(), 0.05);
         t += dt;
+
+        // ─── Dynamic Flock Birdsong Chorus ───
+        // More active birds = more frequent and layered songs!
+        flockChirpTimer -= dt;
+        if (flockChirpTimer <= 0) {
+          const activeBirds = birds.filter((b) => b.state === "flying" || b.state === "spawning");
+          if (activeBirds.length > 0) {
+            const singer = activeBirds[Math.floor(Math.random() * activeBirds.length)];
+            const pan = singer.currentScreenX > -900
+              ? (singer.currentScreenX / (window.innerWidth || 1)) * 2 - 1
+              : 0;
+            const pitchMod = 0.88 + ((singer.colorIdx * 3) % 5) * 0.06;
+            playBirdSong(Math.max(-0.85, Math.min(0.85, pan)), pitchMod);
+
+            // Delay scales inversely with bird count ("more bird = more bird sound"):
+            // 1 bird: ~4.5 - 7.0 seconds (occasional solitary chirp)
+            // 3 birds: ~2.0 - 3.4 seconds
+            // 6 birds: ~0.9 - 1.6 seconds
+            // 10+ birds: ~0.35 - 0.75 seconds (vibrant dawn chorus!)
+            const count = activeBirds.length;
+            const baseInterval = Math.max(0.35, 5.2 / Math.sqrt(count));
+            const jitter = (Math.random() - 0.2) * (baseInterval * 0.5);
+            flockChirpTimer = Math.max(0.25, baseInterval + jitter);
+          } else {
+            flockChirpTimer = 2.5;
+          }
+        }
 
         const boundX = Math.max((visibleWidth / 2) * 0.78, 4);
         const boundY = Math.max((visibleHeight / 2) * 0.68, 2.8);
@@ -512,6 +728,10 @@ export function FlyingMascot() {
             if (age >= bird.lifetime) {
               bird.state = "dismissing";
               bird.dismissProgress = 0;
+              const pan = bird.currentScreenX > -900
+                ? (bird.currentScreenX / (window.innerWidth || 1)) * 2 - 1
+                : 0;
+              playDismissSound(Math.max(-0.85, Math.min(0.85, pan)));
             }
           }
 
@@ -691,6 +911,7 @@ export function FlyingMascot() {
 
       return () => {
         window.removeEventListener("resize", handleResize);
+        window.removeEventListener("pointerdown", unlockAudio);
         window.removeEventListener("pointermove", handlePointerMove);
         window.removeEventListener("message", onWindowMessage);
         window.removeEventListener("spawn-flying-mascot-bird", onCustomSpawn);
