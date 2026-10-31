@@ -245,6 +245,26 @@ const toolComponents: Record<string, ComponentType<ToolUIProps>> = {
   "p2p-text": dynamic(() => import("./tools/p2p-text"), { ssr: false }) as any,
 };
 
+export function hasToolComponent(slug: string): boolean {
+  return Boolean(toolComponents[slug]);
+}
+
+export function ToolRenderer({
+  slug,
+  attempt,
+  onProcessing,
+  onError,
+}: {
+  slug: string;
+  attempt?: number;
+  onProcessing?: (processing: boolean) => void;
+  onError?: (error: string | null) => void;
+}) {
+  const Component = toolComponents[slug];
+  if (!Component) return null;
+  return <Component key={attempt} onProcessing={onProcessing} onError={onError} />;
+}
+
 export function getToolComponent(slug: string) {
   return toolComponents[slug] || null;
 }

@@ -181,7 +181,6 @@ export default async function ToolPage({ params }: ToolPageProps) {
 
   const relatedTools = getRelatedTools(tool);
   const categoryLabel = tool.category === "pdf" ? "PDF Tools" : tool.category === "word" ? "Word Tools" : tool.category === "image" ? "Image Tools" : tool.category === "text" ? "Text Tools" : "Tools";
-  const subCategoryLabel = SUB_CATEGORY_LABELS[tool.subCategory] || tool.subCategory;
 
   // SoftwareApplication schema with rich rating and platform features
   const softwareJsonLd = {

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getToolBySlug } from "@/lib/catalog";
 import { BLOG_POSTS, getBlogPostBySlug, blogUrl, blogIndexUrl, blogReadingMinutes } from "@/lib/blog";
-import { absoluteUrl, jsonLdProps, toolUrl } from "@/lib/site";
+import { absoluteUrl, jsonLdProps } from "@/lib/site";
 import { AdSlot } from "@/components/ad-unit";
 
 interface BlogPostPageProps {

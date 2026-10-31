@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getToolBySlug } from "@/lib/catalog";
 import { GUIDES, getGuideBySlug, guideUrl, readingMinutes } from "@/lib/guides";
-import { absoluteUrl, jsonLdProps, toolUrl } from "@/lib/site";
+import { absoluteUrl, jsonLdProps } from "@/lib/site";
 import { AdSlot } from "@/components/ad-unit";
 
 interface GuidePageProps {

@@ -4,7 +4,7 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import { ToolShell } from "@/components/tool-shell";
 import { recordToolVisit } from "@/lib/usage";
 import { ProgressBar } from "@/components/progress-bar";
-import { getToolComponent } from "@/components/tool-registry";
+import { ToolRenderer, hasToolComponent } from "@/components/tool-registry";
 import { ToolIcon } from "@/components/icon";
 import { pingIndexNow } from "@/lib/indexnow-ping";
 import type { ToolDef } from "@/lib/catalog";
@@ -67,8 +67,6 @@ export function ToolClient({ tool, relatedTools, guide, faq, relatedPost }: Tool
       if (pendingStop.current) clearTimeout(pendingStop.current);
     };
   }, []);
-
-  const ToolComponent = getToolComponent(tool.slug);
 
   // Track usage for "Recently Used" and "Popular" sections
   useEffect(() => {
@@ -138,9 +136,10 @@ export function ToolClient({ tool, relatedTools, guide, faq, relatedPost }: Tool
       )}
 
       {/* Dynamic tool UI — remounts on retry so the tool starts clean */}
-      {ToolComponent ? (
-        <ToolComponent
-          key={attempt}
+      {hasToolComponent(tool.slug) ? (
+        <ToolRenderer
+          slug={tool.slug}
+          attempt={attempt}
           onProcessing={handleProcessing}
           onError={setError}
         />
