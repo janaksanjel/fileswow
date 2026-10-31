@@ -3,7 +3,7 @@ import { useState } from "react";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
-export default function gradient_generator_Tool({ onProcessing }: ToolUIProps) {
+export default function GradientGeneratorTool({ onProcessing }: ToolUIProps) {
   const [color1, setColor1] = useState("#667eea");
   const [color2, setColor2] = useState("#764ba2");
   const [direction, setDirection] = useState<"to-right"|"to-bottom"|"diagonal">("diagonal");

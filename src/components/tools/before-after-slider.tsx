@@ -3,7 +3,7 @@ import { useState, useCallback } from "react";
 import { DropZone } from "@/components/drop-zone";
 import type { ToolUIProps } from "@/components/tool-registry";
 
-export default function before_after_slider_Tool({ onError }: ToolUIProps) {
+export default function BeforeAfterSliderTool({ onError }: ToolUIProps) {
   const [before, setBefore] = useState<string | null>(null);
   const [after, setAfter] = useState<string | null>(null);
   const [sliderPos, setSliderPos] = useState(50);

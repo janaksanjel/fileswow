@@ -5,7 +5,7 @@ import { useState, useCallback } from "react";
 import { DropZone } from "@/components/drop-zone";
 import type { ToolUIProps } from "@/components/tool-registry";
 
-export default function color_palette_Tool({ onError }: ToolUIProps) {
+export default function ColorPaletteTool({ onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [colors, setColors] = useState<string[]>([]);
 

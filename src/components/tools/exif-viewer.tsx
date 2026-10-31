@@ -6,7 +6,7 @@ import { useState, useCallback } from "react";
 import { DropZone } from "@/components/drop-zone";
 import type { ToolUIProps } from "@/components/tool-registry";
 
-export default function exif_viewer_Tool({ onError }: ToolUIProps) {
+export default function ExifViewerTool({ onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [info, setInfo] = useState<Record<string, string> | null>(null);
 

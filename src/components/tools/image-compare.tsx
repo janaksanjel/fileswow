@@ -5,7 +5,7 @@ import { DropZone } from "@/components/drop-zone";
 import type { ToolUIProps } from "@/components/tool-registry";
 
 import { UiIcon } from "@/components/ui-icon";
-export default function image_compare_Tool({ onError }: ToolUIProps) {
+export default function ImageCompareTool({ onError }: ToolUIProps) {
   const [files, setFiles] = useState<File[]>([]);
 
   const handleFile = useCallback((f: File[]) => {

@@ -3,7 +3,7 @@ import { useState } from "react";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
-export default function placeholder_generator_Tool({ onProcessing }: ToolUIProps) {
+export default function PlaceholderGeneratorTool({ onProcessing }: ToolUIProps) {
   const [width, setWidth] = useState(400);
   const [height, setHeight] = useState(300);
   const [bgColor, setBgColor] = useState("#374151");

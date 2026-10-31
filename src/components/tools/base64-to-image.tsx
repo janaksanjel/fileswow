@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
-export default function base64_to_image_Tool({ onError }: ToolUIProps) {
+export default function Base64ToImageTool({ onError }: ToolUIProps) {
   const [input, setInput] = useState("");
   const [result, setResult] = useState<Blob | null>(null);
   const [preview, setPreview] = useState<string | null>(null);

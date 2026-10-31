@@ -6,7 +6,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { DropZone } from "@/components/drop-zone";
 import type { ToolUIProps } from "@/components/tool-registry";
 
-export default function image_histogram_Tool({ onError }: ToolUIProps) {
+export default function ImageHistogramTool({ onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 

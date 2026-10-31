@@ -6,7 +6,7 @@ import { useState, useCallback, useRef } from "react";
 import { DropZone } from "@/components/drop-zone";
 import type { ToolUIProps } from "@/components/tool-registry";
 
-export default function color_picker_image_Tool({ onError }: ToolUIProps) {
+export default function ColorPickerImageTool({ onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [pickedColor, setPickedColor] = useState<string | null>(null);
   const [rgb, setRgb] = useState<{r:number;g:number;b:number} | null>(null);

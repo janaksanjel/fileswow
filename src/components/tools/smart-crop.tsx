@@ -17,7 +17,7 @@ const RATIOS = [
   { label: "3:4", w: 3, h: 4 },
 ];
 
-export default function smart_crop_Tool({ onProcessing, onError }: ToolUIProps) {
+export default function SmartCropTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<Blob | null>(null);
   const [processing, setProcessing] = useState(false);

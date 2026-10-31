@@ -29,13 +29,7 @@ const PAGE_SIZES: Record<Preset, { w: number; h: number }> = {
   A3: { w: 16838, h: 23811 },       // 297 × 420 mm
 };
 
-/** Default margins in twips: 2.54 cm (1 in) top/bottom, 3.18 cm sides. */
-const DEFAULT_MARGINS = { top: 1440, bottom: 1440, left: 1800, right: 1800 };
-
-const W_NS = "http://schemas.openxmlformats.org/wordprocessingml/2006/main";
-
 const TWIPS_PER_CM = 567;
-const TWIPS_PER_INCH = 1440;
 
 async function applyPageSetup(
   file: File,

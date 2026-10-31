@@ -9,7 +9,7 @@ import type { ToolUIProps } from "@/components/tool-registry";
 import { UiIcon } from "@/components/ui-icon";
 const EMOJIS = ["😀","😂","❤️","🔥","⭐","👍","🎉","💯","🚀","😎","🌟","💪","✅","🎵","👀","🙏","💎","🏆","🌈","🍕"];
 
-export default function sticker_image_Tool({ onProcessing, onError }: ToolUIProps) {
+export default function StickerImageTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<Blob | null>(null);
   const [processing, setProcessing] = useState(false);

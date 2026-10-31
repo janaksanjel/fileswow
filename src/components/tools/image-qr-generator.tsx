@@ -4,7 +4,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
-export default function image_qr_generator_Tool({ onProcessing, onError }: ToolUIProps) {
+export default function ImageQrGeneratorTool({ onProcessing, onError }: ToolUIProps) {
   const [text, setText] = useState("https://");
   const [result, setResult] = useState<Blob | null>(null);
   const [size, setSize] = useState(256);

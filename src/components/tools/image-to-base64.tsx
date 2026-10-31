@@ -7,7 +7,7 @@ import { DropZone } from "@/components/drop-zone";
 import type { ToolUIProps } from "@/components/tool-registry";
 
 import { UiIcon } from "@/components/ui-icon";
-export default function image_to_base64_Tool({ onError }: ToolUIProps) {
+export default function ImageToBase64Tool({ onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [base64, setBase64] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);

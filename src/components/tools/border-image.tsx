@@ -7,7 +7,7 @@ import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
 import { UiIcon } from "@/components/ui-icon";
-export default function border_image_Tool({ onProcessing, onError }: ToolUIProps) {
+export default function BorderImageTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<Blob | null>(null);
   const [processing, setProcessing] = useState(false);

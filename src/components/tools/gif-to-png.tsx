@@ -8,7 +8,7 @@ import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
 import { UiIcon } from "@/components/ui-icon";
-export default function gif_to_png_Tool({ onProcessing, onError }: ToolUIProps) {
+export default function GifToPngTool({ onProcessing, onError }: ToolUIProps) {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<Blob | null>(null);
   const [processing, setProcessing] = useState(false);

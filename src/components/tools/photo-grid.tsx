@@ -5,7 +5,7 @@ import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
 import { UiIcon } from "@/components/ui-icon";
-export default function photo_grid_Tool({ onProcessing, onError }: ToolUIProps) {
+export default function PhotoGridTool({ onProcessing, onError }: ToolUIProps) {
   const [files, setFiles] = useState<File[]>([]);
   const [result, setResult] = useState<Blob | null>(null);
   const [processing, setProcessing] = useState(false);

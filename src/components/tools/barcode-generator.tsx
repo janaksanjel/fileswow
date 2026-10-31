@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { DownloadButton } from "@/components/download-button";
 import type { ToolUIProps } from "@/components/tool-registry";
 
-export default function barcode_generator_Tool({ onProcessing, onError }: ToolUIProps) {
+export default function BarcodeGeneratorTool({ onProcessing, onError }: ToolUIProps) {
   const [text, setText] = useState("123456789");
   const [format, setFormat] = useState("CODE128");
   const [result, setResult] = useState<Blob | null>(null);
