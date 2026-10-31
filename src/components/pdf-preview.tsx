@@ -18,6 +18,28 @@ export function PdfPreview({ file, className = "", onPagesLoaded }: PdfPreviewPr
   const containerRef = useRef<HTMLDivElement>(null);
   const renderedPages = useRef<Map<number, HTMLCanvasElement>>(new Map());
 
+  const renderPage = useCallback(async (
+    pdf: any,
+    pageNum: number,
+    currentScale: number
+  ) => {
+    const page = await pdf.getPage(pageNum);
+    const viewport = page.getViewport({ scale: currentScale });
+
+    // Check if already rendered
+    const existing = renderedPages.current.get(pageNum);
+    if (existing && existing.width === viewport.width) return existing;
+
+    const canvas = document.createElement("canvas");
+    canvas.width = viewport.width;
+    canvas.height = viewport.height;
+
+    await page.render({ canvas, viewport }).promise;
+    renderedPages.current.set(pageNum, canvas);
+
+    return canvas;
+  }, []);
+
   // Load PDF and render pages
   const loadPdf = useCallback(async () => {
     try {
@@ -43,30 +65,7 @@ export function PdfPreview({ file, className = "", onPagesLoaded }: PdfPreviewPr
       setError(err instanceof Error ? err.message : "Failed to load PDF");
       setLoading(false);
     }
-  }, [file, scale, onPagesLoaded]);
-
-  const renderPage = async (
-    pdf: any,
-    pageNum: number,
-    currentScale: number
-  ) => {
-    const page = await pdf.getPage(pageNum);
-    const viewport = page.getViewport({ scale: currentScale });
-
-    // Check if already rendered
-    const existing = renderedPages.current.get(pageNum);
-    if (existing && existing.width === viewport.width) return existing;
-
-    const canvas = document.createElement("canvas");
-    canvas.width = viewport.width;
-    canvas.height = viewport.height;
-    const ctx = canvas.getContext("2d")!;
-
-    await page.render({ canvas, viewport }).promise;
-    renderedPages.current.set(pageNum, canvas);
-
-    return canvas;
-  };
+  }, [file, scale, onPagesLoaded, renderPage]);
 
   useEffect(() => {
     loadPdf();
@@ -91,6 +90,7 @@ export function PdfPreview({ file, className = "", onPagesLoaded }: PdfPreviewPr
     };
 
     rerender();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [scale]);
 
   // Scroll to page

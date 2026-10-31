@@ -374,7 +374,7 @@ export function SupportBot() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const idCounter = useRef(1);
-  const sessionRef = useRef<StoredSession>({ sessionId: newSessionId(), startedAt: Date.now(), messages: [] });
+  const sessionRef = useRef<StoredSession>({ sessionId: "", startedAt: 0, messages: [] });
 
   // Restore the previous chat session from localStorage (client-only,
   // after first paint, so SSR markup and hydration always match).

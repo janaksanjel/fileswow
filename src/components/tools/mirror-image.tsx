@@ -30,7 +30,7 @@ export default function MirrorImageTool({ onProcessing, onError }: ToolUIProps) 
       const url = URL.createObjectURL(file);
       await new Promise<void>((res, rej) => { img.onload = () => res(); img.onerror = () => rej(new Error("Failed to load")); img.src = url; });
 
-      let w = img.naturalWidth, h = img.naturalHeight;
+      const w = img.naturalWidth, h = img.naturalHeight;
       let drawW = w, drawH = h;
 
       if (mode === "rotate-90" || mode === "rotate-270") { drawW = h; drawH = w; }

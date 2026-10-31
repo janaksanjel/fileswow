@@ -346,8 +346,8 @@ export default function WatermarkRemoverImageTool({ onProcessing, onError }: Too
         <button onClick={run} disabled={processing || !hasMask} className="btn-primary flex-1 py-3">
           {processing ? "Removing…" : hasMask ? "Remove Watermark" : "Paint over the watermark first"}
         </button>
-        <button onClick={undo} disabled={processing || historyRef.current.length === 0} className="btn-secondary px-4 py-3" title="Undo">↩</button>
-        <button onClick={redo} disabled={processing || redoRef.current.length === 0} className="btn-secondary px-4 py-3" title="Redo">↪</button>
+        <button onClick={undo} disabled={processing} className="btn-secondary px-4 py-3" title="Undo">↩</button>
+        <button onClick={redo} disabled={processing} className="btn-secondary px-4 py-3" title="Redo">↪</button>
         <button onClick={resetOverlay} disabled={processing} className="btn-secondary px-4 py-3" title="Clear selection">Clear</button>
       </div>
 

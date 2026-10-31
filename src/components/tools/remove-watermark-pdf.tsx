@@ -216,7 +216,7 @@ export default function WatermarkRemoverPdfTool({ onProcessing, onError }: ToolU
     } else {
       out = await inpaintRegion(page.src, mask);
     }
-    page.src = out; // healed pixels become the page source
+    setPages((prev) => prev.map((p, i) => (i === idx ? { ...p, src: out } : p)));
     return out;
   };
 

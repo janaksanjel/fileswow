@@ -41,9 +41,10 @@ export default function HueShiftTool({ onProcessing, onError }: ToolUIProps) {
       const d = imageData.data;
 const shift = amount;
 for (let i = 0; i < d.length; i += 4) {
-  let r = d[i]/255, g = d[i+1]/255, b = d[i+2]/255;
+  const r = d[i]/255, g = d[i+1]/255, b = d[i+2]/255;
   const max = Math.max(r,g,b), min = Math.min(r,g,b);
-  let h = 0, s = 0, l = (max+min)/2;
+  let h = 0, s = 0;
+  const l = (max+min)/2;
   if (max !== min) {
     const d2 = max-min;
     s = l > 0.5 ? d2/(2-max-min) : d2/(max+min);
