@@ -44,7 +44,7 @@ export default function PrivacyPage() {
 
         <div className="space-y-6 body-md text-text-secondary leading-relaxed">
           <p>
-            <em>Last updated: September 17, 2026</em>
+            <em>Last updated: November 12, 2026</em>
           </p>
 
           <h2 className="heading-md text-text-primary pt-4">Overview</h2>
@@ -61,11 +61,32 @@ export default function PrivacyPage() {
             File Processing
           </h2>
           <p>
-            All file operations (merging, splitting, converting, compressing,
-            editing, etc.) are performed entirely within your browser using
-            client-side JavaScript and WebAssembly. Files are not uploaded to our
-            servers at any point during processing.
+            For our PDF, Word (DOCX), image, and utility tools, file operations
+            (merging, splitting, converting, compressing, editing, etc.) are
+            performed within your browser using client-side JavaScript and
+            WebAssembly. Files are not uploaded to a FilesWow storage server
+            during processing.
           </p>
+          <p>
+            Two specialized features make limited network connections by design:
+          </p>
+          <ul className="list-disc list-inside space-y-2 pl-2">
+            <li>
+              <strong className="text-text-primary">P2P File Transfer &amp; P2P Chat</strong>{" "}
+              — Uses the public PeerJS signaling broker (<code>0.peerjs.com</code>)
+              only to exchange the initial WebRTC connection handshake so two
+              browsers can find each other. After pairing, file chunks and
+              messages travel directly between the two devices over an encrypted
+              WebRTC DataChannel.
+            </li>
+            <li>
+              <strong className="text-text-primary">AI Background Removal &amp; URL-to-PDF</strong>{" "}
+              — Background Removal downloads its client-side machine-learning
+              model assets on first use before running locally on your device.
+              URL-to-PDF fetches the public webpage URL you enter directly from
+              your browser.
+            </li>
+          </ul>
 
           <h2 className="heading-md text-text-primary pt-4">
             Data We Collect
@@ -160,6 +181,20 @@ export default function PrivacyPage() {
             policy, not ours. You can block or delete these cookies through your
             browser settings; the tools on this site will continue to work
             normally without them.
+          </p>
+
+          <h2 className="heading-md text-text-primary pt-4">
+            Your Privacy Rights
+          </h2>
+          <p>
+            Because FilesWow.com does not require accounts or store your
+            documents on our servers, we generally do not hold personal file
+            data about you. Depending on your jurisdiction (such as the EU/EEA
+            under GDPR or California under CCPA/CPRA), you have the right to
+            decline optional analytics cookies via our cookie banner (or the
+            &ldquo;Cookie settings&rdquo; button at the bottom of the page),
+            clear local browser storage at any time, and contact us with any
+            privacy inquiry.
           </p>
 
           <h2 className="heading-md text-text-primary pt-4">

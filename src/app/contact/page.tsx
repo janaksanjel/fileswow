@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { absoluteUrl, jsonLdProps } from "@/lib/site";
+import { ContactForm } from "./contact-form";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -141,6 +142,8 @@ export default function ContactPage() {
           question, a bug, a privacy request, or a business inquiry — we read
           every message and reply to most within 1–2 business days.
         </p>
+
+        <ContactForm />
 
         <div className="grid gap-4 sm:grid-cols-2 mb-10">
           {CONTACT_CARDS.map((card) => (

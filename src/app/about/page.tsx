@@ -77,24 +77,26 @@ export default function AboutPage() {
           </h2>
           <ul className="list-disc list-inside space-y-2 pl-2">
             <li>
-              <strong className="text-text-primary">100% Private</strong> — No
-              files are ever uploaded to any server. Processing happens locally.
+              <strong className="text-text-primary">Browser-Based Processing</strong> — For
+              our PDF, Word, and image editing tools, files are processed locally
+              in your browser rather than uploaded to a FilesWow storage server.
+              (For P2P File Transfer, a public signaling broker helps pair two
+              devices before data flows peer-to-peer; AI background removal
+              downloads model assets on first use.)
             </li>
             <li>
               <strong className="text-text-primary">No Account Required</strong>{" "}
-              — Use any tool instantly without signing up.
+              — Use any tool instantly without signing up or sharing personal
+              contact details.
             </li>
             <li>
-              <strong className="text-text-primary">Free Forever</strong> — No
-              hidden fees, no premium tiers, no limitations.
+              <strong className="text-text-primary">Free to Use</strong> — No
+              paywalls, forced watermarks, or subscription tiers.
             </li>
             <li>
-              <strong className="text-text-primary">180+ Tools</strong> — PDF,
-              Word, and image processing tools all in one place.
-            </li>
-            <li>
-              <strong className="text-text-primary">Works Offline</strong> — Once
-              loaded, tools can work without an internet connection.
+              <strong className="text-text-primary">{TOOL_COUNT} Tools in One Place</strong> — PDF,
+              Word (DOCX), image, and text utilities organized by task, plus
+              step-by-step educational guides.
             </li>
           </ul>
 
@@ -102,11 +104,12 @@ export default function AboutPage() {
             Our Technology
           </h2>
           <p>
-            FilesWow is built with Next.js, React, and TypeScript. We leverage
-            industry-standard libraries like pdf-lib, Mammoth.js, SheetJS, and
-            Tesseract.js to provide reliable document processing. All processing
-            happens client-side, using WebAssembly modules and JavaScript APIs
-            that modern browsers support natively.
+            FilesWow is built with Next.js, React, and TypeScript. Document and
+            image operations are powered by established open-source client-side
+            libraries including pdf-lib, pdf.js, jsPDF, Mammoth.js, docx,
+            SheetJS, JSZip, and the HTML5 Canvas API. Because processing happens
+            on your device, speed and maximum file size depend on your browser
+            and available memory.
           </p>
 
           <h2 className="heading-md text-text-primary pt-4">

@@ -7,7 +7,11 @@ export const metadata: Metadata = {
   description:
     "180+ free PDF, Word, and image tools. Merge, split, compress, convert, edit, and transform documents — entirely in your browser. No upload required. 100% private.",
   alternates: {
-    canonical: absoluteUrl("/en"),
+    canonical: absoluteUrl("/"),
+  },
+  robots: {
+    index: false,
+    follow: true,
   },
   openGraph: {
     title: "FilesWow.com — Free PDF, Word & Image Tools Online",

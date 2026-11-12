@@ -21,7 +21,7 @@ export default function TermsPage() {
     name: "Terms of Service — FilesWow.com",
     description: "Terms of service for FilesWow.com.",
     url: absoluteUrl("/terms"),
-    dateModified: "2025-01-01",
+    dateModified: "2026-11-12",
   };
 
   return (
@@ -46,7 +46,7 @@ export default function TermsPage() {
 
         <div className="space-y-6 body-md text-text-secondary leading-relaxed">
           <p>
-            <em>Last updated: September 29, 2026</em>
+            <em>Last updated: November 12, 2026</em>
           </p>
 
           <h2 className="heading-md text-text-primary pt-4">
@@ -111,7 +111,15 @@ export default function TermsPage() {
             FilesWow.com is provided &quot;as is&quot; and &quot;as
             available&quot; without warranties of any kind, either express or
             implied. We do not guarantee that the service will be uninterrupted,
-            error-free, or completely secure.
+            error-free, or completely secure. You are responsible for reviewing
+            and verifying all processed output before relying on it — see our{" "}
+            <Link
+              href="/disclaimer"
+              className="font-semibold text-accent hover:underline underline-offset-2"
+            >
+              Disclaimer
+            </Link>{" "}
+            for details.
           </p>
 
           <h2 className="heading-md text-text-primary pt-4">

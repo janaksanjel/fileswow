@@ -5,6 +5,7 @@ import { getToolBySlug } from "@/lib/catalog";
 import { BLOG_POSTS, getBlogPostBySlug, blogUrl, blogIndexUrl, blogReadingMinutes } from "@/lib/blog";
 import { absoluteUrl, jsonLdProps } from "@/lib/site";
 import { AdSlot } from "@/components/ad-unit";
+import { ShareButtons } from "@/components/share-buttons";
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;
@@ -178,7 +179,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             </span>
           </div>
           <h1 className="heading-xl text-text-primary mb-4 [text-wrap:balance]">{post.title}</h1>
-          <p className="body-lg text-text-secondary">{post.description}</p>
+          <p className="body-lg text-text-secondary mb-4">{post.description}</p>
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-border-base">
+            <span className="text-[12.5px] text-text-tertiary">
+              By <strong className="font-semibold text-text-secondary">{post.author}</strong>
+            </span>
+            <ShareButtons url={blogUrl(post.slug)} title={post.title} />
+          </div>
         </header>
 
         {/* Table of contents — only when the post has enough structure */}
@@ -363,13 +370,16 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           )}
         </nav>
 
-        {/* More from the blog */}
+        {/* Related articles */}
         <section className="mt-12" aria-labelledby="more-blog-heading">
           <h2 id="more-blog-heading" className="heading-md text-text-primary mb-4">
-            More from the blog
+            Related articles
           </h2>
           <div className="space-y-2">
-            {BLOG_POSTS.filter((p) => p.slug !== post.slug)
+            {[
+              ...BLOG_POSTS.filter((p) => p.slug !== post.slug && p.category === post.category),
+              ...BLOG_POSTS.filter((p) => p.slug !== post.slug && p.category !== post.category),
+            ]
               .slice(0, 4)
               .map((p) => (
                 <Link

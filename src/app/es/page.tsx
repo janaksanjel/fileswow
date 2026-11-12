@@ -7,7 +7,11 @@ export const metadata: Metadata = {
   description:
     "180+ herramientas gratuitas para PDF, Word e imágenes. Une, divide, comprime y convierte documentos sin subir archivos. 100% privado en tu navegador.",
   alternates: {
-    canonical: absoluteUrl("/es"),
+    canonical: absoluteUrl("/"),
+  },
+  robots: {
+    index: false,
+    follow: true,
   },
   openGraph: {
     title: "FilesWow.com — Herramientas gratuitas para PDF, Word e imágenes",

@@ -140,8 +140,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     "@context": "https://schema.org",
     "@type": "Organization",
     name: SITE_NAME,
-    url: "/",
-    logo: "/favicon.png",
+    url: absoluteUrl("/"),
+    logo: absoluteUrl("/favicon.png"),
     sameAs: [
       "https://www.producthunt.com/products/fileswow-com",
       "https://www.producthunt.com/posts/fileswow-com",
@@ -149,6 +149,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer support",
+      email: "support@fileswow.com",
       availableLanguage: "English",
     },
   };
@@ -157,7 +158,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: SITE_NAME,
-    url: "/",
+    url: absoluteUrl("/"),
     description: `${TOOL_COUNT} free PDF, Word, and image tools. Processed entirely in your browser.`,
     inLanguage: "en",
     // Google Sitelinks Search Box: branded searches render an inline search

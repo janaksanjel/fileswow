@@ -468,13 +468,18 @@ export function HomeClient() {
                 {t("home.blogTitle")}
               </h2>
             </div>
-            <Link href="/blog" className="hidden sm:inline-flex items-center gap-1.5 text-[13px] font-semibold text-accent hover:gap-2.5 transition-all">
-              {t("home.allPosts")}
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
-              </svg>
-            </Link>
+            <div className="flex items-center gap-4">
+              <Link href="/guides" className="hidden sm:inline-flex items-center gap-1.5 text-[13px] font-semibold text-text-secondary hover:text-accent transition-colors">
+                Reference Guides
+              </Link>
+              <Link href="/blog" className="hidden sm:inline-flex items-center gap-1.5 text-[13px] font-semibold text-accent hover:gap-2.5 transition-all">
+                {t("home.allPosts")}
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </Link>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-6">

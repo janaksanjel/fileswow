@@ -7,7 +7,11 @@ export const metadata: Metadata = {
   description:
     "180+ ferramentas gratuitas de PDF, Word e imagens. Junte, divida, comprima e converta documentos sem enviar ficheiros. 100% privado no navegador.",
   alternates: {
-    canonical: absoluteUrl("/pt"),
+    canonical: absoluteUrl("/"),
+  },
+  robots: {
+    index: false,
+    follow: true,
   },
   openGraph: {
     title: "FilesWow.com — Ferramentas gratuitas de PDF, Word e imagens",

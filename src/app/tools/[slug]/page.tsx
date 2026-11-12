@@ -4,6 +4,7 @@ import { ALL_TOOLS, getToolBySlug, getRelatedTools } from "@/lib/catalog";
 import { absoluteUrl, toolUrl, categoryUrl, jsonLdProps } from "@/lib/site";
 import { getToolGuide, getToolFaq } from "@/lib/content";
 import { getBlogPostForTool } from "@/lib/blog";
+import { GUIDES } from "@/lib/guides";
 import { ToolClient } from "./tool-client";
 
 interface ToolPageProps {
@@ -137,21 +138,11 @@ export async function generateMetadata({ params }: ToolPageProps): Promise<Metad
     description,
     keywords: [
       tool.name,
-      `${tool.name} online free`,
+      `${tool.name} online`,
       `free ${tool.name.toLowerCase()}`,
-      `online ${tool.name.toLowerCase()}`,
-      `how to ${tool.name.toLowerCase()}`,
-      `best free ${tool.name.toLowerCase()}`,
-      `${tool.name.toLowerCase()} without watermark`,
-      `${tool.name.toLowerCase()} no file size limit`,
-      `${tool.name.toLowerCase()} no upload`,
-      `private ${tool.name.toLowerCase()}`,
-      `client-side ${tool.name.toLowerCase()}`,
-      "ilovepdf alternative free",
-      "smallpdf alternative free",
-      "free online file tools",
-      "private browser pdf tools",
-      "no upload pdf converter",
+      `browser ${tool.name.toLowerCase()}`,
+      `${categoryLabel.toLowerCase()} tool`,
+      "FilesWow",
     ],
     openGraph: {
       title: `${typeof title === "string" ? title : tool.name} | FilesWow.com`,
@@ -182,14 +173,13 @@ export default async function ToolPage({ params }: ToolPageProps) {
   const relatedTools = getRelatedTools(tool);
   const categoryLabel = tool.category === "pdf" ? "PDF Tools" : tool.category === "word" ? "Word Tools" : tool.category === "image" ? "Image Tools" : tool.category === "text" ? "Text Tools" : "Tools";
 
-  // SoftwareApplication schema with rich rating and platform features
+  // SoftwareApplication schema (factual properties only — no fabricated ratings)
   const softwareJsonLd = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: "FilesWow — " + tool.name,
+    name: `FilesWow — ${tool.name}`,
     applicationCategory: "UtilitiesApplication",
-    applicationSubCategory: "DocumentManagement",
-    operatingSystem: "Windows, macOS, Linux, iOS, Android, ChromeOS",
+    operatingSystem: "All modern browsers (Windows, macOS, Linux, iOS, Android)",
     description: tool.description,
     url: toolUrl(tool.slug),
     offers: {
@@ -198,16 +188,10 @@ export default async function ToolPage({ params }: ToolPageProps) {
       priceCurrency: "USD",
       availability: "https://schema.org/InStock",
     },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.9",
-      ratingCount: "2840",
-      bestRating: "5",
-      worstRating: "1",
-    },
+    isAccessibleForFree: true,
     creator: {
       "@type": "Organization",
-      name: "FilesWow",
+      name: "FilesWow.com",
       url: absoluteUrl("/"),
     },
     featureList: tool.howItWorks.join(", "),
@@ -305,37 +289,12 @@ export default async function ToolPage({ params }: ToolPageProps) {
     })),
   } : null;
 
-  // WebApplication schema for Google rich results
-  const webAppJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    name: tool.name,
-    url: toolUrl(tool.slug),
-    applicationCategory: "UtilitiesApplication",
-    operatingSystem: "All modern browsers (Windows, Mac, iOS, Android)",
-    description: tool.description,
-    offers: {
-      "@type": "Offer",
-      price: "0",
-      priceCurrency: "USD",
-      availability: "https://schema.org/InStock",
-    },
-    aggregateRating: {
-      "@type": "AggregateRating",
-      ratingValue: "4.9",
-      ratingCount: "2840",
-      bestRating: "5",
-      worstRating: "1",
-    },
-    browserRequirements: "Requires a modern web browser (Chrome, Edge, Firefox, Safari) with JavaScript enabled",
-    softwareHelp: {
-      "@type": "CreativeWork",
-      url: toolUrl(tool.slug),
-    },
-  };
-
-  // In-depth tutorial & guide from the blog
+  // In-depth tutorial & guide from the blog and guides library
   const relatedPost = getBlogPostForTool(slug);
+  const relatedGuide =
+    GUIDES.find((g) => g.related.includes(slug)) ??
+    GUIDES.find((g) => g.category === tool.category) ??
+    null;
 
   return (
     <>
@@ -344,7 +303,6 @@ export default async function ToolPage({ params }: ToolPageProps) {
       <script {...jsonLdProps(breadcrumbJsonLd)} />
       {guideJsonLd && <script {...jsonLdProps(guideJsonLd)} />}
       {faqJsonLd && <script {...jsonLdProps(faqJsonLd)} />}
-      <script {...jsonLdProps(webAppJsonLd)} />
 
       <ToolClient
         tool={tool}
@@ -357,6 +315,15 @@ export default async function ToolPage({ params }: ToolPageProps) {
                 slug: relatedPost.slug,
                 title: relatedPost.title,
                 description: relatedPost.description,
+              }
+            : null
+        }
+        relatedGuide={
+          relatedGuide
+            ? {
+                slug: relatedGuide.slug,
+                title: relatedGuide.title,
+                description: relatedGuide.description,
               }
             : null
         }

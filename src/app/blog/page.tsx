@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BLOG_POSTS, blogReadingMinutes, blogIndexUrl, type BlogPost } from "@/lib/blog";
+import { BLOG_POSTS, blogReadingMinutes, blogIndexUrl, blogUrl } from "@/lib/blog";
 import { absoluteUrl, jsonLdProps, TOOL_COUNT } from "@/lib/site";
+import { BlogIndexClient, type BlogCardItem } from "./blog-index-client";
 
 export const metadata: Metadata = {
   title: "Blog — File Tips, Tutorials & Tools (PDF, Word, Image)",
@@ -30,22 +31,16 @@ export const metadata: Metadata = {
   },
 };
 
-const CATEGORY_LABELS: Record<string, string> = {
-  pdf: "PDF",
-  word: "Word",
-  image: "Image",
-  text: "Text & Transfer",
-};
-
-const CATEGORY_COLORS: Record<string, string> = {
-  pdf: "bg-accent/10 text-accent",
-  word: "bg-warning/10 text-warning",
-  image: "bg-accent-blue/10 text-accent-blue",
-  text: "bg-success/10 text-success",
-};
-
 export default function BlogIndexPage() {
-  const [featured, ...rest] = BLOG_POSTS;
+  const cardItems: BlogCardItem[] = BLOG_POSTS.map((p) => ({
+    slug: p.slug,
+    title: p.title,
+    description: p.description,
+    category: p.category,
+    updated: p.updated,
+    minutes: blogReadingMinutes(p),
+    keywords: [p.keyword, ...p.keywords],
+  }));
 
   const blogJsonLd = {
     "@context": "https://schema.org",
@@ -63,11 +58,11 @@ export default function BlogIndexPage() {
       "@type": "BlogPosting",
       headline: p.title,
       description: p.description,
-      url: `/blog/${p.slug}`,
+      url: blogUrl(p.slug),
       datePublished: p.published,
       dateModified: p.updated,
       keywords: p.keyword,
-      author: { "@type": "Organization", name: "FilesWow.com" },
+      author: { "@type": "Organization", name: p.author },
     })),
   };
 
@@ -122,15 +117,8 @@ export default function BlogIndexPage() {
           </p>
         </header>
 
-        {/* Featured post */}
-        {featured && <FeaturedCard post={featured} />}
-
-        {/* Post grid */}
-        <div className="mt-6 space-y-4">
-          {rest.map((post) => (
-            <PostCard key={post.slug} post={post} />
-          ))}
-        </div>
+        {/* Interactive search, category filter & article list */}
+        <BlogIndexClient posts={cardItems} />
 
         {/* Cross-link to tools */}
         <p className="mt-10 text-[13px] text-text-secondary">
@@ -142,98 +130,5 @@ export default function BlogIndexPage() {
         </p>
       </div>
     </>
-  );
-}
-
-/* ─── Featured card — hero treatment for the newest post ─────────── */
-
-function FeaturedCard({ post }: { post: BlogPost }) {
-  const minutes = blogReadingMinutes(post);
-  return (
-    <Link
-      href={`/blog/${post.slug}`}
-      className="block group card card-interactive p-6 sm:p-8 relative overflow-hidden"
-    >
-      <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-accent to-accent-blue opacity-70" aria-hidden="true" />
-      <div className="flex flex-wrap items-center gap-2 mb-3">
-        <span className="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide bg-accent text-white">
-          Featured
-        </span>
-        <span
-          className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide ${CATEGORY_COLORS[post.category] ?? "bg-text-tertiary/10 text-text-tertiary"}`}
-        >
-          {CATEGORY_LABELS[post.category] ?? post.category}
-        </span>
-        <span className="text-[11px] font-medium text-text-tertiary">
-          {new Date(post.updated).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          })}{" "}
-          · {minutes} min read
-        </span>
-      </div>
-      <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-text-primary mb-2 group-hover:text-accent transition-colors [text-wrap:balance]">
-        {post.title}
-      </h2>
-      <p className="text-[13.5px] leading-relaxed text-text-secondary mb-4">
-        {post.description}
-      </p>
-      <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-accent">
-        Read the tutorial
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="transition-transform duration-200 group-hover:translate-x-0.5"
-          aria-hidden="true"
-        >
-          <line x1="5" y1="12" x2="19" y2="12" />
-          <polyline points="12 5 19 12 12 19" />
-        </svg>
-      </span>
-    </Link>
-  );
-}
-
-/* ─── Standard post card ─────────────────────────────────────────── */
-
-function PostCard({ post }: { post: BlogPost }) {
-  const minutes = blogReadingMinutes(post);
-  return (
-    <Link
-      href={`/blog/${post.slug}`}
-      className="block group card p-5 sm:p-6 hover:border-border-strong transition-colors"
-    >
-      <div className="flex flex-wrap items-center gap-2 mb-2.5">
-        <span
-          className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide ${CATEGORY_COLORS[post.category] ?? "bg-text-tertiary/10 text-text-tertiary"}`}
-        >
-          {CATEGORY_LABELS[post.category] ?? post.category}
-        </span>
-        <span className="text-[11px] font-medium text-text-tertiary">
-          Updated{" "}
-          {new Date(post.updated).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          })}
-        </span>
-        <span className="text-[11px] font-medium text-text-tertiary">
-          · {minutes} min read
-        </span>
-      </div>
-      <h2 className="text-[17px] font-bold text-text-primary mb-1.5 group-hover:text-accent transition-colors [text-wrap:balance]">
-        {post.title}
-      </h2>
-      <p className="text-[13.5px] leading-relaxed text-text-secondary">
-        {post.description}
-      </p>
-    </Link>
   );
 }

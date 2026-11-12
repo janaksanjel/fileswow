@@ -9,6 +9,7 @@
 
 import { ALL_TOOLS } from "./catalog";
 import { absoluteUrl } from "./site";
+import { EXTRA_BLOG_POSTS } from "./blog-extra";
 
 export type BlogSection = {
   h2: string;
@@ -1352,6 +1353,7 @@ export const BLOG_POSTS: BlogPost[] = [
     ],
     related: ["add-page-numbers-pdf", "pdf-header-footer", "pdf-bates-numbering", "merge-pdf", "pdf-page-labels"],
   },
+  ...EXTRA_BLOG_POSTS,
 ];
 
 // ── Dev-time validation: related slugs must exist in the tool catalog ──

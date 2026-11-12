@@ -14,37 +14,19 @@ import { SITE_URL, absoluteUrl } from "@/lib/site";
  * "Discovered – currently not indexed"). Keep this a real date and bump it
  * only when tool/content pages actually change.
  */
-const CONTENT_LAST_UPDATED = "2026-10-07";
+const CONTENT_LAST_UPDATED = "2026-11-12";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = SITE_URL;
   const contentDate = new Date(CONTENT_LAST_UPDATED);
 
-  // Static pages with high priority
+  // Static pages with high priority (excluding duplicate locale wrappers and /search)
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: base,
       lastModified: contentDate,
       changeFrequency: "weekly",
       priority: 1.0,
-    },
-    {
-      url: absoluteUrl("/en"),
-      lastModified: contentDate,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: absoluteUrl("/es"),
-      lastModified: contentDate,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: absoluteUrl("/pt"),
-      lastModified: contentDate,
-      changeFrequency: "weekly",
-      priority: 0.9,
     },
     {
       url: absoluteUrl("/pdf-tools"),
@@ -89,12 +71,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: absoluteUrl("/search"),
-      lastModified: contentDate,
-      changeFrequency: "weekly",
-      priority: 0.7,
-    },
-    {
       url: absoluteUrl("/about"),
       lastModified: contentDate,
       changeFrequency: "monthly",
@@ -114,6 +90,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     {
       url: absoluteUrl("/terms"),
+      lastModified: contentDate,
+      changeFrequency: "monthly",
+      priority: 0.3,
+    },
+    {
+      url: absoluteUrl("/disclaimer"),
       lastModified: contentDate,
       changeFrequency: "monthly",
       priority: 0.3,

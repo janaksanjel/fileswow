@@ -43,6 +43,7 @@ export function Footer() {
     [t("footer.textTools"), "/text-tools"],
     [t("footer.privacy"), "/privacy"],
     [t("footer.terms"), "/terms"],
+    ["Disclaimer", "/disclaimer"],
     [t("footer.sitemap"), "/sitemap.xml"],
   ];
 

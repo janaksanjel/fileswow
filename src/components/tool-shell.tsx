@@ -8,6 +8,7 @@ import { ToolIcon } from "./icon";
 import { AdSlot } from "./ad-unit";
 import { Accordion } from "./ui/accordion";
 import { categoryTile } from "@/lib/category-style";
+import { getToolOperationalDetails } from "@/lib/tool-details";
 
 interface ToolShellProps {
   tool: ToolDef;
@@ -15,6 +16,11 @@ interface ToolShellProps {
   guide?: ToolGuide | null;
   faq?: { q: string; a: string }[];
   relatedPost?: {
+    slug: string;
+    title: string;
+    description: string;
+  } | null;
+  relatedGuide?: {
     slug: string;
     title: string;
     description: string;
@@ -47,8 +53,10 @@ export function ToolShell({
   guide = null,
   faq,
   relatedPost,
+  relatedGuide,
   children,
 }: ToolShellProps) {
+  const details = getToolOperationalDetails(tool);
   const categoryHref =
     tool.category === "pdf"
       ? "/pdf-tools"
@@ -119,9 +127,11 @@ export function ToolShell({
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   <path d="M9 12l2 2 4-4" />
                 </svg>
-                Processed on your device
+                {tool.slug === "p2p-text" ? "Peer-to-peer WebRTC" : "Browser-based"}
               </span>
-              <span className="badge">No upload</span>
+              {tool.slug !== "p2p-text" && tool.slug !== "pdf-create-from-url" && (
+                <span className="badge">No server storage</span>
+              )}
               <span className="badge">Free</span>
             </div>
           </div>
@@ -199,7 +209,7 @@ export function ToolShell({
       {guide && guide.paragraphs.length > 0 && (
         <section className="mb-9 max-w-[68ch]" aria-labelledby="guide-heading">
           <h2 id="guide-heading" className="heading-md text-text-primary mb-4">
-            Guide: {tool.name}
+            About {tool.name}
           </h2>
           <div className="space-y-4">
             {guide.paragraphs.map((paragraph, i) => (
@@ -210,6 +220,48 @@ export function ToolShell({
           </div>
         </section>
       )}
+
+      {/* Supported Formats, Use Cases, Limitations & Privacy Handling */}
+      <section className="mb-9 max-w-[68ch] grid gap-4 sm:grid-cols-2" aria-label="Tool specifications and handling">
+        <div className="p-4 sm:p-5 rounded-xl bg-bg-surface border border-border-base">
+          <h2 className="text-[14px] font-bold text-text-primary mb-3">Supported Formats</h2>
+          <div className="space-y-2.5 text-[13px] text-text-secondary">
+            <div>
+              <span className="font-semibold text-text-primary">Input: </span>
+              <span>{details.inputFormats.join(", ")}</span>
+            </div>
+            <div>
+              <span className="font-semibold text-text-primary">Output: </span>
+              <span>{details.outputFormats.join(", ")}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-4 sm:p-5 rounded-xl bg-bg-surface border border-border-base">
+          <h2 className="text-[14px] font-bold text-text-primary mb-3">Privacy &amp; File Handling</h2>
+          <p className="text-[13px] leading-relaxed text-text-secondary">
+            {details.privacySummary}
+          </p>
+        </div>
+
+        <div className="p-4 sm:p-5 rounded-xl bg-bg-surface border border-border-base">
+          <h2 className="text-[14px] font-bold text-text-primary mb-3">Practical Use Cases</h2>
+          <ul className="space-y-1.5 text-[13px] leading-relaxed text-text-secondary list-disc list-inside">
+            {details.useCases.map((item, i) => (
+              <li key={i}>{item}</li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="p-4 sm:p-5 rounded-xl bg-bg-surface border border-border-base">
+          <h2 className="text-[14px] font-bold text-text-primary mb-3">Limitations</h2>
+          <ul className="space-y-1.5 text-[13px] leading-relaxed text-text-secondary list-disc list-inside">
+            {details.limitations.map((item, i) => (
+              <li key={i}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      </section>
 
       {/* FAQ — content mirrors the FAQPage JSON-LD emitted in page.tsx */}
       {(() => {
@@ -225,33 +277,59 @@ export function ToolShell({
         );
       })()}
 
-      {/* In-depth blog guide / tutorial cross-link */}
-      {relatedPost && (
+      {/* In-depth blog guide / tutorial cross-links */}
+      {(relatedPost || relatedGuide) && (
         <section
-          className="mb-9 max-w-[68ch] rounded-2xl border border-accent/20 bg-accent/[0.04] p-5 sm:p-6"
+          className="mb-9 max-w-[68ch] space-y-4"
           aria-labelledby="deep-guide-heading"
         >
-          <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-accent mb-2">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-            </svg>
-            In-Depth Guide & Tutorial
-          </div>
-          <h3 id="deep-guide-heading" className="text-base sm:text-lg font-bold text-text-primary mb-2">
-            <Link href={`/blog/${relatedPost.slug}`} className="hover:text-accent transition-colors">
-              {relatedPost.title}
-            </Link>
-          </h3>
-          <p className="text-[13.5px] leading-relaxed text-text-secondary mb-4">
-            {relatedPost.description}
-          </p>
-          <Link
-            href={`/blog/${relatedPost.slug}`}
-            className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-accent hover:underline"
-          >
-            Read the complete step-by-step tutorial →
-          </Link>
+          {relatedPost && (
+            <div className="rounded-2xl border border-accent/20 bg-accent/[0.04] p-5 sm:p-6">
+              <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-accent mb-2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                </svg>
+                In-Depth Guide &amp; Tutorial
+              </div>
+              <h3 id="deep-guide-heading" className="text-base sm:text-lg font-bold text-text-primary mb-2">
+                <Link href={`/blog/${relatedPost.slug}`} className="hover:text-accent transition-colors">
+                  {relatedPost.title}
+                </Link>
+              </h3>
+              <p className="text-[13.5px] leading-relaxed text-text-secondary mb-4">
+                {relatedPost.description}
+              </p>
+              <Link
+                href={`/blog/${relatedPost.slug}`}
+                className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-accent hover:underline"
+              >
+                Read the complete step-by-step tutorial →
+              </Link>
+            </div>
+          )}
+
+          {relatedGuide && (
+            <div className="rounded-2xl border border-border-base bg-bg-surface p-5 sm:p-6">
+              <div className="text-[11px] font-bold uppercase tracking-wider text-text-tertiary mb-1.5">
+                Related Reference Guide
+              </div>
+              <h3 className="text-base font-bold text-text-primary mb-1.5">
+                <Link href={`/guides/${relatedGuide.slug}`} className="hover:text-accent transition-colors">
+                  {relatedGuide.title}
+                </Link>
+              </h3>
+              <p className="text-[13px] leading-relaxed text-text-secondary mb-3">
+                {relatedGuide.description}
+              </p>
+              <Link
+                href={`/guides/${relatedGuide.slug}`}
+                className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-accent hover:underline"
+              >
+                Read reference guide →
+              </Link>
+            </div>
+          )}
         </section>
       )}
 
