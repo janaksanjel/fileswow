@@ -21,8 +21,24 @@ export function generateStaticParams() {
  */
 const HIGH_INTENT_METADATA: Record<string, { title: string; desc: string }> = {
   "split-pdf": {
-    title: "Split PDF Online Free — Separate PDF Pages",
-    desc: "Split PDF into individual pages or custom page ranges online for free. Preview pages before download in right drawer. 100% private, no server upload.",
+    title: "Split PDF into Multiple Files Online Free",
+    desc: "Split PDF into multiple files or separate pages online for free. Extract custom page ranges or separate all pages. 100% private in browser — no upload.",
+  },
+  "split-pdf-by-size": {
+    title: "Split PDF by File Size Online Free",
+    desc: "Split large PDF files by file size target (MB/KB) online for free. Stay under email and upload portal limits. 100% private, no server upload.",
+  },
+  "split-pdf-by-bookmarks": {
+    title: "Split PDF by Bookmarks Online Free",
+    desc: "Split PDF documents by bookmarks and chapters online for free. Separate multi-page books and manuals by section automatically.",
+  },
+  "split-pdf-by-page-count": {
+    title: "Split PDF by Page Count Online Free",
+    desc: "Split PDF into equal chunks by page count online for free. Break large documents into 2, 5, 10 or N pages per file instantly.",
+  },
+  "extract-pdf-pages": {
+    title: "Extract PDF Pages Online Free",
+    desc: "Extract specific pages or page ranges from PDF online for free. Save extracted pages as a new standalone PDF document with zero quality loss.",
   },
   "merge-pdf": {
     title: "Merge PDF Online Free — Combine PDF Files",

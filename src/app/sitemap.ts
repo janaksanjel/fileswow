@@ -20,13 +20,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const base = SITE_URL;
   const contentDate = new Date(CONTENT_LAST_UPDATED);
 
-  // Static pages with high priority (excluding duplicate locale wrappers and /search)
+  // Static pages with high priority
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: base,
       lastModified: contentDate,
       changeFrequency: "weekly",
       priority: 1.0,
+    },
+    {
+      url: absoluteUrl("/search"),
+      lastModified: contentDate,
+      changeFrequency: "weekly",
+      priority: 0.9,
     },
     {
       url: absoluteUrl("/pdf-tools"),
