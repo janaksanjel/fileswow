@@ -20,6 +20,8 @@ export interface StepFlowResultProps {
   onReset: () => void;
   /** Zip + download all outputs when there are many */
   onDownloadAll?: () => void;
+  /** Optional custom result banner/stats above the outputs */
+  renderResult?: () => React.ReactNode;
 }
 
 export interface StepFlowProps {
@@ -31,6 +33,8 @@ export interface StepFlowProps {
   hint?: string;
   /** Renders the operation UI for step 2 (options + action button) */
   renderOperation: (ctx: StepFlowOperationContext) => React.ReactNode;
+  /** Optional custom result banner/stats for step 3 */
+  renderResult?: () => React.ReactNode;
   /** Current outputs — presence of ≥1 output shows step 3 */
   outputs: StepOutput[];
   /** Can the user run the operation right now? */
@@ -164,6 +168,7 @@ export function StepFlow({
   onRun,
   onReset,
   onDownloadAll,
+  renderResult,
   error,
   onDismissError,
 }: StepFlowProps) {
@@ -397,6 +402,7 @@ export function StepFlow({
               onReset={onReset}
               onDownloadAll={onDownloadAll}
               onBack={goUpload}
+              renderResult={renderResult}
             />
           </div>
         )}
@@ -420,11 +426,13 @@ function OutputPanel({
   onReset,
   onDownloadAll,
   onBack,
+  renderResult,
 }: {
   outputs: StepOutput[];
   onReset: () => void;
   onDownloadAll?: () => void;
   onBack: () => void;
+  renderResult?: () => React.ReactNode;
 }) {
   const [previewOutput, setPreviewOutput] = useState<StepOutput | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -444,6 +452,7 @@ function OutputPanel({
 
   return (
     <div className="space-y-4">
+      {renderResult?.()}
       {/* Success banner */}
       <div className="flex items-center gap-3 px-4 py-3.5 rounded-xl bg-success/[0.05] border border-success/20">
         <span className="flow-check w-7 h-7 rounded-full bg-success/15 text-success flex items-center justify-center shrink-0">
