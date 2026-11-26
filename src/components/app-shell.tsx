@@ -8,6 +8,7 @@ import { SearchModal } from "@/components/search-modal";
 import { ToolIcon } from "@/components/icon";
 import { Footer } from "@/components/footer";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { OnboardingModal } from "@/components/onboarding-modal";
 import { ALL_TOOLS, type ToolCategory } from "@/lib/catalog";
 import { DEFAULT_HEADER_THEME, getHourlyDefaultTheme, getToolGradient, type ToolGradientTheme } from "@/lib/tool-theme";
 
@@ -557,6 +558,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Footer />
         </div>
       </div>
+
+      {/* First-Visit 2-Step Onboarding (Language & Theme) */}
+      <OnboardingModal />
     </>
   );
 }
