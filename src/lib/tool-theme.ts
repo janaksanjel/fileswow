@@ -82,9 +82,9 @@ const TOOL_GRADIENTS: ToolGradientTheme[] = [
 ];
 
 export const DEFAULT_HEADER_THEME: ToolGradientTheme = {
-  gradient: "linear-gradient(135deg, #EA580C 0%, #FC5B00 55%, #FB923C 100%)",
-  softGradient: "linear-gradient(135deg, rgba(252, 91, 0, 0.12) 0%, rgba(251, 146, 60, 0.06) 100%)",
-  accentHex: "#FC5B00",
+  gradient: "linear-gradient(135deg, #047857 0%, #059669 55%, #14B8A6 100%)",
+  softGradient: "linear-gradient(135deg, rgba(5, 150, 105, 0.14) 0%, rgba(20, 184, 166, 0.08) 100%)",
+  accentHex: "#059669",
 };
 
 /**
