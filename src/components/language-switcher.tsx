@@ -7,9 +7,10 @@ import { UiIcon } from "@/components/ui-icon";
 interface LanguageSwitcherProps {
   direction?: "up" | "down";
   compact?: boolean;
+  onGradient?: boolean;
 }
 
-export function LanguageSwitcher({ direction = "up", compact = false }: LanguageSwitcherProps) {
+export function LanguageSwitcher({ direction = "up", compact = false, onGradient = false }: LanguageSwitcherProps) {
   const { locale, setLocale, t } = useI18n();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -44,7 +45,11 @@ export function LanguageSwitcher({ direction = "up", compact = false }: Language
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={t("footer.selectLanguage")}
-        className={`inline-flex items-center border border-border-base bg-bg-surface hover:border-border-strong hover:bg-bg-elevated transition-colors cursor-pointer ${
+        className={`inline-flex items-center border transition-colors cursor-pointer ${
+          onGradient
+            ? "border-white/25 bg-white/15 hover:bg-white/25 text-white"
+            : "border-border-base bg-bg-surface hover:border-border-strong hover:bg-bg-elevated"
+        } ${
           compact
             ? "gap-1.5 h-9 px-2.5 rounded-lg"
             : "gap-2.5 h-11 px-4 rounded-xl shadow-[var(--elevation-sm)]"
@@ -53,7 +58,13 @@ export function LanguageSwitcher({ direction = "up", compact = false }: Language
         <span className="leading-none" aria-hidden="true">
           <UiIcon name={current.flag} size={compact ? 16 : 18} />
         </span>
-        <span className={compact ? "text-[12px] font-semibold uppercase text-text-primary" : "text-[13px] font-medium text-text-primary"}>
+        <span
+          className={
+            compact
+              ? `text-[12px] font-semibold uppercase ${onGradient ? "text-white" : "text-text-primary"}`
+              : `text-[13px] font-medium ${onGradient ? "text-white" : "text-text-primary"}`
+          }
+        >
           {compact ? current.code.toUpperCase() : current.label}
         </span>
         <svg
@@ -66,7 +77,7 @@ export function LanguageSwitcher({ direction = "up", compact = false }: Language
           strokeLinecap="round"
           strokeLinejoin="round"
           aria-hidden="true"
-          className={`text-text-tertiary transition-transform duration-150 ${open ? "rotate-180" : ""}`}
+          className={`${onGradient ? "text-white/80" : "text-text-tertiary"} transition-transform duration-150 ${open ? "rotate-180" : ""}`}
         >
           <polyline points="6 9 12 15 18 9" />
         </svg>

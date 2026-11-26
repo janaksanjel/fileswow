@@ -171,36 +171,27 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="flex flex-col h-full bg-bg-surface">
       {/* Brand Bar */}
       <div
-        className="h-16 px-4 flex items-center justify-between border-b border-border-base shrink-0 relative transition-all duration-300"
-        style={{ backgroundImage: activeTheme.softGradient }}
+        className="h-16 px-4 flex items-center justify-between border-b border-white/15 shrink-0 relative transition-all duration-300"
+        style={{ background: activeTheme.gradient }}
       >
-        <div
-          aria-hidden="true"
-          className="absolute inset-x-0 bottom-0 h-[2.5px] transition-all duration-300"
-          style={{ background: activeTheme.gradient }}
-        />
         <Link
           href="/"
-          className="flex items-center gap-2 min-w-0 logo-plate"
+          className="flex items-center gap-2 min-w-0"
           aria-label="FilesWow — Home"
         >
           {collapsed && !isMobile ? (
             /* eslint-disable-next-line @next/next/no-img-element */
             <img src="/favicon.png" alt="FilesWow" width={36} height={36} className="w-9 h-9 object-contain" />
           ) : (
-            <>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/headerlogo-sm.png" alt="FilesWow" width={210} height={56} className="logo-light h-11 sm:h-12 w-auto object-contain" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/headerlogo-dark.png" alt="FilesWow" width={210} height={56} className="logo-dark h-11 sm:h-12 w-auto object-contain" />
-            </>
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img src="/headerlogo-dark.png" alt="FilesWow" width={210} height={56} className="h-11 sm:h-12 w-auto object-contain" />
           )}
         </Link>
         {isMobile && (
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
-            className="w-9 h-9 rounded-lg flex items-center justify-center text-text-secondary hover:bg-bg-elevated"
+            className="w-9 h-9 rounded-lg flex items-center justify-center text-white/90 hover:text-white hover:bg-white/15 transition-colors"
             aria-label="Close navigation"
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
@@ -425,20 +416,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="flex-1 flex flex-col min-w-0">
           {/* Top Bar */}
           <header
-            className="sticky top-0 z-30 h-16 px-4 sm:px-6 flex items-center justify-between gap-3 bg-bg-surface/85 backdrop-blur-xl border-b border-border-base transition-all duration-300 relative"
-            style={{ backgroundImage: activeTheme.softGradient }}
+            className="sticky top-0 z-30 h-16 px-4 sm:px-6 flex items-center justify-between gap-3 border-b border-white/15 text-white shadow-sm transition-all duration-300 relative"
+            style={{ background: activeTheme.gradient }}
           >
-            <div
-              aria-hidden="true"
-              className="absolute inset-x-0 bottom-0 h-[2.5px] transition-all duration-300"
-              style={{ background: activeTheme.gradient }}
-            />
             <div className="flex items-center gap-2.5 min-w-0">
               {/* Mobile drawer button */}
               <button
                 type="button"
                 onClick={() => setMobileOpen(true)}
-                className="lg:hidden w-10 h-10 -ml-2 rounded-lg flex items-center justify-center text-text-primary hover:bg-bg-elevated/80 transition-colors"
+                className="lg:hidden w-10 h-10 -ml-2 rounded-lg flex items-center justify-center text-white hover:bg-white/15 transition-colors"
                 aria-label="Open menu"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
@@ -452,7 +438,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <button
                 type="button"
                 onClick={() => setCollapsed((v) => !v)}
-                className="hidden lg:inline-flex w-9 h-9 -ml-1 rounded-lg items-center justify-center text-text-secondary hover:text-text-primary hover:bg-bg-elevated/80 transition-colors cursor-pointer"
+                className="hidden lg:inline-flex w-9 h-9 -ml-1 rounded-lg items-center justify-center text-white/90 hover:text-white hover:bg-white/15 transition-colors cursor-pointer"
                 aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                 title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
               >
@@ -466,19 +452,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               {/* Mobile logo */}
               <Link href="/" className="lg:hidden flex items-center shrink-0" aria-label="FilesWow — Home">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/headerlogo-sm.png" alt="FilesWow" width={185} height={50} className="logo-light h-10 sm:h-11 w-auto object-contain" />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/headerlogo-dark.png" alt="FilesWow" width={185} height={50} className="logo-dark h-10 sm:h-11 w-auto object-contain" />
+                <img src="/headerlogo-dark.png" alt="FilesWow" width={185} height={50} className="h-10 sm:h-11 w-auto object-contain" />
               </Link>
 
               {/* Active tool pill in website header */}
-              {activeTool && activeTheme && (
-                <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-bg-surface/80 backdrop-blur-md border border-border-base shadow-2xs text-[12.5px] font-semibold text-text-primary min-w-0">
-                  <span
-                    className="w-2 h-2 rounded-full shrink-0"
-                    style={{ background: activeTheme.gradient }}
-                    aria-hidden="true"
-                  />
+              {activeTool && (
+                <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-[12.5px] font-semibold text-white min-w-0">
+                  <ToolIcon name={activeTool.slug} size={14} />
                   <span className="truncate max-w-[200px]">{activeTool.name}</span>
                 </div>
               )}
@@ -489,38 +469,40 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <button
                 type="button"
                 onClick={() => setSearchOpen(true)}
-                className="inline-flex items-center gap-2 h-9 px-3 sm:w-56 text-[13px] text-text-secondary bg-bg-surface/75 hover:bg-bg-surface rounded-lg border border-border-base transition-colors cursor-pointer"
+                className="inline-flex items-center gap-2 h-9 px-3 sm:w-56 text-[13px] text-white/95 bg-white/15 hover:bg-white/25 rounded-lg border border-white/25 transition-colors cursor-pointer"
                 aria-label="Search tools (Ctrl+K)"
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-tertiary shrink-0" aria-hidden="true">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/80 shrink-0" aria-hidden="true">
                   <circle cx="11" cy="11" r="8" />
                   <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
                 <span className="hidden sm:inline flex-1 text-left">Search tools…</span>
-                <kbd className="hidden md:inline-flex">⌘K</kbd>
+                <span className="hidden md:inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-mono font-semibold bg-white/20 text-white border border-white/25">
+                  ⌘K
+                </span>
               </button>
 
               <nav className="hidden xl:flex items-center gap-1" aria-label="Company">
                 <Link
                   href="/about"
-                  className="px-2.5 py-1.5 rounded-lg text-[13px] font-medium text-text-secondary hover:text-text-primary hover:bg-bg-surface/70 transition-colors"
+                  className="px-2.5 py-1.5 rounded-lg text-[13px] font-medium text-white/90 hover:text-white hover:bg-white/15 transition-colors"
                 >
                   About
                 </Link>
                 <Link
                   href="/contact"
-                  className="px-2.5 py-1.5 rounded-lg text-[13px] font-medium text-text-secondary hover:text-text-primary hover:bg-bg-surface/70 transition-colors"
+                  className="px-2.5 py-1.5 rounded-lg text-[13px] font-medium text-white/90 hover:text-white hover:bg-white/15 transition-colors"
                 >
                   Contact
                 </Link>
               </nav>
 
-              <LanguageSwitcher direction="down" compact />
+              <LanguageSwitcher direction="down" compact onGradient />
 
               <button
                 type="button"
                 onClick={(e) => toggle({ x: e.clientX, y: e.clientY })}
-                className="w-9 h-9 rounded-lg flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-bg-surface/70 transition-colors cursor-pointer"
+                className="w-9 h-9 rounded-lg flex items-center justify-center text-white/90 hover:text-white hover:bg-white/15 transition-colors cursor-pointer"
                 aria-label={`Toggle theme (currently ${theme})`}
                 title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
               >
@@ -546,8 +528,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </header>
 
           {/* Main Content Area */}
-          <main className="flex-1 min-w-0" id="main-content">
-            {children}
+          <main className="flex-1 min-w-0 relative" id="main-content">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 tool-wallpaper-pattern z-0"
+            />
+            <div className="relative z-[1]">{children}</div>
           </main>
 
           {/* Footer */}

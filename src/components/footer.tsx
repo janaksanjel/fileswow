@@ -1,9 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { BLOG_POSTS } from "@/lib/blog";
 import { useI18n } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { ALL_TOOLS } from "@/lib/catalog";
+import { DEFAULT_HEADER_THEME, getToolGradient } from "@/lib/tool-theme";
 
 const POPULAR_TOOLS: Array<[string, string]> = [
   ["Merge PDF", "/tools/merge-pdf"],
@@ -17,7 +20,13 @@ const POPULAR_TOOLS: Array<[string, string]> = [
 
 export function Footer() {
   const { t } = useI18n();
+  const pathname = usePathname();
   const year = new Date().getFullYear();
+
+  const activeTool = pathname.startsWith("/tools/")
+    ? ALL_TOOLS.find((tool) => tool.slug === pathname.slice("/tools/".length).split("/")[0])
+    : undefined;
+  const footerTheme = activeTool ? getToolGradient(activeTool.slug) : DEFAULT_HEADER_THEME;
 
   const categoryLinks: Array<[string, string]> = [
     [t("footer.pdfTools"), "/pdf-tools"],
@@ -38,23 +47,24 @@ export function Footer() {
   ];
 
   return (
-    <footer className="bg-bg-warm border-t border-border-base text-text-secondary">
+    <footer
+      className="border-t border-white/15 text-white/85 transition-all duration-300"
+      style={{ background: footerTheme.gradient }}
+    >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-12 sm:pt-16 pb-8">
         <div className="flex flex-col lg:flex-row gap-10 lg:gap-14">
           {/* Brand + language */}
           <div className="lg:w-[260px] shrink-0">
-            <Link href="/" className="inline-flex items-baseline gap-px group" aria-label="FilesWow.com — Home">
-              <span className="font-heading text-[18px] font-semibold tracking-[-0.02em] text-text-primary group-hover:text-accent transition-colors">
-                FilesWow
-              </span>
-              <span className="font-heading text-[18px] font-semibold tracking-[-0.02em] text-accent">.com</span>
+            <Link href="/" className="inline-flex items-center group" aria-label="FilesWow.com — Home">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/headerlogo-dark.png" alt="FilesWow" width={190} height={50} className="h-10 w-auto object-contain" />
             </Link>
-            <p className="mt-2.5 text-[13px] leading-relaxed text-text-secondary max-w-xs">
+            <p className="mt-3 text-[13px] leading-relaxed text-white/80 max-w-xs">
               {t("footer.tagline")}
             </p>
 
             <div className="mt-5">
-              <LanguageSwitcher />
+              <LanguageSwitcher onGradient />
             </div>
           </div>
 
@@ -77,12 +87,12 @@ export function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-12 pt-6 border-t border-border-base flex flex-col sm:flex-row items-center justify-between gap-3">
-          <p className="order-2 sm:order-1 text-[12.5px] text-text-tertiary">
+        <div className="mt-12 pt-6 border-t border-white/15 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <p className="order-2 sm:order-1 text-[12.5px] text-white/70">
             &copy; {year} FilesWow.com — {t("footer.rights")}
           </p>
-          <span className="order-1 sm:order-2 inline-flex items-center gap-2 text-[12px] font-medium text-text-secondary">
-            <span className="w-1.5 h-1.5 rounded-full bg-success" aria-hidden="true" />
+          <span className="order-1 sm:order-2 inline-flex items-center gap-2 text-[12px] font-medium text-white/90 px-3 py-1 rounded-full bg-white/15 border border-white/20">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-300" aria-hidden="true" />
             {t("footer.systems")}
           </span>
         </div>
@@ -100,7 +110,7 @@ function FooterColumn({
 }) {
   return (
     <nav aria-label={heading}>
-      <h3 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-text-tertiary mb-3.5">
+      <h3 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/65 mb-3.5">
         {heading}
       </h3>
       <ul className="space-y-2">
@@ -108,7 +118,7 @@ function FooterColumn({
           <li key={href}>
             <Link
               href={href}
-              className="text-[13px] text-text-secondary hover:text-text-primary transition-colors"
+              className="text-[13px] text-white/85 hover:text-white transition-colors"
             >
               {label}
             </Link>
