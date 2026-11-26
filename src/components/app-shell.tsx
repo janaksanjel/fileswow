@@ -9,8 +9,9 @@ import { ToolIcon } from "@/components/icon";
 import { Footer } from "@/components/footer";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { OnboardingModal } from "@/components/onboarding-modal";
+import { AccessibilityWidget } from "@/components/accessibility-widget";
 import { ALL_TOOLS, type ToolCategory } from "@/lib/catalog";
-import { DEFAULT_HEADER_THEME, getHourlyDefaultTheme, getToolGradient, type ToolGradientTheme } from "@/lib/tool-theme";
+import { DEFAULT_HEADER_THEME, getToolGradient } from "@/lib/tool-theme";
 
 const SIDEBAR_CATEGORIES: Array<{
   category: ToolCategory;
@@ -166,24 +167,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     setOpenCategory((prev) => (prev === cat ? null : cat));
   };
 
-  const [hourlyTheme, setHourlyTheme] = useState<ToolGradientTheme>(DEFAULT_HEADER_THEME);
-
-  useEffect(() => {
-    const syncTheme = () => setHourlyTheme(getHourlyDefaultTheme());
-    syncTheme();
-    const msUntilNextHour = 3_600_000 - (Date.now() % 3_600_000);
-    let intervalId: number | null = null;
-    const timeoutId = window.setTimeout(() => {
-      syncTheme();
-      intervalId = window.setInterval(syncTheme, 3_600_000);
-    }, msUntilNextHour);
-    return () => {
-      window.clearTimeout(timeoutId);
-      if (intervalId !== null) window.clearInterval(intervalId);
-    };
-  }, []);
-
-  const activeTheme = activeTool ? getToolGradient(activeTool.slug) : hourlyTheme;
+  const activeTheme = activeTool ? getToolGradient(activeTool.slug) : DEFAULT_HEADER_THEME;
 
   const sidebarContent = (isMobile: boolean) => (
     <div className="flex flex-col h-full bg-bg-surface">
@@ -401,7 +385,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <>
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
 
-      <div className="min-h-screen flex bg-bg-base">
+      <div className="min-h-screen flex bg-bg-base overflow-x-clip">
         {/* Desktop Persistent Collapsible Sidebar */}
         <aside
           className={`hidden lg:block shrink-0 border-r border-border-base bg-bg-surface sticky top-0 h-screen transition-[width] duration-200 ${
@@ -434,15 +418,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="flex-1 flex flex-col min-w-0">
           {/* Top Bar */}
           <header
-            className="sticky top-0 z-30 h-16 px-4 sm:px-6 flex items-center justify-between gap-3 border-b border-white/15 text-white shadow-sm transition-all duration-300 relative"
+            className="sticky top-0 z-30 h-16 px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-3 border-b border-white/15 text-white shadow-sm transition-all duration-300 relative"
             style={{ background: activeTheme.gradient }}
           >
-            <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex items-center gap-1.5 sm:gap-2.5 min-w-0">
               {/* Mobile drawer button */}
               <button
                 type="button"
                 onClick={() => setMobileOpen(true)}
-                className="lg:hidden w-10 h-10 -ml-2 rounded-lg flex items-center justify-center text-white hover:bg-white/15 transition-colors"
+                className="lg:hidden w-9 h-9 -ml-1 rounded-lg flex items-center justify-center text-white hover:bg-white/15 transition-colors shrink-0"
                 aria-label="Open menu"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
@@ -470,7 +454,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               {/* Mobile logo */}
               <Link href="/" className="lg:hidden flex items-center shrink-0" aria-label="FilesWow — Home">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/headerlogo-dark.png" alt="FilesWow" width={185} height={50} className="h-10 sm:h-11 w-auto object-contain" />
+                <img src="/headerlogo-dark.png" alt="FilesWow" width={160} height={44} className="h-8 sm:h-10 w-auto object-contain" />
               </Link>
 
               {/* Active tool pill in website header */}
@@ -483,11 +467,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
 
             {/* Top Bar Right: Search + Trust Links + Language + Theme */}
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-1 sm:gap-2 shrink-0">
               <button
                 type="button"
                 onClick={() => setSearchOpen(true)}
-                className="inline-flex items-center gap-2 h-9 px-3 sm:w-56 text-[13px] text-white/95 bg-white/15 hover:bg-white/25 rounded-lg border border-white/25 transition-colors cursor-pointer"
+                className="inline-flex items-center justify-center sm:justify-start gap-2 h-9 w-9 sm:w-56 px-0 sm:px-3 text-[13px] text-white/95 bg-white/15 hover:bg-white/25 rounded-lg border border-white/25 transition-colors cursor-pointer"
                 aria-label="Search tools (Ctrl+K)"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white/80 shrink-0" aria-hidden="true">
@@ -516,6 +500,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </nav>
 
               <LanguageSwitcher direction="down" compact onGradient />
+
+              <AccessibilityWidget onGradient />
 
               <button
                 type="button"

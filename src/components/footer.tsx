@@ -1,13 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { BLOG_POSTS } from "@/lib/blog";
 import { useI18n } from "@/lib/i18n";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ALL_TOOLS } from "@/lib/catalog";
-import { DEFAULT_HEADER_THEME, getHourlyDefaultTheme, getToolGradient, type ToolGradientTheme } from "@/lib/tool-theme";
+import { DEFAULT_HEADER_THEME, getToolGradient } from "@/lib/tool-theme";
 
 const POPULAR_TOOLS: Array<[string, string]> = [
   ["Merge PDF", "/tools/merge-pdf"],
@@ -24,27 +23,10 @@ export function Footer() {
   const pathname = usePathname();
   const year = new Date().getFullYear();
 
-  const [hourlyTheme, setHourlyTheme] = useState<ToolGradientTheme>(DEFAULT_HEADER_THEME);
-
-  useEffect(() => {
-    const syncTheme = () => setHourlyTheme(getHourlyDefaultTheme());
-    syncTheme();
-    const msUntilNextHour = 3_600_000 - (Date.now() % 3_600_000);
-    let intervalId: number | null = null;
-    const timeoutId = window.setTimeout(() => {
-      syncTheme();
-      intervalId = window.setInterval(syncTheme, 3_600_000);
-    }, msUntilNextHour);
-    return () => {
-      window.clearTimeout(timeoutId);
-      if (intervalId !== null) window.clearInterval(intervalId);
-    };
-  }, []);
-
   const activeTool = pathname.startsWith("/tools/")
     ? ALL_TOOLS.find((tool) => tool.slug === pathname.slice("/tools/".length).split("/")[0])
     : undefined;
-  const footerTheme = activeTool ? getToolGradient(activeTool.slug) : hourlyTheme;
+  const footerTheme = activeTool ? getToolGradient(activeTool.slug) : DEFAULT_HEADER_THEME;
 
   const categoryLinks: Array<[string, string]> = [
     [t("footer.pdfTools"), "/pdf-tools"],

@@ -1074,3 +1074,48 @@ kbd,
 .dark .tool-wallpaper-pattern {
   background-color: rgba(255, 255, 255, 0.045);
 }
+
+/* ─── Accessibility Tools Modes (controlled by AccessibilityWidget) ─── */
+html.a11y-high-contrast {
+  filter: contrast(1.18);
+}
+
+html.a11y-dyslexic body,
+html.a11y-dyslexic p,
+html.a11y-dyslexic a,
+html.a11y-dyslexic button,
+html.a11y-dyslexic input,
+html.a11y-dyslexic li,
+html.a11y-dyslexic h1,
+html.a11y-dyslexic h2,
+html.a11y-dyslexic h3 {
+  font-family: "Verdana", "Tahoma", -apple-system, BlinkMacSystemFont, sans-serif !important;
+  letter-spacing: 0.03em !important;
+  word-spacing: 0.08em !important;
+}
+
+html.a11y-line-spacing p,
+html.a11y-line-spacing li,
+html.a11y-line-spacing label {
+  line-height: 1.85 !important;
+}
+
+html.a11y-highlight-links a {
+  text-decoration: underline !important;
+  text-decoration-thickness: 2px !important;
+  text-underline-offset: 3px !important;
+}
+
+html.a11y-reduce-motion *,
+html.a11y-reduce-motion *::before,
+html.a11y-reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+html.a11y-big-cursor,
+html.a11y-big-cursor * {
+  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36' viewBox='0 0 24 24'%3E%3Cpath d='M4 2l14 10-6 1.5L9 20z' fill='%23030A17' stroke='%23FFFFFF' stroke-width='1.5'/%3E%3C/svg%3E") 4 2, auto !important;
+}

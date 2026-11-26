@@ -6,12 +6,6 @@ export interface ToolGradientTheme {
   accentHex: string;
 }
 
-export const DEFAULT_HEADER_THEME: ToolGradientTheme = {
-  gradient: "linear-gradient(135deg, #047857 0%, #059669 55%, #14B8A6 100%)",
-  softGradient: "linear-gradient(135deg, rgba(5, 150, 105, 0.14) 0%, rgba(20, 184, 166, 0.08) 100%)",
-  accentHex: "#059669",
-};
-
 const TOOL_GRADIENTS: ToolGradientTheme[] = [
   // Royal Indigo
   {
@@ -108,3 +102,8 @@ export function getToolGradient(slug: string): ToolGradientTheme {
   const index = Math.abs(hash) % TOOL_GRADIENTS.length;
   return TOOL_GRADIENTS[index];
 }
+
+/**
+ * Default header & footer theme matches the Merge PDF gradient.
+ */
+export const DEFAULT_HEADER_THEME: ToolGradientTheme = getToolGradient("merge-pdf");
