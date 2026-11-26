@@ -9,6 +9,7 @@ import { ToolIcon } from "@/components/icon";
 import { Footer } from "@/components/footer";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ALL_TOOLS, type ToolCategory } from "@/lib/catalog";
+import { DEFAULT_HEADER_THEME, getToolGradient } from "@/lib/tool-theme";
 
 const SIDEBAR_CATEGORIES: Array<{
   category: ToolCategory;
@@ -164,10 +165,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     setOpenCategory((prev) => (prev === cat ? null : cat));
   };
 
+  const activeTheme = activeTool ? getToolGradient(activeTool.slug) : DEFAULT_HEADER_THEME;
+
   const sidebarContent = (isMobile: boolean) => (
     <div className="flex flex-col h-full bg-bg-surface">
       {/* Brand Bar */}
-      <div className="h-16 px-4 flex items-center justify-between border-b border-border-base shrink-0">
+      <div
+        className="h-16 px-4 flex items-center justify-between border-b border-border-base shrink-0 relative transition-all duration-300"
+        style={{ backgroundImage: activeTheme.softGradient }}
+      >
+        <div
+          aria-hidden="true"
+          className="absolute inset-x-0 bottom-0 h-[2.5px] transition-all duration-300"
+          style={{ background: activeTheme.gradient }}
+        />
         <Link
           href="/"
           className="flex items-center gap-2 min-w-0 logo-plate"
@@ -413,13 +424,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         {/* Right Workspace Column: Top Bar + Main + Footer */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Top Bar */}
-          <header className="sticky top-0 z-30 h-16 bg-bg-surface/85 backdrop-blur-xl border-b border-border-base px-4 sm:px-6 flex items-center justify-between gap-3">
+          <header
+            className="sticky top-0 z-30 h-16 px-4 sm:px-6 flex items-center justify-between gap-3 bg-bg-surface/85 backdrop-blur-xl border-b border-border-base transition-all duration-300 relative"
+            style={{ backgroundImage: activeTheme.softGradient }}
+          >
+            <div
+              aria-hidden="true"
+              className="absolute inset-x-0 bottom-0 h-[2.5px] transition-all duration-300"
+              style={{ background: activeTheme.gradient }}
+            />
             <div className="flex items-center gap-2.5 min-w-0">
               {/* Mobile drawer button */}
               <button
                 type="button"
                 onClick={() => setMobileOpen(true)}
-                className="lg:hidden w-10 h-10 -ml-2 rounded-lg flex items-center justify-center text-text-primary hover:bg-bg-elevated transition-colors"
+                className="lg:hidden w-10 h-10 -ml-2 rounded-lg flex items-center justify-center text-text-primary hover:bg-bg-elevated/80 transition-colors"
                 aria-label="Open menu"
               >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
@@ -433,13 +452,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <button
                 type="button"
                 onClick={() => setCollapsed((v) => !v)}
-                className="hidden lg:inline-flex w-9 h-9 -ml-1 rounded-lg items-center justify-center text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors cursor-pointer"
+                className="hidden lg:inline-flex w-9 h-9 -ml-1 rounded-lg items-center justify-center text-text-secondary hover:text-text-primary hover:bg-bg-elevated/80 transition-colors cursor-pointer"
                 aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
                 title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
               >
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <rect x="3" y="3" width="18" height="18" rx="2" />
-                  <line x1="9" y1="3" x2="9" y2="21" />
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                  <line x1="4" y1="7" x2="20" y2="7" />
+                  <line x1="4" y1="12" x2="20" y2="12" />
+                  <line x1="4" y1="17" x2="20" y2="17" />
                 </svg>
               </button>
 
@@ -450,6 +470,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/headerlogo-dark.png" alt="FilesWow" width={185} height={50} className="logo-dark h-10 sm:h-11 w-auto object-contain" />
               </Link>
+
+              {/* Active tool pill in website header */}
+              {activeTool && activeTheme && (
+                <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-bg-surface/80 backdrop-blur-md border border-border-base shadow-2xs text-[12.5px] font-semibold text-text-primary min-w-0">
+                  <span
+                    className="w-2 h-2 rounded-full shrink-0"
+                    style={{ background: activeTheme.gradient }}
+                    aria-hidden="true"
+                  />
+                  <span className="truncate max-w-[200px]">{activeTool.name}</span>
+                </div>
+              )}
             </div>
 
             {/* Top Bar Right: Search + Trust Links + Language + Theme */}
@@ -457,7 +489,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <button
                 type="button"
                 onClick={() => setSearchOpen(true)}
-                className="inline-flex items-center gap-2 h-9 px-3 sm:w-56 text-[13px] text-text-secondary bg-bg-elevated hover:bg-bg-hover rounded-lg border border-border-base transition-colors cursor-pointer"
+                className="inline-flex items-center gap-2 h-9 px-3 sm:w-56 text-[13px] text-text-secondary bg-bg-surface/75 hover:bg-bg-surface rounded-lg border border-border-base transition-colors cursor-pointer"
                 aria-label="Search tools (Ctrl+K)"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-tertiary shrink-0" aria-hidden="true">
@@ -469,10 +501,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </button>
 
               <nav className="hidden xl:flex items-center gap-1" aria-label="Company">
-                <Link href="/about" className="px-2.5 py-1.5 rounded-lg text-[13px] font-medium text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors">
+                <Link
+                  href="/about"
+                  className="px-2.5 py-1.5 rounded-lg text-[13px] font-medium text-text-secondary hover:text-text-primary hover:bg-bg-surface/70 transition-colors"
+                >
                   About
                 </Link>
-                <Link href="/contact" className="px-2.5 py-1.5 rounded-lg text-[13px] font-medium text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors">
+                <Link
+                  href="/contact"
+                  className="px-2.5 py-1.5 rounded-lg text-[13px] font-medium text-text-secondary hover:text-text-primary hover:bg-bg-surface/70 transition-colors"
+                >
                   Contact
                 </Link>
               </nav>
@@ -482,7 +520,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <button
                 type="button"
                 onClick={(e) => toggle({ x: e.clientX, y: e.clientY })}
-                className="w-9 h-9 rounded-lg flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors cursor-pointer"
+                className="w-9 h-9 rounded-lg flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-bg-surface/70 transition-colors cursor-pointer"
                 aria-label={`Toggle theme (currently ${theme})`}
                 title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
               >
