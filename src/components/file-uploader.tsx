@@ -27,6 +27,8 @@ interface FileUploaderProps {
   onInvalidated?: () => void;
   /** Auto-start "uploading" simulation when files are added */
   simulateUpload?: boolean;
+  /** Pre-populated files when returning to Step 1 (avoids re-uploading) */
+  initialFiles?: File[];
 }
 
 /* ─── Helpers ──────────────────────────────────────────────────── */
@@ -92,8 +94,16 @@ export function FileUploader({
   onFilesChanged,
   onInvalidated,
   simulateUpload = true,
+  initialFiles,
 }: FileUploaderProps) {
-  const [items, setItems] = useState<UploadedFile[]>([]);
+  const [items, setItems] = useState<UploadedFile[]>(() =>
+    (initialFiles || []).map((file) => ({
+      id: nextId(),
+      file,
+      status: "done" as const,
+      progress: 100,
+    }))
+  );
   const [previewFile, setPreviewFile] = useState<File | null>(null);
   const itemsRef = useRef<UploadedFile[]>(items);
   const [dragging, setDragging] = useState(false);

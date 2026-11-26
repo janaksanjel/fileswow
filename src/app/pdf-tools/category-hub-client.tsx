@@ -278,57 +278,59 @@ export function CategoryHubClient({
   return (
     <div ref={rootRef}>
       {/* ─── Page header ─────────────────────────────────────────── */}
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-8">
-        {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-xs font-medium text-text-tertiary mb-7" aria-label="Breadcrumb">
-          <Link href="/" className="hover:text-accent transition-colors">
-            Home
-          </Link>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <polyline points="9 18 15 12 9 6" />
-          </svg>
-          <span className="text-text-secondary">{title}</span>
-        </nav>
-
-        <div className="flex items-start gap-4 sm:gap-5">
-          <span className={`hidden sm:flex w-13 h-13 rounded-2xl items-center justify-center shrink-0 mt-0.5 ${tile}`}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              {CATEGORY_GLYPHS[category]}
+      <section className="bg-bg-warm border-b border-border-base pt-6 sm:pt-8 pb-6">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          {/* Breadcrumb */}
+          <nav className="flex items-center gap-2 text-xs font-medium text-text-tertiary mb-4" aria-label="Breadcrumb">
+            <Link href="/" className="hover:text-accent transition-colors">
+              Home
+            </Link>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6" />
             </svg>
-          </span>
-          <div className="min-w-0">
-            <h1 className="heading-xl text-text-primary mb-2">{title}</h1>
-            <p className="body-md text-text-secondary max-w-2xl">{subtitle}</p>
-            <p className="mt-2.5 text-[12.5px] font-medium text-text-tertiary">
-              <span className="text-accent-ink font-semibold">{count} {count === 1 ? "tool" : "tools"}</span>
-              <span className="mx-2" aria-hidden="true">·</span>
-              <span>Processed in your browser</span>
-              <span className="mx-2" aria-hidden="true">·</span>
-              <span>Free</span>
-            </p>
+            <span className="text-text-secondary">{title}</span>
+          </nav>
+
+          <div className="flex items-start gap-3.5 sm:gap-4">
+            <span className={`hidden sm:flex w-11 h-11 rounded-xl items-center justify-center shrink-0 mt-0.5 ${tile}`}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                {CATEGORY_GLYPHS[category]}
+              </svg>
+            </span>
+            <div className="min-w-0">
+              <h1 className="heading-lg text-text-primary mb-1">{title}</h1>
+              <p className="text-[14px] text-text-secondary max-w-2xl">{subtitle}</p>
+              <p className="mt-2 text-[12px] font-medium text-text-tertiary">
+                <span className="text-accent-ink font-semibold">{count} {count === 1 ? "tool" : "tools"}</span>
+                <span className="mx-2" aria-hidden="true">·</span>
+                <span>Processed in your browser</span>
+                <span className="mx-2" aria-hidden="true">·</span>
+                <span>Free</span>
+              </p>
+            </div>
+          </div>
+
+          {/* Search within category (visible below md; sticky bar owns it above) */}
+          <div className="mt-5 md:hidden">
+            <label className="sr-only" htmlFor="hub-search-mobile">
+              Search {title}
+            </label>
+            <input
+              id="hub-search-mobile"
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder={`Search among ${count} ${categoryName.toLowerCase()} ${count === 1 ? "tool" : "tools"}…`}
+              className="input h-11"
+            />
           </div>
         </div>
-
-        {/* Search within category (visible below md; sticky bar owns it above) */}
-        <div className="mt-7 md:hidden">
-          <label className="sr-only" htmlFor="hub-search-mobile">
-            Search {title}
-          </label>
-          <input
-            id="hub-search-mobile"
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={`Search among ${count} ${categoryName.toLowerCase()} tools…`}
-            className="input h-11"
-          />
-        </div>
-      </div>
+      </section>
 
       {/* ─── Sticky sub-nav: group jump links + search ───────────── */}
       <nav
         aria-label="Sections"
-        className="sticky top-14 z-30 bg-bg-surface/85 backdrop-blur-xl border-y border-border-base"
+        className="sticky top-14 z-20 bg-bg-surface/90 backdrop-blur-xl border-b border-border-base"
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-3 min-h-12 py-1.5">
           <div className="flex-1 flex items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -407,8 +409,8 @@ export function CategoryHubClient({
           </section>
         ) : (
           <>
-            {/* Popular */}
-            {popularTools.length > 0 && (
+            {/* Popular (only shown when category has > 6 tools to avoid repeating a 1-tool list) */}
+            {tools.length > 6 && popularTools.length > 0 && (
               <section className="mb-12 sm:mb-14 reveal" aria-labelledby="popular-category-tools">
                 <div className="flex items-baseline justify-between gap-3 mb-5">
                   <h2
@@ -420,7 +422,7 @@ export function CategoryHubClient({
                       : `Popular ${categoryName} tools`}
                   </h2>
                   <span className="text-[12px] font-medium text-text-tertiary tabular-nums">
-                    {popularTools.length} tools
+                    {popularTools.length} {popularTools.length === 1 ? "tool" : "tools"}
                   </span>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">

@@ -175,6 +175,7 @@ export function StepFlow({
   const [step, setStep] = useState<Step>(1);
   const panelRef = useRef<HTMLDivElement>(null);
   const [currentFiles, setCurrentFiles] = useState<File[]>([]);
+  const [uploaderResetKey, setUploaderResetKey] = useState(0);
   const [activeDrawerFile, setActiveDrawerFile] = useState<{ file: File | Blob; title: string } | null>(null);
 
   /* All step transitions happen inside event handlers or rAF-deferred
@@ -198,6 +199,27 @@ export function StepFlow({
     setStep(2);
     requestAnimationFrame(() => panelRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }));
   }, []);
+
+  /* Start over from Output (Step 3) keeps already-uploaded files so users never have to re-upload */
+  const handleStartOverKeepFiles = useCallback(() => {
+    if (currentFiles.length > 0) {
+      onFilesChanged(currentFiles);
+      onInvalidated?.();
+      setStep(2);
+    } else {
+      setUploaderResetKey((k) => k + 1);
+      setStep(1);
+      onReset();
+    }
+  }, [currentFiles, onFilesChanged, onInvalidated, onReset]);
+
+  /* Full reset (clears files and returns to Upload) */
+  const handleFullReset = useCallback(() => {
+    setCurrentFiles([]);
+    setUploaderResetKey((k) => k + 1);
+    setStep(1);
+    onReset();
+  }, [onReset]);
 
   /* Browser back button = previous step while inside the flow */
   useEffect(() => {
@@ -240,7 +262,7 @@ export function StepFlow({
       <div className="mb-5">
         <div className="flex items-center justify-between gap-3 mb-4">
           <button
-            onClick={() => (step > 1 ? setStep((s) => (s - 1) as Step) : onReset())}
+            onClick={() => (step > 1 ? setStep((s) => (s - 1) as Step) : handleFullReset())}
             className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-text-tertiary hover:text-text-primary transition-colors"
           >
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -251,10 +273,10 @@ export function StepFlow({
           </button>
           {step === 1 && hasFiles && (
             <button
-              onClick={onReset}
+              onClick={handleFullReset}
               className="text-[12px] font-semibold text-text-tertiary hover:text-danger transition-colors"
             >
-              Start over
+              Clear all
             </button>
           )}
         </div>
@@ -286,10 +308,12 @@ export function StepFlow({
         {step === 1 && (
           <div key="upload" className="flow-panel-enter">
             <FileUploader
+              key={uploaderResetKey}
               accept={accept}
               multiple={multiple}
               maxFiles={maxFiles}
               hint={hint}
+              initialFiles={currentFiles}
               onFilesChanged={handleFilesChanged}
               onInvalidated={onInvalidated}
             />
@@ -399,7 +423,7 @@ export function StepFlow({
           <div key="output" className="flow-panel-enter">
             <OutputPanel
               outputs={outputs}
-              onReset={onReset}
+              onReset={handleStartOverKeepFiles}
               onDownloadAll={onDownloadAll}
               onBack={goUpload}
               renderResult={renderResult}

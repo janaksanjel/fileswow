@@ -271,10 +271,16 @@ body {
   color: var(--accent-ink);
 }
 
-[data-theme="dark"] .logo-plate {
-  background: rgba(255, 255, 255, 0.94);
-  border-radius: 8px;
-  padding: 4px 8px;
+.logo-dark {
+  display: none;
+}
+
+[data-theme="dark"] .logo-light {
+  display: none;
+}
+
+[data-theme="dark"] .logo-dark {
+  display: block;
 }
 
 /* ─── Scrollbar ──────────────────────────────────────────────── */

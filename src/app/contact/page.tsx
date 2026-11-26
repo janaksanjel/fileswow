@@ -120,8 +120,8 @@ export default function ContactPage() {
       <script {...jsonLdProps(jsonLd)} />
       <script {...jsonLdProps(orgJsonLd)} />
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
-        <nav className="flex items-center gap-1.5 text-xs text-text-tertiary mb-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+        <nav className="flex items-center gap-1.5 text-xs text-text-tertiary mb-5">
           <Link href="/" className="hover:text-text-primary transition-colors">
             Home
           </Link>
@@ -129,52 +129,46 @@ export default function ContactPage() {
           <span className="text-text-secondary">Contact</span>
         </nav>
 
-        <h1 className="heading-xl text-text-primary mb-4">Contact us</h1>
+        <header className="mb-8 pb-6 border-b border-border-base">
+          <h1 className="heading-lg text-text-primary mb-2">Contact us</h1>
+          <p className="body-md text-text-secondary max-w-2xl">
+            FilesWow is built and maintained by a small team. Whether it&apos;s a
+            question, a bug, a privacy request, or a business inquiry — we read
+            every message and reply to most within 1–2 business days.
+          </p>
+        </header>
 
-        <p className="body-lg text-text-secondary max-w-xl mb-10">
-          FilesWow is built and maintained by a small team. Whether it&apos;s a
-          question, a bug, a privacy request, or a business inquiry — we read
-          every message and reply to most within 1–2 business days.
-        </p>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start mb-10">
+          <div className="lg:col-span-7">
+            <ContactForm />
+          </div>
 
-        <ContactForm />
-
-        <div className="grid gap-4 sm:grid-cols-2 mb-10">
-          {CONTACT_CARDS.map((card) => (
-            <a
-              key={card.title}
-              href={`mailto:${card.email}?subject=${encodeURIComponent(`[FilesWow] ${card.subject}`)}`}
-              className="group card p-5 hover:border-accent/50 transition-colors"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <span className="w-10 h-10 rounded-xl bg-accent-subtle text-accent flex items-center justify-center shrink-0">
-                  {card.icon}
-                </span>
-                <h2 className="text-[15px] font-bold text-text-primary">{card.title}</h2>
-              </div>
-              <p className="text-[13px] leading-relaxed text-text-secondary mb-3">
-                {card.description}
-              </p>
-              <span className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-accent group-hover:underline underline-offset-2">
-                {card.email}
-                <svg
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                  className="transition-transform group-hover:translate-x-0.5"
+          <div className="lg:col-span-5 space-y-4">
+            <div className="grid gap-3">
+              {CONTACT_CARDS.map((card) => (
+                <a
+                  key={card.title}
+                  href={`mailto:${card.email}?subject=${encodeURIComponent(`[FilesWow] ${card.subject}`)}`}
+                  className="group p-4 rounded-2xl bg-bg-surface border border-border-base hover:border-accent/40 hover:shadow-[var(--elevation-sm)] transition-all"
                 >
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
-              </span>
-            </a>
-          ))}
+                  <div className="flex items-center gap-3 mb-2">
+                    <span className="w-9 h-9 rounded-xl bg-accent-subtle text-accent flex items-center justify-center shrink-0">
+                      {card.icon}
+                    </span>
+                    <div className="min-w-0">
+                      <h2 className="text-[14.5px] font-semibold text-text-primary">{card.title}</h2>
+                      <span className="text-[12.5px] font-medium text-accent-ink group-hover:underline underline-offset-2">
+                        {card.email}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-[12.5px] leading-relaxed text-text-secondary">
+                    {card.description}
+                  </p>
+                </a>
+              ))}
+            </div>
+          </div>
         </div>
 
         <section className="mb-10 p-5 sm:p-6 rounded-2xl bg-bg-surface border border-border-base">

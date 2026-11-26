@@ -88,26 +88,6 @@ export function CookieConsentBanner() {
           </div>
         </div>
       )}
-
-      {/* Floating button to reopen settings after a choice has been made */}
-      {!visible && consent && (
-        <button
-          onClick={() => {
-            window.localStorage.removeItem(STORAGE_KEY);
-            setConsent(null);
-            setVisible(true);
-          }}
-          className="fab-cookie fixed bottom-4 left-4 z-40 inline-flex items-center gap-1.5 px-3 py-2 rounded-full border border-border-base bg-bg-surface text-text-secondary text-[11.5px] font-semibold shadow-lg backdrop-blur-md hover:text-text-primary hover:border-border-strong transition-all"
-          aria-label="Cookie settings"
-          title="Cookie settings"
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5" />
-            <path d="M8.5 8.5h.01M7 12.5h.01M11 15.5h.01" />
-          </svg>
-          Cookie settings
-        </button>
-      )}
     </>
   );
 }

@@ -2,24 +2,24 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
-import { useRouter } from "next/navigation";
 import { ToolCard } from "@/components/tool-card";
 import { Accordion } from "@/components/ui/accordion";
 import { searchTools } from "@/lib/search";
 import { ToolIcon } from "@/components/icon";
-import { ALL_TOOLS, CATEGORY_COUNTS, type ToolDef, type ToolCategory } from "@/lib/catalog";
+import { ALL_TOOLS, type ToolDef } from "@/lib/catalog";
 import {
   POPULAR_DEFAULT_SLUGS,
   subscribeUsage,
   getTopToolsSnapshot,
   getRecentToolsSnapshot,
   getEmptyToolsSnapshot,
-  hasPersonalHistorySnapshot,
 } from "@/lib/usage";
 import { useReveal } from "@/lib/use-reveal";
 import { AdSlot } from "@/components/ad-unit";
 import { useI18n, type MessageKey } from "@/lib/i18n";
-import { BLOG_POSTS } from "@/lib/blog";
+
+const PINNED_STORAGE_KEY = "fileswow-pinned-tools";
+const MAX_QUICK_TOOLS = 12;
 
 const CURATED_POPULAR = new Set(POPULAR_DEFAULT_SLUGS);
 const ORDERED_TOOLS: ToolDef[] = [
@@ -28,56 +28,6 @@ const ORDERED_TOOLS: ToolDef[] = [
 ];
 
 const TOOL_BY_SLUG = new Map(ALL_TOOLS.map((t) => [t.slug, t]));
-
-const QUICK_SLUGS = [
-  "merge-pdf",
-  "compress-pdf",
-  "pdf-to-word",
-  "jpg-to-pdf",
-  "sign-pdf",
-  "split-pdf",
-  "word-to-pdf",
-  "background-remove-image",
-];
-
-interface WorkbenchTabSpec {
-  id: ToolCategory;
-  label: string;
-  href: string;
-  count: number;
-  tools: string[];
-}
-
-const WORKBENCH_TABS: WorkbenchTabSpec[] = [
-  {
-    id: "pdf",
-    label: "PDF",
-    href: "/pdf-tools",
-    count: CATEGORY_COUNTS.pdf,
-    tools: ["merge-pdf", "compress-pdf", "split-pdf", "pdf-to-word", "sign-pdf"],
-  },
-  {
-    id: "word",
-    label: "Word",
-    href: "/word-tools",
-    count: CATEGORY_COUNTS.word,
-    tools: ["word-to-pdf", "merge-word", "split-word", "word-to-text", "compress-word"],
-  },
-  {
-    id: "image",
-    label: "Image",
-    href: "/image-tools",
-    count: CATEGORY_COUNTS.image,
-    tools: ["compress-image", "background-remove-image", "resize-image", "crop-image", "jpg-to-pdf"],
-  },
-  {
-    id: "text",
-    label: "Text & P2P",
-    href: "/transfer",
-    count: CATEGORY_COUNTS.text,
-    tools: ["p2p-text"],
-  },
-];
 
 type ChipId = "all" | "organize" | "convert" | "edit" | "optimize" | "security" | "image";
 
@@ -109,273 +59,18 @@ export function HomeClient() {
   useReveal(rootRef);
   const { t } = useI18n();
 
-  const [heroQuery, setHeroQuery] = useState("");
-  const [heroResults, setHeroResults] = useState<ToolDef[]>([]);
-  const [heroSelectedIdx, setHeroSelectedIdx] = useState(0);
-  const [activeTab, setActiveTab] = useState<ToolCategory>("pdf");
-  const router = useRouter();
-
-  const heroQueryEmpty = heroQuery.trim() === "";
-  useEffect(() => {
-    if (heroQueryEmpty) return;
-    const timer = setTimeout(() => {
-      setHeroResults(searchTools(heroQuery, 8).map((r) => r.tool));
-      setHeroSelectedIdx(0);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [heroQuery, heroQueryEmpty]);
-
-  const hasPersonalHistory = useSyncExternalStore(
-    subscribeUsage,
-    hasPersonalHistorySnapshot,
-    () => false
-  );
-  const topTools = useSyncExternalStore(
-    subscribeUsage,
-    getTopToolsSnapshot,
-    getEmptyToolsSnapshot
-  );
-  const recentTools = useSyncExternalStore(
-    subscribeUsage,
-    getRecentToolsSnapshot,
-    getEmptyToolsSnapshot
-  );
-
-  const smartQuickTools = useMemo(() => {
-    const defaultList = QUICK_SLUGS.map((s) => TOOL_BY_SLUG.get(s)).filter(Boolean) as ToolDef[];
-    if (!hasPersonalHistory) {
-      return defaultList.map((tool) => ({ tool, kind: "default" as const }));
-    }
-
-    const seen = new Set<string>();
-    const items: Array<{ tool: ToolDef; kind: "top" | "recent" | "related" | "default" }> = [];
-
-    for (const tool of topTools.slice(0, 5)) {
-      if (seen.has(tool.slug)) continue;
-      seen.add(tool.slug);
-      items.push({ tool, kind: "top" });
-    }
-    for (const tool of recentTools.slice(0, 3)) {
-      if (seen.has(tool.slug)) continue;
-      seen.add(tool.slug);
-      items.push({ tool, kind: "recent" });
-    }
-    for (const { tool } of items.slice(0, 3)) {
-      for (const relSlug of tool.relatedSlugs ?? []) {
-        if (seen.has(relSlug)) continue;
-        const rel = TOOL_BY_SLUG.get(relSlug);
-        if (rel) {
-          seen.add(rel.slug);
-          items.push({ tool: rel, kind: "related" });
-          break;
-        }
-      }
-      if (items.length >= 10) break;
-    }
-    for (const tool of defaultList) {
-      if (items.length >= 10) break;
-      if (seen.has(tool.slug)) continue;
-      seen.add(tool.slug);
-      items.push({ tool, kind: "default" });
-    }
-    return items.slice(0, 10);
-  }, [hasPersonalHistory, topTools, recentTools]);
-
-  const currentTab = WORKBENCH_TABS.find((tab) => tab.id === activeTab) ?? WORKBENCH_TABS[0];
-
   return (
     <div ref={rootRef}>
-      {/* ─── 1. Asymmetric Product Hero ───────────────────────────── */}
-      <section className="bg-bg-surface border-b border-border-base py-12 sm:py-16 lg:py-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
-          {/* Left: Direct Headline, Search & Smart Quick Tools */}
-          <div className="lg:col-span-7">
-            <div className="inline-flex items-center gap-2 text-[12.5px] font-medium text-text-secondary mb-4">
-              <span className="w-2 h-2 rounded-full bg-success" aria-hidden="true" />
-              <span>{ALL_TOOLS.length} browser-based tools · No uploads · Free</span>
-            </div>
+      {/* ─── 1. Quick Shortcuts (Custom Pinned + Most Useful) ─────── */}
+      <QuickShortcutsSection />
 
-            <h1 className="heading-xl text-text-primary mb-4 [text-wrap:balance]">
-              {t("home.heroTitle")}
-            </h1>
-
-            <p className="body-lg text-text-secondary max-w-xl mb-7">
-              {t("home.heroSubtitle")}
-            </p>
-
-            {/* Spotlight Search */}
-            <div className="relative max-w-xl mb-5">
-              <div className="flex items-center gap-3 h-13 px-4 bg-bg-input border border-border-base rounded-2xl transition-[border-color,background-color,box-shadow] duration-150 focus-within:bg-bg-surface focus-within:border-accent focus-within:shadow-[0_0_0_3px_var(--accent-subtle)]">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-tertiary shrink-0" aria-hidden="true">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-                <input
-                  type="text"
-                  value={heroQuery}
-                  onChange={(e) => setHeroQuery(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && heroResults[heroSelectedIdx]) {
-                      router.push(`/tools/${heroResults[heroSelectedIdx].slug}`);
-                    }
-                    if (e.key === "ArrowDown") {
-                      e.preventDefault();
-                      setHeroSelectedIdx((prev) => Math.min(prev + 1, heroResults.length - 1));
-                    }
-                    if (e.key === "ArrowUp") {
-                      e.preventDefault();
-                      setHeroSelectedIdx((prev) => Math.max(prev - 1, 0));
-                    }
-                  }}
-                  placeholder={t("home.searchPlaceholder").replace("{count}", String(ALL_TOOLS.length))}
-                  className="flex-1 bg-transparent h-full text-text-primary text-[15px] placeholder:text-text-tertiary outline-none min-w-0"
-                  aria-label="Search tools"
-                />
-                <kbd className="hidden sm:inline-flex shrink-0">⌘K</kbd>
-              </div>
-
-              {!heroQueryEmpty && heroResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-bg-surface rounded-2xl border border-border-base shadow-[var(--elevation-xl)] overflow-hidden z-50 text-left animate-fade-in-up">
-                  <div className="py-1.5 max-h-[360px] overflow-y-auto">
-                    {heroResults.map((tool, i) => (
-                      <button
-                        key={tool.slug}
-                        onClick={() => router.push(`/tools/${tool.slug}`)}
-                        onMouseEnter={() => setHeroSelectedIdx(i)}
-                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
-                          i === heroSelectedIdx ? "bg-accent-subtle" : "hover:bg-bg-elevated"
-                        }`}
-                      >
-                        <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-bg-elevated">
-                          <ToolIcon name={tool.slug} size={17} />
-                        </span>
-                        <span className="flex-1 min-w-0">
-                          <span className={`block text-[14px] font-medium truncate ${i === heroSelectedIdx ? "text-accent-ink" : "text-text-primary"}`}>
-                            {tool.name}
-                          </span>
-                          <span className="block text-[12px] text-text-secondary truncate">{tool.description}</span>
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Smart Personalized Quick Actions (auto-ranked by usage & recency) */}
-            <nav aria-label="Quick tools" className="flex flex-wrap gap-2">
-              {smartQuickTools.map(({ tool }) => (
-                <Link
-                  key={tool.slug}
-                  href={`/tools/${tool.slug}`}
-                  className="hero-chip"
-                >
-                  <ToolIcon name={tool.slug} size={14} />
-                  <span>{tool.name}</span>
-                </Link>
-              ))}
-            </nav>
-          </div>
-
-          {/* Right: Interactive Format Launcher Panel */}
-          <div className="lg:col-span-5">
-            <div className="rounded-2xl border border-border-base bg-bg-warm p-4 sm:p-5 shadow-[var(--elevation-sm)]">
-              <div className="flex items-center justify-between gap-2 mb-4">
-                <div className="inline-flex p-1 rounded-xl bg-bg-elevated border border-border-base w-full">
-                  {WORKBENCH_TABS.map((tab) => {
-                    const active = tab.id === activeTab;
-                    return (
-                      <button
-                        key={tab.id}
-                        type="button"
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`flex-1 py-1.5 px-2 rounded-lg text-[12.5px] font-medium transition-all cursor-pointer whitespace-nowrap ${
-                          active
-                            ? "bg-bg-surface text-text-primary shadow-[var(--elevation-sm)]"
-                            : "text-text-secondary hover:text-text-primary"
-                        }`}
-                      >
-                        {tab.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <ul className="rounded-xl border border-border-base bg-bg-surface divide-y divide-border-base overflow-hidden">
-                {currentTab.tools.map((slug) => {
-                  const tool = TOOL_BY_SLUG.get(slug);
-                  if (!tool) return null;
-                  return (
-                    <li key={slug}>
-                      <Link
-                        href={`/tools/${slug}`}
-                        className="group flex items-center gap-3 px-3.5 py-3 hover:bg-bg-elevated/60 transition-colors"
-                      >
-                        <ToolIcon name={slug} size={18} />
-                        <div className="min-w-0 flex-1">
-                          <span className="block text-[13.5px] font-medium text-text-primary group-hover:text-accent transition-colors truncate">
-                            {tool.name}
-                          </span>
-                          <span className="block text-[11.5px] text-text-tertiary truncate">
-                            {tool.description}
-                          </span>
-                        </div>
-                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-tertiary group-hover:text-accent group-hover:translate-x-0.5 transition-all shrink-0" aria-hidden="true">
-                          <polyline points="9 18 15 12 9 6" />
-                        </svg>
-                      </Link>
-                    </li>
-                  );
-                })}
-                {currentTab.id === "text" && (
-                  <li>
-                    <Link
-                      href="/transfer"
-                      className="group flex items-center gap-3 px-3.5 py-3 hover:bg-bg-elevated/60 transition-colors"
-                    >
-                      <span className="w-[18px] h-[18px] flex items-center justify-center text-accent shrink-0">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                          <line x1="22" y1="2" x2="11" y2="13" />
-                          <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                        </svg>
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <span className="block text-[13.5px] font-medium text-text-primary group-hover:text-accent transition-colors">
-                          P2P File Transfer
-                        </span>
-                        <span className="block text-[11.5px] text-text-tertiary truncate">
-                          Send files directly between devices over WebRTC
-                        </span>
-                      </div>
-                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-tertiary group-hover:text-accent group-hover:translate-x-0.5 transition-all shrink-0" aria-hidden="true">
-                        <polyline points="9 18 15 12 9 6" />
-                      </svg>
-                    </Link>
-                  </li>
-                )}
-              </ul>
-
-              <div className="mt-3.5 flex items-center justify-between px-1 text-[12.5px]">
-                <span className="text-text-tertiary tabular-nums">
-                  {currentTab.count} tools in {currentTab.label}
-                </span>
-                <Link href={currentTab.href} className="font-medium text-accent-ink hover:underline underline-offset-2">
-                  Open {currentTab.label} hub →
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── 2. Popular Tools (Toolbar + Compact Grid) ───────────── */}
+      {/* ─── 2. Most Useful Tools (Toolbar + Compact Grid) ───────── */}
       <PopularTools />
 
       {/* Ad — renders nothing when no slot is configured */}
       <AdSlot slot="home" label="leaderboard (home)" className="max-w-6xl mx-auto px-4 sm:px-6 py-6" />
 
-      {/* ─── 3. How It Works & Local Architecture (Unified Band) ─── */}
+      {/* ─── 3. How It Works & Local Architecture ────────────────── */}
       <section className="border-t border-border-base bg-bg-surface" aria-labelledby="architecture-heading">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
           <div className="lg:col-span-6">
@@ -442,49 +137,8 @@ export function HomeClient() {
         </div>
       </section>
 
-      {/* ─── 4. Editorial Guides & Tutorials ─────────────────────── */}
-      <section className="border-t border-border-base bg-bg-base" aria-labelledby="guides-heading">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
-          <div className="flex flex-wrap items-baseline justify-between gap-4 mb-8">
-            <h2 id="guides-heading" className="heading-lg text-text-primary">
-              {t("home.blogTitle")}
-            </h2>
-            <div className="flex items-center gap-5 text-[13.5px] font-medium">
-              <Link href="/guides" className="text-text-secondary hover:text-text-primary transition-colors">
-                Reference Guides
-              </Link>
-              <Link href="/blog" className="text-accent-ink hover:underline underline-offset-2">
-                {t("home.allPosts")} →
-              </Link>
-            </div>
-          </div>
-
-          <div className="rounded-2xl border border-border-base bg-bg-surface divide-y divide-border-base overflow-hidden">
-            {BLOG_POSTS.slice(0, 4).map((post) => (
-              <Link
-                key={post.slug}
-                href={`/blog/${post.slug}`}
-                className="group flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 hover:bg-bg-elevated/50 transition-colors"
-              >
-                <div className="min-w-0">
-                  <h3 className="text-[15px] font-semibold text-text-primary group-hover:text-accent transition-colors">
-                    {post.title}
-                  </h3>
-                  <p className="text-[13px] text-text-secondary line-clamp-1 mt-0.5">
-                    {post.description}
-                  </p>
-                </div>
-                <span className="text-[13px] font-medium text-accent-ink shrink-0">
-                  {t("home.readGuide")} →
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── 5. FAQ (2-column split) ─────────────────────────────── */}
-      <section id="faq" className="border-t border-border-base bg-bg-surface" aria-labelledby="faq-heading">
+      {/* ─── 4. FAQ (2-column split) ─────────────────────────────── */}
+      <section id="faq" className="border-t border-border-base bg-bg-base" aria-labelledby="faq-heading">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
           <div className="lg:col-span-4">
             <h2 id="faq-heading" className="heading-lg text-text-primary mb-2">
@@ -503,6 +157,339 @@ export function HomeClient() {
   );
 }
 
+/* ─── Customizable Quick Shortcuts (localStorage + Most Useful) ─── */
+
+function QuickShortcutsSection() {
+  const [pinnedSlugs, setPinnedSlugs] = useState<string[]>([]);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [pickerQuery, setPickerQuery] = useState("");
+  const [draggedSlug, setDraggedSlug] = useState<string | null>(null);
+  const [dragOverSlug, setDragOverSlug] = useState<string | null>(null);
+  const pickerInputRef = useRef<HTMLInputElement>(null);
+
+  const topTools = useSyncExternalStore(
+    subscribeUsage,
+    getTopToolsSnapshot,
+    getEmptyToolsSnapshot
+  );
+  const recentTools = useSyncExternalStore(
+    subscribeUsage,
+    getRecentToolsSnapshot,
+    getEmptyToolsSnapshot
+  );
+
+  // Load saved custom shortcuts from localStorage
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(PINNED_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          setPinnedSlugs(
+            parsed.filter((s) => typeof s === "string" && TOOL_BY_SLUG.has(s)).slice(0, MAX_QUICK_TOOLS)
+          );
+        }
+      }
+    } catch {
+      // Ignore storage errors
+    }
+  }, []);
+
+  // Save custom shortcuts to localStorage
+  const savePinned = (next: string[]) => {
+    setPinnedSlugs(next);
+    try {
+      window.localStorage.setItem(PINNED_STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      // Ignore storage errors
+    }
+  };
+
+  const togglePin = (slug: string) => {
+    if (pinnedSlugs.includes(slug)) {
+      savePinned(pinnedSlugs.filter((s) => s !== slug));
+    } else if (pinnedSlugs.length < MAX_QUICK_TOOLS && displayShortcuts.length < MAX_QUICK_TOOLS) {
+      savePinned([...pinnedSlugs, slug]);
+    }
+  };
+
+  useEffect(() => {
+    if (pickerOpen) {
+      const timer = setTimeout(() => pickerInputRef.current?.focus(), 80);
+      const onKey = (e: KeyboardEvent) => {
+        if (e.key === "Escape") setPickerOpen(false);
+      };
+      window.addEventListener("keydown", onKey);
+      return () => {
+        clearTimeout(timer);
+        window.removeEventListener("keydown", onKey);
+      };
+    }
+  }, [pickerOpen]);
+
+  // Order:
+  // 1. Last used tool(s) automatically go first
+  // 2. User's custom pinned tools (preserving drag-and-drop order)
+  // 3. Most useful / top tools to fill up to 7 cards
+  const displayShortcuts = useMemo(() => {
+    const seen = new Set<string>();
+    const items: Array<{ tool: ToolDef; badge: "Recent" | "Pinned" | "Popular"; isPinned: boolean }> = [];
+
+    // 1. Last used tool goes first automatically
+    for (const tool of recentTools.slice(0, 2)) {
+      if (seen.has(tool.slug)) continue;
+      seen.add(tool.slug);
+      items.push({
+        tool,
+        badge: "Recent",
+        isPinned: pinnedSlugs.includes(tool.slug),
+      });
+    }
+
+    // 2. Custom pinned tools
+    for (const slug of pinnedSlugs) {
+      if (seen.has(slug)) continue;
+      const tool = TOOL_BY_SLUG.get(slug);
+      if (tool) {
+        seen.add(slug);
+        items.push({ tool, badge: "Pinned", isPinned: true });
+      }
+    }
+
+    // 3. Most useful / popular fallback
+    const fallbackTools =
+      topTools.length > 0
+        ? topTools
+        : (POPULAR_DEFAULT_SLUGS.slice(0, 7).map((s) => TOOL_BY_SLUG.get(s)).filter(Boolean) as ToolDef[]);
+
+    for (const tool of fallbackTools) {
+      if (items.length >= 7) break;
+      if (seen.has(tool.slug)) continue;
+      seen.add(tool.slug);
+      items.push({ tool, badge: "Popular", isPinned: false });
+    }
+
+    return items.slice(0, MAX_QUICK_TOOLS);
+  }, [pinnedSlugs, recentTools, topTools]);
+
+  // Drag-and-drop reorder handler — persists full custom order to localStorage
+  const handleDropOnCard = (targetSlug: string) => {
+    if (!draggedSlug || draggedSlug === targetSlug) {
+      setDraggedSlug(null);
+      setDragOverSlug(null);
+      return;
+    }
+    const currentOrder = displayShortcuts.map((d) => d.tool.slug);
+    const fromIdx = currentOrder.indexOf(draggedSlug);
+    const toIdx = currentOrder.indexOf(targetSlug);
+    if (fromIdx === -1 || toIdx === -1) return;
+
+    const reordered = [...currentOrder];
+    const [moved] = reordered.splice(fromIdx, 1);
+    reordered.splice(toIdx, 0, moved);
+    savePinned(reordered);
+    setDraggedSlug(null);
+    setDragOverSlug(null);
+  };
+
+  const pickerResults = useMemo(() => {
+    if (!pickerQuery.trim()) return ORDERED_TOOLS.slice(0, 24);
+    return searchTools(pickerQuery, 24).map((r) => r.tool);
+  }, [pickerQuery]);
+
+  return (
+    <section className="border-b border-border-base bg-bg-warm py-6 sm:py-8" aria-label="Quick tools">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <div className="flex items-center gap-2.5">
+            <h1 className="heading-md text-text-primary">Quick Tools</h1>
+            <span className="text-[12px] text-text-tertiary hidden sm:inline">
+              · Drag to reorder
+            </span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+          {displayShortcuts.map(({ tool, badge, isPinned }) => {
+            const isOver = dragOverSlug === tool.slug && draggedSlug !== tool.slug;
+            return (
+              <div
+                key={tool.slug}
+                draggable
+                onDragStart={() => setDraggedSlug(tool.slug)}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  if (dragOverSlug !== tool.slug) setDragOverSlug(tool.slug);
+                }}
+                onDragLeave={() => {
+                  if (dragOverSlug === tool.slug) setDragOverSlug(null);
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  handleDropOnCard(tool.slug);
+                }}
+                onDragEnd={() => {
+                  setDraggedSlug(null);
+                  setDragOverSlug(null);
+                }}
+                className={`group relative rounded-xl transition-all ${
+                  isOver ? "ring-2 ring-accent scale-[1.01]" : ""
+                } ${draggedSlug === tool.slug ? "opacity-50" : ""}`}
+              >
+                <Link
+                  href={`/tools/${tool.slug}`}
+                  className="flex items-center gap-3 p-3 sm:p-3.5 rounded-xl bg-bg-surface border border-border-base hover:border-accent/40 hover:shadow-[var(--elevation-sm)] transition-all cursor-grab active:cursor-grabbing"
+                >
+                  <span className="w-9 h-9 rounded-lg bg-bg-elevated flex items-center justify-center shrink-0">
+                    <ToolIcon name={tool.slug} size={18} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-[13.5px] font-semibold text-text-primary group-hover:text-accent transition-colors truncate pr-4">
+                      {tool.name}
+                    </span>
+                    <span className="block text-[11.5px] text-text-tertiary truncate">
+                      {badge}
+                    </span>
+                  </span>
+                </Link>
+
+                {isPinned && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      togglePin(tool.slug);
+                    }}
+                    title={`Remove ${tool.name} from quick tools`}
+                    aria-label={`Remove ${tool.name}`}
+                    className="absolute top-2 right-2 w-6 h-6 rounded-md flex items-center justify-center text-text-tertiary opacity-0 group-hover:opacity-100 hover:text-danger hover:bg-bg-elevated transition-all cursor-pointer"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            );
+          })}
+
+          {/* + Add Custom Shortcut Tile (hidden once max 12 tools reached) */}
+          {displayShortcuts.length < MAX_QUICK_TOOLS && (
+            <button
+              type="button"
+              onClick={() => {
+                setPickerQuery("");
+                setPickerOpen(true);
+              }}
+              className="flex items-center justify-center gap-2 p-3 sm:p-3.5 rounded-xl border border-dashed border-border-strong bg-bg-surface/50 hover:bg-bg-surface hover:border-accent/60 text-text-secondary hover:text-accent transition-all cursor-pointer min-h-[62px]"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+              <span className="text-[13.5px] font-medium">Add tool</span>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Custom Tool Picker Modal */}
+      {pickerOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs"
+            onClick={() => setPickerOpen(false)}
+            aria-hidden="true"
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Add custom quick tools"
+            className="relative w-full max-w-lg rounded-2xl bg-bg-surface border border-border-base shadow-[var(--elevation-xl)] overflow-hidden z-10 animate-fade-in-up"
+          >
+            <div className="flex items-center justify-between px-4 py-3.5 border-b border-border-base">
+              <h2 className="text-[15px] font-semibold text-text-primary">
+                Customize Quick Tools
+              </h2>
+              <button
+                type="button"
+                onClick={() => setPickerOpen(false)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-text-tertiary hover:text-text-primary hover:bg-bg-elevated cursor-pointer"
+                aria-label="Close"
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="p-3 border-b border-border-base">
+              <input
+                ref={pickerInputRef}
+                type="text"
+                value={pickerQuery}
+                onChange={(e) => setPickerQuery(e.target.value)}
+                placeholder={`Search ${ALL_TOOLS.length} tools to pin…`}
+                className="input h-10 text-[14px]"
+              />
+            </div>
+
+            <ul className="max-h-80 overflow-y-auto divide-y divide-border-base">
+              {pickerResults.map((tool) => {
+                const pinned = pinnedSlugs.includes(tool.slug);
+                const atLimit = displayShortcuts.length >= MAX_QUICK_TOOLS || pinnedSlugs.length >= MAX_QUICK_TOOLS;
+                return (
+                  <li key={tool.slug}>
+                    <button
+                      type="button"
+                      disabled={!pinned && atLimit}
+                      onClick={() => togglePin(tool.slug)}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-bg-elevated/60 disabled:opacity-45 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                    >
+                      <ToolIcon name={tool.slug} size={18} className="shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <span className="block text-[13.5px] font-medium text-text-primary truncate">
+                          {tool.name}
+                        </span>
+                        <span className="block text-[11.5px] text-text-tertiary truncate">
+                          {tool.description}
+                        </span>
+                      </div>
+                      <span
+                        className={`px-2.5 py-1 rounded-lg text-[11.5px] font-medium shrink-0 ${
+                          pinned
+                            ? "bg-accent text-text-on-accent"
+                            : "bg-bg-elevated text-text-secondary"
+                        }`}
+                      >
+                        {pinned ? "Pinned" : "+ Add"}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+
+            <div className="px-4 py-3 border-t border-border-base bg-bg-warm flex items-center justify-between text-[12px] text-text-tertiary">
+              <span>Saved locally in your browser</span>
+              <button
+                type="button"
+                onClick={() => setPickerOpen(false)}
+                className="btn-primary !min-h-8 px-4 py-1 text-[12.5px]"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function PopularTools() {
   const { t } = useI18n();
   const [chip, setChip] = useState<ChipId>("all");
@@ -516,7 +503,7 @@ function PopularTools() {
   const visible = showAll ? matched.slice(0, MAX_VISIBLE) : matched.slice(0, DEFAULT_VISIBLE);
 
   return (
-    <section className="py-14 sm:py-18" aria-labelledby="popular-heading">
+    <section className="py-10 sm:py-14" aria-labelledby="popular-heading">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-7">
           <div>

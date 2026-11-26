@@ -36,9 +36,9 @@ export default function DisclaimerPage() {
     <>
       <script {...jsonLdProps(jsonLd)} />
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         <nav
-          className="flex items-center gap-1.5 text-xs text-text-tertiary mb-8"
+          className="flex items-center gap-1.5 text-xs text-text-tertiary mb-5"
           aria-label="Breadcrumb"
         >
           <Link href="/" className="hover:text-text-primary transition-colors">
@@ -48,12 +48,14 @@ export default function DisclaimerPage() {
           <span className="text-text-secondary">Disclaimer</span>
         </nav>
 
-        <h1 className="heading-xl text-text-primary mb-6">Disclaimer</h1>
-
-        <div className="space-y-6 body-md text-text-secondary leading-relaxed">
-          <p>
-            <em>Last updated: November 12, 2026</em>
+        <header className="mb-8 pb-6 border-b border-border-base">
+          <h1 className="heading-lg text-text-primary mb-1.5">Disclaimer</h1>
+          <p className="text-[13px] text-text-tertiary">
+            Last updated: November 12, 2026
           </p>
+        </header>
+
+        <div className="rounded-2xl border border-border-base bg-bg-surface p-6 sm:p-8 space-y-6 body-md text-text-secondary leading-relaxed">
 
           <h2 className="heading-md text-text-primary pt-4">
             Automated Document-Processing Limitations

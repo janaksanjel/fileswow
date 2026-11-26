@@ -4,11 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import { LOCALES, useI18n } from "@/lib/i18n";
 import { UiIcon } from "@/components/ui-icon";
 
-/**
- * Language switcher — flag + native language label, dropdown opens upward.
- * Uses theme tokens so it adapts cleanly to both light and dark mode.
- */
-export function LanguageSwitcher() {
+interface LanguageSwitcherProps {
+  direction?: "up" | "down";
+  compact?: boolean;
+}
+
+export function LanguageSwitcher({ direction = "up", compact = false }: LanguageSwitcherProps) {
   const { locale, setLocale, t } = useI18n();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -30,6 +31,11 @@ export function LanguageSwitcher() {
     };
   }, [open]);
 
+  const menuPos =
+    direction === "down"
+      ? "top-full right-0 mt-2"
+      : "bottom-full left-0 mb-2";
+
   return (
     <div ref={wrapRef} className="relative inline-block text-left">
       <button
@@ -38,17 +44,21 @@ export function LanguageSwitcher() {
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={t("footer.selectLanguage")}
-        className="inline-flex items-center gap-2.5 h-11 px-4 rounded-xl border border-border-base bg-bg-surface hover:border-border-strong hover:bg-bg-elevated transition-colors cursor-pointer shadow-[var(--elevation-sm)]"
+        className={`inline-flex items-center border border-border-base bg-bg-surface hover:border-border-strong hover:bg-bg-elevated transition-colors cursor-pointer ${
+          compact
+            ? "gap-1.5 h-9 px-2.5 rounded-lg"
+            : "gap-2.5 h-11 px-4 rounded-xl shadow-[var(--elevation-sm)]"
+        }`}
       >
         <span className="leading-none" aria-hidden="true">
-          <UiIcon name={current.flag} size={18} />
+          <UiIcon name={current.flag} size={compact ? 16 : 18} />
         </span>
-        <span className="text-[13px] font-medium text-text-primary">
-          {current.label}
+        <span className={compact ? "text-[12px] font-semibold uppercase text-text-primary" : "text-[13px] font-medium text-text-primary"}>
+          {compact ? current.code.toUpperCase() : current.label}
         </span>
         <svg
-          width="12"
-          height="12"
+          width="11"
+          height="11"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -66,7 +76,7 @@ export function LanguageSwitcher() {
         <ul
           role="listbox"
           aria-label={t("footer.selectLanguage")}
-          className="absolute bottom-full left-0 mb-2 w-52 rounded-2xl border border-border-base bg-bg-surface shadow-[var(--elevation-xl)] overflow-hidden z-50 p-1.5 animate-fade-in-up"
+          className={`absolute ${menuPos} w-48 rounded-2xl border border-border-base bg-bg-surface shadow-[var(--elevation-xl)] overflow-hidden z-50 p-1.5 animate-fade-in-up`}
         >
           {LOCALES.map((l) => {
             const selected = l.code === locale;
@@ -80,22 +90,20 @@ export function LanguageSwitcher() {
                     setLocale(l.code);
                     setOpen(false);
                   }}
-                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors cursor-pointer ${
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left transition-colors cursor-pointer ${
                     selected
                       ? "bg-bg-elevated text-text-primary font-semibold"
                       : "text-text-secondary hover:bg-bg-elevated hover:text-text-primary font-medium"
                   }`}
                 >
                   <span className="leading-none" aria-hidden="true">
-                    <UiIcon name={l.flag} size={18} />
+                    <UiIcon name={l.flag} size={17} />
                   </span>
-                  <span className="text-[13.5px]">
-                    {l.label}
-                  </span>
+                  <span className="text-[13px]">{l.label}</span>
                   {selected && (
                     <svg
-                      width="14"
-                      height="14"
+                      width="13"
+                      height="13"
                       viewBox="0 0 24 24"
                       fill="none"
                       stroke="currentColor"

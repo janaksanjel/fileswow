@@ -59,10 +59,10 @@ export default function GuidesIndexPage() {
       <script {...jsonLdProps(blogJsonLd)} />
       <script {...jsonLdProps(breadcrumbJsonLd)} />
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Heading */}
         <nav
-          className="flex items-center gap-2 text-xs font-medium text-text-tertiary mb-6"
+          className="flex items-center gap-2 text-xs font-medium text-text-tertiary mb-5"
           aria-label="Breadcrumb"
         >
           <Link href="/" className="hover:text-accent transition-colors">
@@ -84,47 +84,46 @@ export default function GuidesIndexPage() {
           <span className="text-text-secondary">Guides</span>
         </nav>
 
-        <header className="mb-10">
-          <h1 className="heading-xl text-text-primary mb-3 [text-wrap:balance]">
+        <header className="mb-8 pb-6 border-b border-border-base">
+          <h1 className="heading-lg text-text-primary mb-2 [text-wrap:balance]">
             Practical guides for real document work
           </h1>
-          <p className="body-lg text-text-secondary max-w-xl">
+          <p className="body-md text-text-secondary max-w-2xl">
             In-depth, no-fluff articles on the operations people actually do —
-            merging, compressing, converting, signing, OCR — with the reasoning
-            and the pitfalls, not just the steps.
+            merging, compressing, converting, signing, and OCR — with the reasoning
+            and pitfalls, not just the steps.
           </p>
         </header>
 
-        {/* Guide cards */}
-        <div className="space-y-4">
+        {/* Guide cards — 2-column grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {GUIDES.map((guide) => (
             <Link
               key={guide.slug}
               href={`/guides/${guide.slug}`}
-              className="block group card p-5 sm:p-6 hover:border-border-strong transition-colors"
+              className="group flex flex-col p-5 rounded-2xl bg-bg-surface border border-border-base hover:border-accent/40 hover:shadow-[var(--elevation-md)] transition-all"
             >
               <div className="flex flex-wrap items-center gap-2 mb-2.5">
                 <span
-                  className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide ${CATEGORY_COLORS[guide.category] ?? "bg-text-tertiary/10 text-text-tertiary"}`}
+                  className={`text-[10.5px] px-2 py-0.5 rounded-md font-semibold uppercase tracking-wide ${CATEGORY_COLORS[guide.category] ?? "bg-bg-elevated text-text-secondary"}`}
                 >
                   {CATEGORY_LABELS[guide.category] ?? guide.category}
                 </span>
-                <span className="text-[11px] font-medium text-text-tertiary">
-                  Updated{" "}
+                <span className="text-[11.5px] text-text-tertiary">
                   {new Date(guide.updated).toLocaleDateString("en-US", {
                     year: "numeric",
                     month: "short",
                     day: "numeric",
                   })}
                 </span>
-                <span className="text-[11px] font-medium text-text-tertiary">
+                <span className="text-[11.5px] text-text-tertiary">
                   · {readingMinutes(guide)} min read
                 </span>
               </div>
-              <h2 className="text-[17px] font-bold text-text-primary mb-1.5 group-hover:text-accent transition-colors">
+              <h2 className="text-[16px] font-semibold text-text-primary mb-1.5 group-hover:text-accent transition-colors leading-snug">
                 {guide.title}
               </h2>
-              <p className="text-[13.5px] leading-relaxed text-text-secondary">
+              <p className="text-[13px] leading-relaxed text-text-secondary line-clamp-3">
                 {guide.description}
               </p>
             </Link>

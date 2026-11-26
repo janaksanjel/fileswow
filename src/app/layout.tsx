@@ -2,8 +2,7 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { I18nProvider } from "@/lib/i18n";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
+import { AppShell } from "@/components/app-shell";
 import { CookieConsentBanner } from "@/components/cookie-consent";
 import { AnalyticsConsentGate } from "@/components/analytics-consent-gate";
 import { SupportBot } from "@/components/support-bot";
@@ -213,9 +212,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
         <ThemeProvider>
           <I18nProvider>
-            <Header />
-            <main className="min-h-[calc(100vh-4rem)]" id="main-content">{children}</main>
-            <Footer />
+            <AppShell>{children}</AppShell>
             <CookieConsentBanner />
             <SupportBot />
           </I18nProvider>

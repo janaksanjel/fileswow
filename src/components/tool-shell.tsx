@@ -9,6 +9,8 @@ import { AdSlot } from "./ad-unit";
 import { Accordion } from "./ui/accordion";
 import { categoryTile } from "@/lib/category-style";
 import { getToolOperationalDetails } from "@/lib/tool-details";
+import { ShareButtons } from "./share-buttons";
+import { toolUrl } from "@/lib/site";
 
 interface ToolShellProps {
   tool: ToolDef;
@@ -77,9 +79,9 @@ export function ToolShell({
   const tierLabel = tool.tier === 2 ? "WASM" : tool.tier === 3 ? "BETA" : null;
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-xs font-medium text-text-tertiary mb-6" aria-label="Breadcrumb">
+      <nav className="flex items-center gap-2 text-xs font-medium text-text-tertiary mb-5" aria-label="Breadcrumb">
         <Link href="/" className="hover:text-accent transition-colors">
           Home
         </Link>
@@ -95,78 +97,86 @@ export function ToolShell({
         <span className="text-text-secondary truncate">{tool.name}</span>
       </nav>
 
-      {/* Header */}
-      <div className="mb-7">
-        <div className="flex items-start gap-4">
-          <span
-            className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${categoryTile(
-              tool.category
-            )}`}
-          >
-            <ToolIcon name={tool.slug} size={24} />
-          </span>
-          <div className="min-w-0 pt-0.5">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <h1 className="heading-lg text-text-primary">{tool.name}</h1>
-              {tierLabel && (
-                <span
-                  className={`badge badge-mono ${
-                    tool.tier === 2 ? "badge-accent" : ""
-                  }`}
-                >
-                  {tierLabel}
-                </span>
-              )}
+      {/* Unified System Tool Window (Header + Workbench in one cohesive frame) */}
+      <div className="rounded-2xl border border-border-base bg-bg-surface shadow-[var(--elevation-sm)] overflow-hidden mb-10">
+        <div className="px-4 sm:px-7 py-4 sm:py-5 border-b border-border-base bg-bg-warm flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-start sm:items-center gap-3.5 min-w-0">
+            <span
+              className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${categoryTile(
+                tool.category
+              )}`}
+            >
+              <ToolIcon name={tool.slug} size={22} />
+            </span>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="heading-md text-text-primary">{tool.name}</h1>
+                {tierLabel && (
+                  <span
+                    className={`badge badge-mono ${
+                      tool.tier === 2 ? "badge-accent" : ""
+                    }`}
+                  >
+                    {tierLabel}
+                  </span>
+                )}
+              </div>
+              <p className="text-[13.5px] text-text-secondary mt-0.5">{tool.description}</p>
             </div>
-            <p className="body-md text-text-secondary mt-1.5 max-w-xl">{tool.description}</p>
+          </div>
 
-            {/* Calm privacy indicator */}
-            <p className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2.5 text-[12.5px] font-medium text-text-secondary">
-              <span className="inline-flex items-center gap-1.5 text-success">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                  <path d="M9 12l2 2 4-4" />
-                </svg>
-                {tool.slug === "p2p-text" ? "Peer-to-peer WebRTC" : "Processed in your browser"}
-              </span>
-              {tool.slug !== "p2p-text" && tool.slug !== "pdf-create-from-url" && (
-                <>
-                  <span className="text-text-tertiary" aria-hidden="true">·</span>
-                  <span>No server upload</span>
-                </>
-              )}
-              <span className="text-text-tertiary" aria-hidden="true">·</span>
-              <span>Free</span>
-            </p>
+          <div className="flex items-center gap-2 text-[12px] font-medium text-text-secondary shrink-0">
+            <span className="inline-flex items-center gap-1.5 text-success">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="M9 12l2 2 4-4" />
+              </svg>
+              {tool.slug === "p2p-text" ? "Peer-to-peer WebRTC" : "Browser-based"}
+            </span>
+            {tool.slug !== "p2p-text" && tool.slug !== "pdf-create-from-url" && (
+              <>
+                <span className="text-text-tertiary" aria-hidden="true">·</span>
+                <span>No upload</span>
+              </>
+            )}
           </div>
         </div>
+
+        {/* Responsible-use notice for tools that interact with protections/markings */}
+        {RESPONSIBLE_USE_SLUGS.has(tool.slug) && (
+          <div className="mx-5 sm:mx-7 mt-5 px-4 py-3 rounded-xl bg-warning/[0.06] border border-warning/25 flex items-start gap-3">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-warning mt-0.5 shrink-0" aria-hidden="true">
+              <path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />
+            </svg>
+            <p className="text-[13px] leading-relaxed text-text-secondary">
+              <strong className="text-text-primary font-semibold">
+                Use only on documents you own or are authorized to modify.
+              </strong>{" "}
+              Watermarks and password protection often assert legal rights — removing them
+              from someone else&apos;s work may infringe copyright. See our{" "}
+              <Link
+                href="/terms"
+                className="font-semibold text-text-primary underline decoration-warning underline-offset-2 hover:opacity-80 transition-opacity"
+              >
+                Terms of Service
+              </Link>
+              .
+            </p>
+          </div>
+        )}
+
+        {/* Tool workbench */}
+        <div className="p-4 sm:p-7">{children}</div>
       </div>
 
-      {/* Responsible-use notice for tools that interact with protections/markings */}
-      {RESPONSIBLE_USE_SLUGS.has(tool.slug) && (
-        <div className="mb-5 px-4 py-3 rounded-xl bg-warning/[0.06] border border-warning/25 flex items-start gap-3">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-warning mt-0.5 shrink-0" aria-hidden="true">
-            <path d="M12 9v4M12 17h.01M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />
-          </svg>
-          <p className="text-[13px] leading-relaxed text-text-secondary">
-            <strong className="text-text-primary font-semibold">
-              Use only on documents you own or are authorized to modify.
-            </strong>{" "}
-            Watermarks and password protection often assert legal rights — removing them
-            from someone else&apos;s work may infringe copyright. See our{" "}
-            <Link
-              href="/terms"
-              className="font-semibold text-text-primary underline decoration-warning underline-offset-2 hover:opacity-80 transition-opacity"
-            >
-              Terms of Service
-            </Link>
-            .
-          </p>
-        </div>
-      )}
-
-      {/* Tool workbench */}
-      <div className="panel p-5 sm:p-6 mb-8">{children}</div>
+      {/* Share bar — 7 popular social platforms + copy link */}
+      <div className="mb-9 px-4 sm:px-5 py-3.5 rounded-2xl border border-border-base bg-bg-surface">
+        <ShareButtons
+          url={toolUrl(tool.slug)}
+          title={`${tool.name} — Free Online Tool on FilesWow.com`}
+          label={`Share ${tool.name}`}
+        />
+      </div>
 
       {/* Tier notice for Tier 3 tools */}
       {tool.tier === 3 && (

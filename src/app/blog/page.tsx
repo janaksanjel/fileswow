@@ -80,10 +80,10 @@ export default function BlogIndexPage() {
       <script {...jsonLdProps(blogJsonLd)} />
       <script {...jsonLdProps(breadcrumbJsonLd)} />
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Breadcrumb */}
         <nav
-          className="flex items-center gap-2 text-xs font-medium text-text-tertiary mb-6"
+          className="flex items-center gap-2 text-xs font-medium text-text-tertiary mb-5"
           aria-label="Breadcrumb"
         >
           <Link href="/" className="hover:text-accent transition-colors">
@@ -106,14 +106,14 @@ export default function BlogIndexPage() {
         </nav>
 
         {/* Heading */}
-        <header className="mb-10">
-          <h1 className="heading-xl text-text-primary mb-3 [text-wrap:balance]">
+        <header className="mb-8 pb-6 border-b border-border-base">
+          <h1 className="heading-lg text-text-primary mb-2 [text-wrap:balance]">
             The FilesWow blog
           </h1>
-          <p className="body-lg text-text-secondary max-w-xl">
+          <p className="body-md text-text-secondary max-w-2xl">
             Step-by-step tutorials for real file work — merging, compressing,
-            converting, signing, resizing — with privacy-first tools that run
-            entirely in your browser. No fluff, no uploads, no sign-ups.
+            converting, signing, and resizing — with privacy-first tools that run
+            entirely in your browser.
           </p>
         </header>
 

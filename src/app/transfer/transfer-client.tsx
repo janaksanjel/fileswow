@@ -1551,19 +1551,10 @@ export function TransferClient() {
   // Render
   // ═══════════════════════════════════════════════════════════════════════
 
-  // ── Landing: Send Anywhere-style — upload on top, code input below ──
+  // ── Landing: unified system window — upload on top, code input below ──
   if (role === null) {
     return (
-      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="heading-lg text-text-primary">Send files straight to any device</h1>
-          <p className="body-md text-text-secondary mt-2 max-w-xl mx-auto">
-            Up to <strong className="text-text-primary">50 GB</strong>, peer-to-peer and end-to-end encrypted.
-            No sign-up, no cloud storage — files go directly from device to device.
-          </p>
-        </div>
-
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         {error && (
           <div className="mb-5 px-4 py-3 rounded-xl bg-danger/[0.05] border border-danger/25 flex items-start gap-3" role="alert">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-danger mt-0.5 shrink-0" aria-hidden="true">
@@ -1581,14 +1572,27 @@ export function TransferClient() {
           </div>
         )}
 
-        {/* ① Upload zone — unified with all other tools */}
-        <section id="send" aria-labelledby="send-heading" className="mb-10 scroll-mt-20">
-          <div className="flex items-center gap-2.5 mb-3">
-            <span className="flex items-center justify-center w-6 h-6 rounded-full bg-accent text-text-on-accent text-[11px] font-extrabold">1</span>
-            <h2 id="send-heading" className="heading-md text-text-primary">Send files</h2>
+        {/* Unified Send Files Window */}
+        <section id="send" aria-labelledby="send-heading" className="mb-10 scroll-mt-20 rounded-2xl border border-border-base bg-bg-surface shadow-[var(--elevation-sm)] overflow-hidden">
+          <div className="px-5 sm:px-7 py-5 border-b border-border-base bg-bg-warm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h1 id="send-heading" className="heading-md text-text-primary">
+                Send files straight to any device
+              </h1>
+              <p className="text-[13.5px] text-text-secondary mt-0.5">
+                Up to <strong className="text-text-primary font-semibold">50 GB</strong>, peer-to-peer and encrypted — no cloud storage.
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-success shrink-0">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="M9 12l2 2 4-4" />
+              </svg>
+              Direct WebRTC
+            </span>
           </div>
 
-          <div className="panel p-3 sm:p-6">
+          <div className="p-5 sm:p-7">
             <FileUploader
               accept="*/*"
               multiple={true}
