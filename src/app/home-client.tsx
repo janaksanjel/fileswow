@@ -307,6 +307,23 @@ function QuickShortcutsSection() {
               · Drag to reorder
             </span>
           </div>
+
+          {pinnedSlugs.length > 0 && (
+            <button
+              type="button"
+              onClick={() => savePinned([])}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[12px] font-semibold text-text-secondary hover:text-danger bg-bg-surface hover:bg-danger/10 border border-border-base hover:border-danger/30 transition-colors cursor-pointer"
+              title="Clear all pinned quick tools"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="3 6 5 6 21 6" />
+                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                <path d="M10 11v6" />
+                <path d="M14 11v6" />
+              </svg>
+              <span>Clear all</span>
+            </button>
+          )}
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
@@ -316,9 +333,19 @@ function QuickShortcutsSection() {
               <div
                 key={tool.slug}
                 draggable
-                onDragStart={() => setDraggedSlug(tool.slug)}
+                onDragStart={(e) => {
+                  setDraggedSlug(tool.slug);
+                  e.dataTransfer.effectAllowed = "move";
+                  e.dataTransfer.setData("text/plain", tool.slug);
+                  try {
+                    e.dataTransfer.setDragImage(e.currentTarget, 24, 24);
+                  } catch {
+                    // Ignore in browsers that restrict setDragImage
+                  }
+                }}
                 onDragOver={(e) => {
                   e.preventDefault();
+                  e.dataTransfer.dropEffect = "move";
                   if (dragOverSlug !== tool.slug) setDragOverSlug(tool.slug);
                 }}
                 onDragLeave={() => {
@@ -332,13 +359,14 @@ function QuickShortcutsSection() {
                   setDraggedSlug(null);
                   setDragOverSlug(null);
                 }}
-                className={`group relative rounded-xl transition-all ${
-                  isOver ? "ring-2 ring-accent scale-[1.01]" : ""
-                } ${draggedSlug === tool.slug ? "opacity-50" : ""}`}
+                className={`group relative rounded-xl select-none transition-all ${
+                  isOver ? "ring-2 ring-accent scale-[1.02]" : ""
+                } ${draggedSlug === tool.slug ? "opacity-45 scale-[0.98]" : ""}`}
               >
                 <Link
                   href={`/tools/${tool.slug}`}
-                  className="flex items-center gap-3 p-3 sm:p-3.5 rounded-xl bg-bg-surface border border-border-base hover:border-accent/40 hover:shadow-[var(--elevation-sm)] transition-all cursor-grab active:cursor-grabbing"
+                  draggable={false}
+                  className="flex items-center gap-3 p-3 sm:p-3.5 rounded-xl bg-bg-surface border border-border-base hover:border-accent/40 hover:shadow-[var(--elevation-sm)] transition-all cursor-grab active:cursor-grabbing select-none"
                 >
                   <span className="w-9 h-9 rounded-lg bg-bg-elevated flex items-center justify-center shrink-0">
                     <ToolIcon name={tool.slug} size={18} />

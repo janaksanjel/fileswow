@@ -9,7 +9,7 @@ import { ToolIcon } from "@/components/icon";
 import { Footer } from "@/components/footer";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { ALL_TOOLS, type ToolCategory } from "@/lib/catalog";
-import { DEFAULT_HEADER_THEME, getToolGradient } from "@/lib/tool-theme";
+import { DEFAULT_HEADER_THEME, getHourlyDefaultTheme, getToolGradient, type ToolGradientTheme } from "@/lib/tool-theme";
 
 const SIDEBAR_CATEGORIES: Array<{
   category: ToolCategory;
@@ -165,7 +165,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     setOpenCategory((prev) => (prev === cat ? null : cat));
   };
 
-  const activeTheme = activeTool ? getToolGradient(activeTool.slug) : DEFAULT_HEADER_THEME;
+  const [hourlyTheme, setHourlyTheme] = useState<ToolGradientTheme>(DEFAULT_HEADER_THEME);
+
+  useEffect(() => {
+    const syncTheme = () => setHourlyTheme(getHourlyDefaultTheme());
+    syncTheme();
+    const msUntilNextHour = 3_600_000 - (Date.now() % 3_600_000);
+    let intervalId: number | null = null;
+    const timeoutId = window.setTimeout(() => {
+      syncTheme();
+      intervalId = window.setInterval(syncTheme, 3_600_000);
+    }, msUntilNextHour);
+    return () => {
+      window.clearTimeout(timeoutId);
+      if (intervalId !== null) window.clearInterval(intervalId);
+    };
+  }, []);
+
+  const activeTheme = activeTool ? getToolGradient(activeTool.slug) : hourlyTheme;
 
   const sidebarContent = (isMobile: boolean) => (
     <div className="flex flex-col h-full bg-bg-surface">

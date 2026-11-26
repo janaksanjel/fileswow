@@ -1,18 +1,18 @@
 export interface ToolGradientTheme {
   /** Vibrant gradient for accent bars, pills, and highlights */
   gradient: string;
-  /** Soft translucent gradient wash for the website header so text & logo stay crisp */
+  /** Soft translucent gradient wash */
   softGradient: string;
   accentHex: string;
 }
 
+export const DEFAULT_HEADER_THEME: ToolGradientTheme = {
+  gradient: "linear-gradient(135deg, #047857 0%, #059669 55%, #14B8A6 100%)",
+  softGradient: "linear-gradient(135deg, rgba(5, 150, 105, 0.14) 0%, rgba(20, 184, 166, 0.08) 100%)",
+  accentHex: "#059669",
+};
+
 const TOOL_GRADIENTS: ToolGradientTheme[] = [
-  // Sunset Orange
-  {
-    gradient: "linear-gradient(135deg, #EA580C 0%, #FC5B00 55%, #FB923C 100%)",
-    softGradient: "linear-gradient(135deg, rgba(252, 91, 0, 0.14) 0%, rgba(251, 146, 60, 0.08) 100%)",
-    accentHex: "#FC5B00",
-  },
   // Royal Indigo
   {
     gradient: "linear-gradient(135deg, #4338CA 0%, #6366F1 55%, #818CF8 100%)",
@@ -31,12 +31,6 @@ const TOOL_GRADIENTS: ToolGradientTheme[] = [
     softGradient: "linear-gradient(135deg, rgba(5, 150, 105, 0.14) 0%, rgba(20, 184, 166, 0.08) 100%)",
     accentHex: "#059669",
   },
-  // Crimson Rose
-  {
-    gradient: "linear-gradient(135deg, #BE123C 0%, #E11D48 55%, #F43F5E 100%)",
-    softGradient: "linear-gradient(135deg, rgba(225, 29, 72, 0.14) 0%, rgba(244, 63, 94, 0.08) 100%)",
-    accentHex: "#E11D48",
-  },
   // Deep Violet
   {
     gradient: "linear-gradient(135deg, #6D28D9 0%, #7C3AED 55%, #A855F7 100%)",
@@ -49,11 +43,29 @@ const TOOL_GRADIENTS: ToolGradientTheme[] = [
     softGradient: "linear-gradient(135deg, rgba(37, 99, 235, 0.14) 0%, rgba(59, 130, 246, 0.08) 100%)",
     accentHex: "#2563EB",
   },
-  // Magenta Plum
+  // Electric Cyan
   {
-    gradient: "linear-gradient(135deg, #A21CAF 0%, #C026D3 55%, #EC4899 100%)",
-    softGradient: "linear-gradient(135deg, rgba(192, 38, 211, 0.14) 0%, rgba(236, 72, 153, 0.08) 100%)",
-    accentHex: "#C026D3",
+    gradient: "linear-gradient(135deg, #0E7490 0%, #0891B2 55%, #2563EB 100%)",
+    softGradient: "linear-gradient(135deg, rgba(8, 145, 178, 0.14) 0%, rgba(37, 99, 235, 0.08) 100%)",
+    accentHex: "#0891B2",
+  },
+  // Teal Indigo
+  {
+    gradient: "linear-gradient(135deg, #0F766E 0%, #0D9488 55%, #2563EB 100%)",
+    softGradient: "linear-gradient(135deg, rgba(13, 148, 136, 0.14) 0%, rgba(37, 99, 235, 0.08) 100%)",
+    accentHex: "#0D9488",
+  },
+  // Berry Plum
+  {
+    gradient: "linear-gradient(135deg, #7E22CE 0%, #9333EA 55%, #DB2777 100%)",
+    softGradient: "linear-gradient(135deg, rgba(147, 51, 234, 0.14) 0%, rgba(219, 39, 119, 0.08) 100%)",
+    accentHex: "#9333EA",
+  },
+  // Deep Navy Blue
+  {
+    gradient: "linear-gradient(135deg, #1E3A8A 0%, #1D4ED8 55%, #0284C7 100%)",
+    softGradient: "linear-gradient(135deg, rgba(29, 78, 216, 0.15) 0%, rgba(2, 132, 199, 0.08) 100%)",
+    accentHex: "#1D4ED8",
   },
   // Forest Mint
   {
@@ -61,35 +73,31 @@ const TOOL_GRADIENTS: ToolGradientTheme[] = [
     softGradient: "linear-gradient(135deg, rgba(22, 163, 74, 0.14) 0%, rgba(13, 148, 136, 0.08) 100%)",
     accentHex: "#16A34A",
   },
-  // Amber Coral
+  // Crimson Berry
   {
-    gradient: "linear-gradient(135deg, #B45309 0%, #D97706 55%, #EA580C 100%)",
-    softGradient: "linear-gradient(135deg, rgba(217, 119, 6, 0.15) 0%, rgba(234, 88, 12, 0.08) 100%)",
-    accentHex: "#D97706",
+    gradient: "linear-gradient(135deg, #9D174D 0%, #BE185D 55%, #EC4899 100%)",
+    softGradient: "linear-gradient(135deg, rgba(190, 24, 93, 0.14) 0%, rgba(236, 72, 153, 0.08) 100%)",
+    accentHex: "#BE185D",
   },
-  // Midnight Slate
+  // Indigo Cyan
   {
-    gradient: "linear-gradient(135deg, #0F172A 0%, #1E293B 55%, #334155 100%)",
-    softGradient: "linear-gradient(135deg, rgba(30, 41, 59, 0.14) 0%, rgba(71, 85, 105, 0.08) 100%)",
-    accentHex: "#334155",
-  },
-  // Electric Cyan
-  {
-    gradient: "linear-gradient(135deg, #0E7490 0%, #0891B2 55%, #2563EB 100%)",
-    softGradient: "linear-gradient(135deg, rgba(8, 145, 178, 0.14) 0%, rgba(37, 99, 235, 0.08) 100%)",
-    accentHex: "#0891B2",
+    gradient: "linear-gradient(135deg, #3730A3 0%, #4F46E5 55%, #06B6D4 100%)",
+    softGradient: "linear-gradient(135deg, rgba(79, 70, 229, 0.15) 0%, rgba(6, 182, 212, 0.08) 100%)",
+    accentHex: "#4F46E5",
   },
 ];
 
-export const DEFAULT_HEADER_THEME: ToolGradientTheme = {
-  gradient: "linear-gradient(135deg, #047857 0%, #059669 55%, #14B8A6 100%)",
-  softGradient: "linear-gradient(135deg, rgba(5, 150, 105, 0.14) 0%, rgba(20, 184, 166, 0.08) 100%)",
-  accentHex: "#059669",
-};
+/**
+ * Returns a default pro gradient theme that rotates automatically every 1 hour.
+ */
+export function getHourlyDefaultTheme(nowMs: number = Date.now()): ToolGradientTheme {
+  const hourBucket = Math.floor(nowMs / 3_600_000);
+  return TOOL_GRADIENTS[hourBucket % TOOL_GRADIENTS.length];
+}
 
 /**
  * Deterministic pro gradient palette for each tool slug so every tool header
- * has a distinct, cohesive visual identity.
+ * has a distinct, cohesive visual identity that keeps the FilesWow logo crisp.
  */
 export function getToolGradient(slug: string): ToolGradientTheme {
   let hash = 2166136261;
