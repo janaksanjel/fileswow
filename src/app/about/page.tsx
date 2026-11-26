@@ -43,12 +43,9 @@ export default function AboutPage() {
           <span className="text-text-secondary">About</span>
         </nav>
 
-        <div className="flex items-start gap-4 mb-6">
-          <span className="hidden sm:block w-1.5 self-stretch rounded-full bg-gradient-to-b from-accent-light to-accent shrink-0" aria-hidden="true" />
-          <h1 className="heading-xl text-text-primary">
-            About FilesWow.com
-          </h1>
-        </div>
+        <h1 className="heading-xl text-text-primary mb-8">
+          About FilesWow.com
+        </h1>
 
         <div className="space-y-6 body-md text-text-secondary leading-relaxed">
           <p>

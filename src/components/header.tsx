@@ -8,105 +8,54 @@ import { SearchModal } from "@/components/search-modal";
 import { ToolIcon } from "@/components/icon";
 import { CATEGORY_MENUS, type CategoryMenu } from "@/lib/mega-menu";
 import { ALL_TOOLS } from "@/lib/catalog";
-import { getHeaderSmartTools, DEFAULT_HEADER_TOOLS, subscribeUsage } from "@/lib/usage";
 
-const TRANSFER_HREF = "/transfer";
-
-// Smart dynamic tools loaded via getHeaderSmartTools()
-
-/* Structured sections matching the user's uploaded reference image */
 const ALL_TOOLS_COLUMNS = [
   {
-    title: "CONVERT TO PDF",
+    title: "Convert to PDF",
     tools: [
       { name: "JPG to PDF", slug: "jpg-to-pdf", href: "/tools/jpg-to-pdf" },
-      { name: "WORD to PDF", slug: "word-to-pdf", href: "/tools/word-to-pdf" },
-      { name: "EXCEL to PDF", slug: "excel-to-pdf", href: "/tools/excel-to-pdf" },
+      { name: "Word to PDF", slug: "word-to-pdf", href: "/tools/word-to-pdf" },
+      { name: "Excel to PDF", slug: "excel-to-pdf", href: "/tools/excel-to-pdf" },
       { name: "HTML to PDF", slug: "html-to-pdf", href: "/tools/html-to-pdf" },
-      { name: "TEXT to PDF", slug: "text-to-pdf", href: "/tools/text-to-pdf" },
+      { name: "Text to PDF", slug: "text-to-pdf", href: "/tools/text-to-pdf" },
     ],
   },
   {
-    title: "CONVERT FROM PDF",
+    title: "Convert from PDF",
     tools: [
       { name: "PDF to JPG", slug: "pdf-to-jpg", href: "/tools/pdf-to-jpg" },
-      { name: "PDF to WORD", slug: "pdf-to-word", href: "/tools/pdf-to-word" },
-      { name: "PDF to EXCEL", slug: "pdf-to-excel", href: "/tools/pdf-to-excel" },
-      { name: "PDF to TEXT", slug: "pdf-to-text", href: "/tools/pdf-to-text" },
+      { name: "PDF to Word", slug: "pdf-to-word", href: "/tools/pdf-to-word" },
+      { name: "PDF to Excel", slug: "pdf-to-excel", href: "/tools/pdf-to-excel" },
+      { name: "PDF to Text", slug: "pdf-to-text", href: "/tools/pdf-to-text" },
       { name: "PDF to HTML", slug: "pdf-to-html", href: "/tools/pdf-to-html" },
     ],
   },
   {
-    title: "ORGANIZE & EDIT",
+    title: "Organize & Edit",
     tools: [
-      { name: "MERGE PDF", slug: "merge-pdf", href: "/tools/merge-pdf" },
-      { name: "SPLIT PDF", slug: "split-pdf", href: "/tools/split-pdf" },
-      { name: "COMPRESS PDF", slug: "compress-pdf", href: "/tools/compress-pdf" },
-      { name: "ROTATE PDF", slug: "rotate-pdf", href: "/tools/rotate-pdf" },
-      { name: "SIGN PDF", slug: "sign-pdf", href: "/tools/sign-pdf" },
+      { name: "Merge PDF", slug: "merge-pdf", href: "/tools/merge-pdf" },
+      { name: "Split PDF", slug: "split-pdf", href: "/tools/split-pdf" },
+      { name: "Compress PDF", slug: "compress-pdf", href: "/tools/compress-pdf" },
+      { name: "Rotate PDF", slug: "rotate-pdf", href: "/tools/rotate-pdf" },
+      { name: "Sign PDF", slug: "sign-pdf", href: "/tools/sign-pdf" },
     ],
   },
 ];
 
-// Simple monochrome outline icon matching File Transfer navigation style
-function SimpleNavIcon({ slug }: { slug: string }) {
-  if (slug.includes("merge")) {
-    return (
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14 2 14 8 20 8" />
-        <line x1="12" y1="18" x2="12" y2="12" />
-        <line x1="9" y1="15" x2="15" y2="15" />
-      </svg>
-    );
-  }
-  if (slug.includes("compress")) {
-    return (
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="7 14 12 18 17 14" />
-        <line x1="12" y1="9" x2="12" y2="18" />
-      </svg>
-    );
-  }
-  if (slug.includes("split")) {
-    return (
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <line x1="2" y1="12" x2="22" y2="12" />
-      </svg>
-    );
-  }
-  if (slug.includes("to-")) {
-    return (
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-      </svg>
-    );
-  }
-  if (slug.includes("sign")) {
-    return (
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
-      </svg>
-    );
-  }
-  if (slug.includes("image") || slug.includes("jpg") || slug.includes("png")) {
-    return (
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-        <circle cx="8.5" cy="8.5" r="1.5" />
-        <polyline points="21 15 16 10 5 21" />
-      </svg>
-    );
-  }
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-    </svg>
-  );
-}
+const NAV_LINKS = [
+  { label: "Transfer", href: "/transfer" },
+  { label: "Guides", href: "/guides" },
+  { label: "Blog", href: "/blog" },
+  { label: "About", href: "/about" },
+  { label: "Contact", href: "/contact" },
+];
+
+const CATEGORY_LINKS = [
+  { label: "PDF Tools", href: "/pdf-tools" },
+  { label: "Word Tools", href: "/word-tools" },
+  { label: "Image Tools", href: "/image-tools" },
+  { label: "Text Tools", href: "/text-tools" },
+];
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -115,18 +64,8 @@ export function Header() {
   const [openSection, setOpenSection] = useState<number | null>(0);
   const pathname = usePathname();
   const { theme, toggle } = useTheme();
-  const [navTools, setNavTools] = useState(DEFAULT_HEADER_TOOLS);
-
-  // Sync smart top 2 tools + 1 recommendation from local storage algorithm
-  useEffect(() => {
-    setNavTools(getHeaderSmartTools());
-    return subscribeUsage(() => {
-      setNavTools(getHeaderSmartTools());
-    });
-  }, []);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Close mobile drawer and dropdown on navigation
   const [prevPath, setPrevPath] = useState(pathname);
   if (prevPath !== pathname) {
     setPrevPath(pathname);
@@ -134,8 +73,6 @@ export function Header() {
     setAllToolsOpen(false);
   }
 
-
-  // ⌘K / Ctrl+K toggles the palette; Esc closes drawer and popups
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -173,276 +110,250 @@ export function Header() {
     closeTimer.current = setTimeout(() => setAllToolsOpen(false), 160);
   };
 
-  const isTransferActive = pathname === TRANSFER_HREF || pathname.startsWith(TRANSFER_HREF + "/");
-
   return (
     <>
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
-      <header className="sticky top-0 z-40 w-full py-1.5 sm:py-2 px-3 sm:px-6 pointer-events-none">
-        <div className="max-w-6xl mx-auto pointer-events-auto">
-          {/* Sleek capsule header bar */}
-          <div className="h-10 sm:h-11 rounded-xl sm:rounded-2xl bg-bg-surface border border-white/80 dark:border-white/10 shadow-[3px_3px_10px_var(--neu-shadow-dark),-3px_-3px_10px_var(--neu-shadow-light)] flex items-center justify-between px-3 sm:px-4 relative select-none">
-            
-            {/* Left cluster: ONLY LOGO + Split PDF, Text to PDF, and All Tools hover dropdown */}
-            <div className="flex items-center gap-2 sm:gap-4 shrink-0 min-w-0">
-              <Link
-                href="/"
-                className="flex items-center pr-2 hover:opacity-90 transition-opacity shrink-0"
-                aria-label="FilesWow — Home"
+      <header className="sticky top-0 z-40 w-full bg-bg-surface/80 backdrop-blur-xl border-b border-border-base">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+          {/* Left: Brand + Primary Navigation */}
+          <div className="flex items-center gap-6 min-w-0">
+            <Link
+              href="/"
+              className="flex items-center shrink-0 hover:opacity-85 transition-opacity logo-plate"
+              aria-label="FilesWow — Home"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/headerlogo-sm.png"
+                alt="FilesWow"
+                width={132}
+                height={36}
+                className="h-5 sm:h-6 w-auto object-contain"
+              />
+            </Link>
+
+            <nav className="hidden md:flex items-center gap-1" aria-label="Main">
+              {/* Tools dropdown */}
+              <div
+                className="relative"
+                onMouseEnter={handleOpenDropdown}
+                onMouseLeave={handleCloseSchedule}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/headerlogo-sm.png"
-                  alt="FilesWow"
-                  width={140}
-                  height={40}
-                  className="h-5 sm:h-6 w-auto object-contain"
-                />
-              </Link>
-
-              {/* Text navigation links: Top 2 most used + 1 match recommendation */}
-              <nav className="hidden sm:flex items-center gap-1 lg:gap-1.5" aria-label="Main">
-                {navTools.map((item) => {
-                  const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={`flex items-center gap-1.5 h-7 px-2.5 text-[11.5px] sm:text-[12px] rounded-lg transition-all whitespace-nowrap ${
-                        isActive
-                          ? "text-[#ff5500] font-bold bg-[#ff5500]/10"
-                          : "font-semibold text-text-secondary hover:text-[#ff5500] hover:bg-black/5 dark:hover:bg-white/5"
-                      }`}
-                      title={item.isRecommendation ? "Recommended match based on your activity" : undefined}
-                    >
-                      <SimpleNavIcon slug={item.slug} />
-                      <span>{item.name}</span>
-                      {item.isRecommendation && (
-                        <span className="hidden xl:inline-flex text-[8.5px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-accent/15 text-accent border border-accent/25">
-                          For you
-                        </span>
-                      )}
-                    </Link>
-                  );
-                })}
-
-                {/* All Tools with Hover Dropdown (Matching Reference Image) */}
-                <div
-                  className="relative"
-                  onMouseEnter={handleOpenDropdown}
-                  onMouseLeave={handleCloseSchedule}
+                <button
+                  type="button"
+                  onClick={() => setAllToolsOpen((v) => !v)}
+                  aria-expanded={allToolsOpen}
+                  className={`inline-flex items-center gap-1 h-9 px-3 text-[13.5px] font-medium rounded-lg transition-colors whitespace-nowrap ${
+                    allToolsOpen
+                      ? "text-accent bg-accent-subtle"
+                      : "text-text-secondary hover:text-text-primary hover:bg-bg-elevated"
+                  }`}
                 >
-                  <button
-                    type="button"
-                    onClick={() => setAllToolsOpen((v) => !v)}
-                    className={`flex items-center gap-1 h-7 px-2.5 text-[11.5px] sm:text-[12px] rounded-lg transition-all whitespace-nowrap ${
-                      allToolsOpen
-                        ? "text-[#ff5500] font-bold bg-[#ff5500]/10"
-                        : "font-semibold text-text-secondary hover:text-[#ff5500] hover:bg-black/5 dark:hover:bg-white/5"
-                    }`}
+                  <span>Tools</span>
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className={`transition-transform duration-150 ${allToolsOpen ? "rotate-180" : ""}`}
+                    aria-hidden="true"
                   >
-                    <span>All Tools</span>
-                    <svg
-                      width="12"
-                      height="12"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className={`transition-transform duration-150 ${allToolsOpen ? "rotate-180 text-[#ff5500]" : ""}`}
-                      aria-hidden="true"
-                    >
-                      <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                  </button>
+                    <polyline points="6 9 12 15 18 9" />
+                  </svg>
+                </button>
 
-                  {/* The Floating All Tools Card Dropdown matching reference image */}
-                  {allToolsOpen && (
-                    <div className="absolute top-full left-0 pt-2 z-50">
-                      {/* Floating card */}
-                      <div className="relative rounded-2xl bg-bg-surface border border-white/80 dark:border-white/10 shadow-[0_20px_48px_rgba(0,0,0,0.18)] p-5 w-auto max-w-[calc(100vw-2rem)] min-w-[300px] sm:min-w-[520px] lg:min-w-[620px] animate-fade-in-up">
-                        {/* Top arrow pointer matching reference */}
-                        <div className="absolute -top-1.5 left-7 w-3 h-3 bg-bg-surface border-t border-l border-white/80 dark:border-white/10 transform rotate-45" />
-
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 relative z-10">
-                          {ALL_TOOLS_COLUMNS.map((col) => (
-                            <div key={col.title}>
-                              <p className="text-[10.5px] font-black uppercase tracking-wider text-text-tertiary mb-3 select-none">
-                                {col.title}
-                              </p>
-                              <ul className="space-y-1">
-                                {col.tools.map((tool) => (
-                                  <li key={tool.slug}>
-                                    <Link
-                                      href={tool.href}
-                                      onClick={() => setAllToolsOpen(false)}
-                                      className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-black/5 dark:hover:bg-white/5 transition-colors group"
-                                    >
-                                      <span className="w-5 h-5 flex items-center justify-center shrink-0">
-                                        <ToolIcon name={tool.slug} size={18} />
-                                      </span>
-                                      <span className="font-bold text-[11.5px] tracking-wide text-text-primary group-hover:text-[#ff5500] uppercase whitespace-nowrap transition-colors">
-                                        {tool.name}
-                                      </span>
-                                    </Link>
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Footer bar */}
-                        <div className="mt-4 pt-3 border-t border-border-base flex items-center justify-between text-[11.5px] text-text-tertiary">
-                          <span className="flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-success inline-block" />
-                            100% Free & Private — client-side
-                          </span>
+                {allToolsOpen && (
+                  <div className="absolute top-full left-0 pt-2 z-50">
+                    <div className="rounded-2xl bg-bg-surface border border-border-base shadow-[var(--elevation-xl)] p-5 w-[640px] max-w-[calc(100vw-2rem)] animate-fade-in-up">
+                      {/* Category Pills */}
+                      <div className="flex flex-wrap items-center gap-1.5 pb-4 mb-4 border-b border-border-base">
+                        {CATEGORY_LINKS.map((cat) => (
                           <Link
-                            href="/search"
+                            key={cat.href}
+                            href={cat.href}
                             onClick={() => setAllToolsOpen(false)}
-                            className="font-bold text-[#ff5500] hover:underline flex items-center gap-1"
+                            className="px-3 py-1.5 rounded-lg text-[12.5px] font-medium text-text-secondary bg-bg-elevated hover:text-text-primary hover:bg-bg-hover transition-colors"
                           >
-                            View all {ALL_TOOLS.length} tools
-                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                              <polyline points="9 18 15 12 9 6" />
-                            </svg>
+                            {cat.label}
                           </Link>
-                        </div>
+                        ))}
+                      </div>
+
+                      <div className="grid grid-cols-3 gap-5">
+                        {ALL_TOOLS_COLUMNS.map((col) => (
+                          <div key={col.title}>
+                            <p className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary mb-2.5 px-2">
+                              {col.title}
+                            </p>
+                            <ul className="space-y-0.5">
+                              {col.tools.map((tool) => (
+                                <li key={tool.slug}>
+                                  <Link
+                                    href={tool.href}
+                                    onClick={() => setAllToolsOpen(false)}
+                                    className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-bg-elevated transition-colors group"
+                                  >
+                                    <span className="w-5 h-5 flex items-center justify-center shrink-0">
+                                      <ToolIcon name={tool.slug} size={17} />
+                                    </span>
+                                    <span className="text-[13px] font-medium text-text-primary group-hover:text-accent transition-colors whitespace-nowrap">
+                                      {tool.name}
+                                    </span>
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="mt-4 pt-3 border-t border-border-base flex items-center justify-between text-[12px] text-text-tertiary">
+                        <span className="flex items-center gap-1.5">
+                          <span className="w-1.5 h-1.5 rounded-full bg-success inline-block" />
+                          Processed locally in your browser
+                        </span>
+                        <Link
+                          href="/search"
+                          onClick={() => setAllToolsOpen(false)}
+                          className="font-medium text-accent hover:underline flex items-center gap-1"
+                        >
+                          View all {ALL_TOOLS.length} tools
+                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                            <polyline points="9 18 15 12 9 6" />
+                          </svg>
+                        </Link>
                       </div>
                     </div>
-                  )}
-                </div>
-              </nav>
-            </div>
+                  </div>
+                )}
+              </div>
 
-            {/* Right cluster: File Transfer, Search pill, and the Orange physical toggle switch */}
-            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-              {/* File Transfer text link */}
-              <Link
-                href={TRANSFER_HREF}
-                className={`hidden sm:flex items-center gap-1.5 h-7 px-2.5 text-[11px] sm:text-[11.5px] rounded-lg transition-all whitespace-nowrap ${
-                  isTransferActive
-                    ? "text-[#ff5500] font-bold bg-[#ff5500]/10"
-                    : "font-semibold text-text-secondary hover:text-[#ff5500] hover:bg-black/5 dark:hover:bg-white/5"
-                }`}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <line x1="22" y1="2" x2="11" y2="13" />
-                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                </svg>
-                <span>File Transfer</span>
-              </Link>
-
-              {/* Search button */}
-              <button
-                type="button"
-                onClick={() => setSearchOpen(true)}
-                className="hidden md:flex items-center gap-1.5 h-7 px-2 text-[11px] font-medium text-text-tertiary bg-bg-input rounded-lg border border-white/40 shadow-[inset_1px_1px_2px_var(--neu-shadow-dark),inset_-1px_-1px_2px_var(--neu-shadow-light)] hover:text-text-secondary transition-all cursor-text"
-                aria-label="Search tools (Ctrl+K)"
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="text-text-tertiary" aria-hidden="true">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-                <span className="font-mono text-[10px]">⌘K</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSearchOpen(true)}
-                className="md:hidden w-7 h-7 rounded-lg flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors"
-                aria-label="Search tools"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-              </button>
-
-              {/* The Orange Physical Rocker / Slide Toggle Switch */}
-              <button
-                type="button"
-                onClick={(e) => toggle({ x: e.clientX, y: e.clientY })}
-                className="group relative flex items-center shrink-0 cursor-pointer p-0.5 select-none focus:outline-none"
-                aria-label={`Toggle theme (currently ${theme})`}
-                title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-              >
-                <div className="w-8.5 h-4.5 sm:w-9.5 sm:h-5 rounded-full bg-black/15 dark:bg-black/50 shadow-[inset_1px_1px_2.5px_rgba(0,0,0,0.4),inset_-0.5px_-0.5px_1.5px_rgba(255,255,255,0.4)] flex items-center p-0.5 transition-colors">
-                  <div
-                    className={`w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-gradient-to-b from-[#ff6e1a] to-[#ff4500] shadow-[0_1.5px_3px_rgba(0,0,0,0.4),inset_0_0.8px_0.8px_rgba(255,255,255,0.7)] transition-transform duration-200 ease-out flex items-center justify-center ${
-                      theme === "dark" ? "translate-x-4 sm:translate-x-4.5" : "translate-x-0"
+              {NAV_LINKS.map((item) => {
+                const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`inline-flex items-center h-9 px-3 text-[13.5px] font-medium rounded-lg transition-colors whitespace-nowrap ${
+                      isActive
+                        ? "text-accent bg-accent-subtle"
+                        : "text-text-secondary hover:text-text-primary hover:bg-bg-elevated"
                     }`}
                   >
-                    <span className="w-1 h-1 rounded-full bg-white/50 block" />
-                  </div>
-                </div>
-              </button>
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
 
-              {/* Mobile drawer trigger */}
-              <button
-                type="button"
-                onClick={() => setMobileOpen((v) => !v)}
-                className="sm:hidden w-7 h-7 rounded-lg flex items-center justify-center text-text-primary hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-                aria-label="Open menu"
-                aria-expanded={mobileOpen}
-              >
-                {mobileOpen ? (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <line x1="18" y1="6" x2="6" y2="18" />
-                    <line x1="6" y1="6" x2="18" y2="18" />
-                  </svg>
-                ) : (
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <line x1="4" y1="7" x2="20" y2="7" />
-                    <line x1="4" y1="12" x2="20" y2="12" />
-                    <line x1="4" y1="17" x2="20" y2="17" />
-                  </svg>
-                )}
-              </button>
-            </div>
+          {/* Right: Search, Theme Toggle, Mobile Drawer */}
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setSearchOpen(true)}
+              className="hidden sm:inline-flex items-center gap-2 h-9 px-3 text-[13px] text-text-secondary bg-bg-elevated hover:bg-bg-hover rounded-lg border border-border-base transition-colors cursor-pointer"
+              aria-label="Search tools (Ctrl+K)"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-tertiary" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+              <span className="hidden lg:inline">Search</span>
+              <kbd>⌘K</kbd>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setSearchOpen(true)}
+              className="sm:hidden w-11 h-11 -mr-1 rounded-lg flex items-center justify-center text-text-secondary hover:text-text-primary transition-colors"
+              aria-label="Search tools"
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              onClick={(e) => toggle({ x: e.clientX, y: e.clientY })}
+              className="w-10 h-10 rounded-lg flex items-center justify-center text-text-secondary hover:text-text-primary hover:bg-bg-elevated transition-colors cursor-pointer"
+              aria-label={`Toggle theme (currently ${theme})`}
+              title={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
+            >
+              {theme === "dark" ? (
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="5" />
+                  <line x1="12" y1="1" x2="12" y2="3" />
+                  <line x1="12" y1="21" x2="12" y2="23" />
+                  <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                  <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                  <line x1="1" y1="12" x2="3" y2="12" />
+                  <line x1="21" y1="12" x2="23" y2="12" />
+                  <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                  <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                </svg>
+              ) : (
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                </svg>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setMobileOpen((v) => !v)}
+              className="md:hidden w-11 h-11 -mr-2 rounded-lg flex items-center justify-center text-text-primary hover:bg-bg-elevated transition-colors"
+              aria-label="Open menu"
+              aria-expanded={mobileOpen}
+            >
+              {mobileOpen ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="4" y1="7" x2="20" y2="7" />
+                  <line x1="4" y1="12" x2="20" y2="12" />
+                  <line x1="4" y1="17" x2="20" y2="17" />
+                </svg>
+              )}
+            </button>
           </div>
         </div>
 
-        {/* Mobile drawer — full-screen, accordion sections for all tools */}
+        {/* Mobile drawer */}
         {mobileOpen && (
           <div
             id="mobile-drawer"
-            className="sm:hidden fixed inset-x-0 top-[52px] bottom-0 z-40 bg-bg-surface overflow-y-auto overscroll-contain shadow-2xl pointer-events-auto"
+            className="md:hidden fixed inset-x-0 top-14 bottom-0 z-40 bg-bg-surface overflow-y-auto overscroll-contain border-t border-border-base"
             role="dialog"
             aria-modal="true"
             aria-label="Menu"
           >
-            <div className="pb-10 pt-2">
-              {/* Quick access items */}
+            <div className="pb-10">
               <div className="p-4 grid grid-cols-2 gap-2 border-b border-border-base">
                 <Link
-                  href={TRANSFER_HREF}
+                  href="/search"
                   onClick={() => setMobileOpen(false)}
-                  className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-bg-elevated text-[12px] font-bold text-text-primary hover:text-[#ff5500] transition-colors text-center"
+                  className="flex items-center justify-center min-h-11 px-3 rounded-xl bg-bg-elevated text-[13px] font-medium text-text-primary hover:bg-bg-hover transition-colors"
                 >
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <line x1="22" y1="2" x2="11" y2="13" />
-                    <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                  </svg>
-                  <span>File Transfer</span>
+                  All Tools ({ALL_TOOLS.length})
                 </Link>
-                {navTools.map((item) => (
+                {NAV_LINKS.map((item) => (
                   <Link
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileOpen(false)}
-                    className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl bg-bg-elevated text-[12px] font-bold text-text-primary hover:text-[#ff5500] transition-colors text-center"
+                    className="flex items-center justify-center min-h-11 px-3 rounded-xl bg-bg-elevated text-[13px] font-medium text-text-primary hover:bg-bg-hover transition-colors"
                   >
-                    <SimpleNavIcon slug={item.slug} />
-                    <span>{item.name}</span>
-                    {item.isRecommendation && (
-                      <span className="text-[8.5px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-accent/15 text-accent">
-                        For you
-                      </span>
-                    )}
+                    {item.label}
                   </Link>
                 ))}
               </div>
@@ -454,31 +365,28 @@ export function Header() {
                     <button
                       type="button"
                       onClick={() => setOpenSection(expanded ? null : i)}
-                      className="w-full flex items-center justify-between px-5 py-3 text-left text-[13.5px] font-bold text-text-primary hover:bg-bg-hover transition-colors"
+                      className="w-full flex items-center justify-between px-5 py-3.5 text-left text-[14px] font-semibold text-text-primary hover:bg-bg-elevated transition-colors"
                       aria-expanded={expanded}
                     >
-                      <span className="flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-accent" />
-                        {menu.label}
-                      </span>
+                      <span>{menu.label}</span>
                       <svg
-                        width="15"
-                        height="15"
+                        width="16"
+                        height="16"
                         viewBox="0 0 24 24"
                         fill="none"
                         stroke="currentColor"
                         strokeWidth="2"
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        className={`transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+                        className={`text-text-tertiary transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
                         aria-hidden="true"
                       >
                         <polyline points="6 9 12 15 18 9" />
                       </svg>
                     </button>
                     {expanded && (
-                      <div className="px-5 pb-4 bg-bg-base/40">
-                        <DrawerGroups menu={menu} />
+                      <div className="px-5 pb-4 bg-bg-base/50">
+                        <DrawerGroups menu={menu} onNavigate={() => setMobileOpen(false)} />
                       </div>
                     )}
                   </div>
@@ -492,12 +400,12 @@ export function Header() {
   );
 }
 
-function DrawerGroups({ menu }: { menu: CategoryMenu }) {
+function DrawerGroups({ menu, onNavigate }: { menu: CategoryMenu; onNavigate: () => void }) {
   return (
-    <div className="space-y-3.5">
+    <div className="space-y-3.5 pt-2">
       {menu.groups.map((group) => (
         <div key={group.title}>
-          <p className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-text-tertiary mb-1">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary mb-1.5">
             {group.title}
           </p>
           <ul className="grid grid-cols-1 gap-0.5">
@@ -505,16 +413,17 @@ function DrawerGroups({ menu }: { menu: CategoryMenu }) {
               <li key={tool.slug}>
                 <Link
                   href={`/tools/${tool.slug}`}
-                  className="flex items-center gap-2.5 rounded-lg px-2 py-2 -mx-1 hover:bg-bg-hover transition-colors"
+                  onClick={onNavigate}
+                  className="flex items-center gap-3 rounded-lg px-2 py-2 -mx-1 hover:bg-bg-surface transition-colors"
                 >
-                  <span className="w-7 h-7 rounded-lg bg-bg-elevated ring-1 ring-inset ring-border-base flex items-center justify-center shrink-0">
+                  <span className="w-7 h-7 rounded-lg bg-bg-surface border border-border-base flex items-center justify-center shrink-0">
                     <ToolIcon name={tool.slug} size={15} />
                   </span>
                   <span className="min-w-0">
-                    <span className="block text-[13px] font-semibold text-text-primary leading-tight">
+                    <span className="block text-[13.5px] font-medium text-text-primary leading-tight">
                       {tool.name}
                     </span>
-                    <span className="block text-[11.5px] text-text-tertiary leading-snug line-clamp-1">
+                    <span className="block text-[12px] text-text-tertiary leading-snug line-clamp-1">
                       {tool.description}
                     </span>
                   </span>

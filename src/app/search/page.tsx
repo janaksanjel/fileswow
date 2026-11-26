@@ -22,6 +22,10 @@ export const metadata: Metadata = {
       "x-default": absoluteUrl("/search"),
     },
   },
+  robots: {
+    index: false,
+    follow: true,
+  },
   openGraph: {
     title: "Search All FilesWow.com Tools",
     description:

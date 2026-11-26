@@ -14,25 +14,27 @@ import { SITE_URL, absoluteUrl } from "@/lib/site";
  * "Discovered – currently not indexed"). Keep this a real date and bump it
  * only when tool/content pages actually change.
  */
-const CONTENT_LAST_UPDATED = "2026-11-12";
+const CONTENT_LAST_UPDATED = "2026-11-26";
+
+const EXCLUDED_TOOL_SLUGS = new Set([
+  "pdf-to-word-2",
+  "word-to-pdf-2",
+  "image-to-pdf-image",
+  "recent-tools",
+  "command-palette",
+]);
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = SITE_URL;
   const contentDate = new Date(CONTENT_LAST_UPDATED);
 
-  // Static pages with high priority
+  // Static pages with high priority (/search is noindex, so omitted)
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: base,
       lastModified: contentDate,
       changeFrequency: "weekly",
       priority: 1.0,
-    },
-    {
-      url: absoluteUrl("/search"),
-      lastModified: contentDate,
-      changeFrequency: "weekly",
-      priority: 0.9,
     },
     {
       url: absoluteUrl("/pdf-tools"),
@@ -108,12 +110,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
   ];
 
-  // Tool pages — tier 1 tools get higher priority
-  const toolPages: MetadataRoute.Sitemap = ALL_TOOLS.map((tool) => ({
+  // Focus crawl budget on core Tier 1 tools (excluding duplicates & utility widgets)
+  const toolPages: MetadataRoute.Sitemap = ALL_TOOLS.filter(
+    (tool) => tool.tier === 1 && !EXCLUDED_TOOL_SLUGS.has(tool.slug)
+  ).map((tool) => ({
     url: absoluteUrl(`/tools/${tool.slug}`),
     lastModified: contentDate,
     changeFrequency: "monthly" as const,
-    priority: tool.tier === 1 ? 0.8 : tool.tier === 2 ? 0.6 : 0.4,
+    priority: 0.8,
   }));
 
   // Editorial guides — dated by their actual last-updated date

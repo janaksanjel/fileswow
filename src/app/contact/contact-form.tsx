@@ -74,12 +74,7 @@ export function ContactForm() {
     }
 
     // Static-site fallback: open the visitor's email client with a pre-filled draft
-    const recipient =
-      topic === "Privacy request"
-        ? "privacy@fileswow.com"
-        : topic === "Legal / Copyright"
-          ? "legal@fileswow.com"
-          : "support@fileswow.com";
+    const recipient = "fileswow.contact@gmail.com";
 
     const subject = `[FilesWow] ${topic} — from ${cleanName}`;
     const body = `Name: ${cleanName}\nReply-to: ${cleanEmail}\nTopic: ${topic}\n\n${cleanMessage}`;
@@ -201,8 +196,8 @@ export function ContactForm() {
           {status === "mailto" && (
             <div className="p-3.5 rounded-xl bg-accent/[0.06] border border-accent/25 text-[13px] text-text-secondary">
               Your email app should now open with a pre-filled message. If it didn&apos;t open, you can email{" "}
-              <a href="mailto:support@fileswow.com" className="font-semibold text-accent underline">
-                support@fileswow.com
+              <a href="mailto:fileswow.contact@gmail.com" className="font-semibold text-accent underline">
+                fileswow.contact@gmail.com
               </a>{" "}
               directly.
             </div>

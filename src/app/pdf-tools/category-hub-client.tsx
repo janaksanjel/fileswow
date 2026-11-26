@@ -291,21 +291,21 @@ export function CategoryHubClient({
         </nav>
 
         <div className="flex items-start gap-4 sm:gap-5">
-          <span className={`hidden sm:flex w-14 h-14 rounded-xl ring-1 ring-inset items-center justify-center shrink-0 mt-1 ${tile}`}>
+          <span className={`hidden sm:flex w-13 h-13 rounded-2xl items-center justify-center shrink-0 mt-0.5 ${tile}`}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               {CATEGORY_GLYPHS[category]}
             </svg>
           </span>
           <div className="min-w-0">
-            <h1 className="heading-xl text-text-primary mb-2.5">{title}</h1>
+            <h1 className="heading-xl text-text-primary mb-2">{title}</h1>
             <p className="body-md text-text-secondary max-w-2xl">{subtitle}</p>
-            <div className="flex flex-wrap items-center gap-2 mt-4">
-              <span className="badge badge-accent">
-                {count} {count === 1 ? "tool" : "tools"}
-              </span>
-              <span className="badge">Runs in your browser</span>
-              <span className="badge">Free forever</span>
-            </div>
+            <p className="mt-2.5 text-[12.5px] font-medium text-text-tertiary">
+              <span className="text-accent-ink font-semibold">{count} {count === 1 ? "tool" : "tools"}</span>
+              <span className="mx-2" aria-hidden="true">·</span>
+              <span>Processed in your browser</span>
+              <span className="mx-2" aria-hidden="true">·</span>
+              <span>Free</span>
+            </p>
           </div>
         </div>
 
@@ -328,43 +328,43 @@ export function CategoryHubClient({
       {/* ─── Sticky sub-nav: group jump links + search ───────────── */}
       <nav
         aria-label="Sections"
-        className="bg-bg-surface border-y border-border-base"
+        className="sticky top-14 z-30 bg-bg-surface/85 backdrop-blur-xl border-y border-border-base"
       >
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="flex items-center gap-1 h-12 overflow-x-auto">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-3 min-h-12 py-1.5">
+          <div className="flex-1 flex items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {sections.map((s) => (
               <a
                 key={s.subCat}
                 href={`#sec-${s.subCat}`}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-[13px] font-medium text-text-secondary hover:text-text-primary hover:bg-bg-hover whitespace-nowrap transition-colors"
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[13px] font-medium text-text-secondary hover:text-text-primary hover:bg-bg-elevated whitespace-nowrap transition-colors shrink-0"
               >
                 {s.label}
                 <span className="font-mono text-[11px] text-text-tertiary">{s.tools.length}</span>
               </a>
             ))}
+          </div>
 
-            <div className="hidden md:flex items-center gap-2 ml-auto pl-3">
-              <label className="sr-only" htmlFor="hub-search">
-                Search {title}
-              </label>
-              <input
-                id="hub-search"
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search this category…"
-                className="input h-9 w-52 !py-1.5 text-[13px]"
-              />
-              {query && (
-                <button
-                  type="button"
-                  onClick={() => setQuery("")}
-                  className="text-[12px] font-semibold text-text-tertiary hover:text-danger transition-colors"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
+          <div className="hidden md:flex items-center gap-2 shrink-0 pl-2 border-l border-border-base">
+            <label className="sr-only" htmlFor="hub-search">
+              Search {title}
+            </label>
+            <input
+              id="hub-search"
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search this category…"
+              className="w-48 h-8 px-3 rounded-lg bg-bg-input border border-transparent focus:bg-bg-surface focus:border-accent focus:outline-none text-[13px] text-text-primary placeholder:text-text-tertiary transition-colors"
+            />
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery("")}
+                className="text-[12px] font-medium text-text-tertiary hover:text-danger transition-colors cursor-pointer"
+              >
+                Clear
+              </button>
+            )}
           </div>
         </div>
       </nav>
@@ -388,7 +388,7 @@ export function CategoryHubClient({
               </button>
             </div>
             {results.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                 {results.map((tool, i) => (
                   <ToolCard key={tool.slug} tool={tool} index={i} />
                 ))}
@@ -410,26 +410,20 @@ export function CategoryHubClient({
             {/* Popular */}
             {popularTools.length > 0 && (
               <section className="mb-12 sm:mb-14 reveal" aria-labelledby="popular-category-tools">
-                <div className="flex items-center gap-3 mb-5">
+                <div className="flex items-baseline justify-between gap-3 mb-5">
                   <h2
                     id="popular-category-tools"
-                    className="text-[13px] font-bold uppercase tracking-widest text-text-secondary whitespace-nowrap flex items-center gap-2"
+                    className="heading-md text-text-primary"
                   >
-                    <span className="w-5 h-5 rounded-md bg-accent/10 text-accent flex items-center justify-center">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                        <path d="M12 2l2.4 7.4H22l-6 4.6 2.3 7.2-6.3-4.5-6.3 4.5L8 14l-6-4.6h7.6z" />
-                      </svg>
-                    </span>
                     {hasPersonalHistory
                       ? `Top ${categoryName} tools for you`
                       : `Popular ${categoryName} tools`}
                   </h2>
-                  <div className="flex-1 h-px bg-border-base" />
-                  <span className="badge badge-mono shrink-0">
-                    {popularTools.length}
+                  <span className="text-[12px] font-medium text-text-tertiary tabular-nums">
+                    {popularTools.length} tools
                   </span>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                   {popularTools.map((tool, i) => (
                     <ToolCard key={tool.slug} tool={tool} index={i} />
                   ))}
@@ -445,22 +439,21 @@ export function CategoryHubClient({
               <div key={section.subCat}>
                 <section
                   id={`sec-${section.subCat}`}
-                  className="mb-12 sm:mb-14 scroll-mt-28 reveal"
+                  className="mb-12 sm:mb-14 scroll-mt-32 reveal"
                   aria-labelledby={`sec-label-${section.subCat}`}
                 >
-                  <div className="flex items-center gap-3 mb-5">
+                  <div className="flex items-baseline justify-between gap-3 mb-5">
                     <h2
                       id={`sec-label-${section.subCat}`}
-                      className="text-[13px] font-bold uppercase tracking-widest text-text-secondary whitespace-nowrap"
+                      className="heading-md text-text-primary"
                     >
                       {section.label}
                     </h2>
-                    <div className="flex-1 h-px bg-border-base" />
-                    <span className="badge badge-mono shrink-0">
+                    <span className="text-[12px] font-medium text-text-tertiary tabular-nums">
                       {section.tools.length}
                     </span>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
                     {section.tools.map((tool, i) => (
                       <ToolCard key={tool.slug} tool={tool} index={i} />
                     ))}

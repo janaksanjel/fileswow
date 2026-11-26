@@ -37,12 +37,9 @@ export default function TermsPage() {
           <span className="text-text-secondary">Terms of Service</span>
         </nav>
 
-        <div className="flex items-start gap-4 mb-6">
-          <span className="hidden sm:block w-1.5 self-stretch rounded-full bg-gradient-to-b from-accent-light to-accent shrink-0" aria-hidden="true" />
-          <h1 className="heading-xl text-text-primary">
-            Terms of Service
-          </h1>
-        </div>
+        <h1 className="heading-xl text-text-primary mb-6">
+          Terms of Service
+        </h1>
 
         <div className="space-y-6 body-md text-text-secondary leading-relaxed">
           <p>
@@ -151,10 +148,10 @@ export default function TermsPage() {
             </Link>{" "}
             or email{" "}
             <a
-              href="mailto:legal@fileswow.com"
+              href="mailto:fileswow.contact@gmail.com"
               className="font-bold text-text-primary underline decoration-accent decoration-[3px] underline-offset-2 hover:bg-accent-subtle transition-colors"
             >
-              legal@fileswow.com
+              fileswow.contact@gmail.com
             </a>
             .
           </p>

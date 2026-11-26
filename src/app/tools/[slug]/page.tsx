@@ -21,8 +21,8 @@ export function generateStaticParams() {
  */
 const HIGH_INTENT_METADATA: Record<string, { title: string; desc: string }> = {
   "split-pdf": {
-    title: "Split PDF into Multiple Files Online Free",
-    desc: "Split PDF into multiple files or separate pages online for free. Extract custom page ranges or separate all pages. 100% private in browser — no upload.",
+    title: "Split PDF Into Multiple Files & Pages Online",
+    desc: "Split a PDF into multiple files or separate pages online free. Extract custom page ranges or split every page in your browser — no upload, instant download.",
   },
   "split-pdf-by-size": {
     title: "Split PDF by File Size Online Free",
@@ -106,6 +106,20 @@ const HIGH_INTENT_METADATA: Record<string, { title: string; desc: string }> = {
   },
 };
 
+const DUPLICATE_CANONICALS: Record<string, string> = {
+  "pdf-to-word-2": "/tools/pdf-to-word",
+  "word-to-pdf-2": "/tools/word-to-pdf",
+  "image-to-pdf-image": "/tools/images-to-pdf",
+};
+
+const NOINDEX_TOOL_SLUGS = new Set([
+  "pdf-to-word-2",
+  "word-to-pdf-2",
+  "image-to-pdf-image",
+  "recent-tools",
+  "command-palette",
+]);
+
 export async function generateMetadata({ params }: ToolPageProps): Promise<Metadata> {
   const { slug } = await params;
   const tool = getToolBySlug(slug);
@@ -149,9 +163,15 @@ export async function generateMetadata({ params }: ToolPageProps): Promise<Metad
 
   const description = custom?.desc ?? `${tool.description} Processed entirely in your browser. No upload required. 100% private and free.`;
 
+  const canonicalUrl = DUPLICATE_CANONICALS[slug]
+    ? absoluteUrl(DUPLICATE_CANONICALS[slug])
+    : toolUrl(tool.slug);
+  const shouldNoindex = NOINDEX_TOOL_SLUGS.has(slug) || tool.tier === 3;
+
   return {
     title,
     description,
+    ...(shouldNoindex ? { robots: { index: false, follow: true } } : {}),
     keywords: [
       tool.name,
       `${tool.name} online`,
@@ -163,7 +183,7 @@ export async function generateMetadata({ params }: ToolPageProps): Promise<Metad
     openGraph: {
       title: `${typeof title === "string" ? title : tool.name} | FilesWow.com`,
       description,
-      url: toolUrl(tool.slug),
+      url: canonicalUrl,
       type: "website",
       siteName: "FilesWow.com",
     },
@@ -173,9 +193,9 @@ export async function generateMetadata({ params }: ToolPageProps): Promise<Metad
       description,
     },
     alternates: {
-      canonical: toolUrl(tool.slug),
+      canonical: canonicalUrl,
       languages: {
-        "x-default": toolUrl(tool.slug),
+        "x-default": canonicalUrl,
       },
     },
   };
@@ -270,27 +290,6 @@ export default async function ToolPage({ params }: ToolPageProps) {
   const guide = getToolGuide(slug);
   const faq = getToolFaq(slug, tool.faq);
 
-  // Guide as Article schema — signals substantial written content to crawlers
-  const guideJsonLd = guide
-    ? {
-        "@context": "https://schema.org",
-        "@type": "Article",
-        headline: "Complete Guide to " + tool.name,
-        description: tool.description,
-        mainEntityOfPage: { "@type": "WebPage", "@id": toolUrl(tool.slug) },
-        author: {
-          "@type": "Organization",
-          name: "FilesWow",
-          url: absoluteUrl("/"),
-        },
-        publisher: {
-          "@type": "Organization",
-          name: "FilesWow",
-          url: absoluteUrl("/"),
-        },
-      }
-    : null;
-
   // FAQ schema — mirrors visible accordion with rich snippet answers
   const faqJsonLd = faq.length > 0 ? {
     "@context": "https://schema.org",
@@ -317,7 +316,6 @@ export default async function ToolPage({ params }: ToolPageProps) {
       <script {...jsonLdProps(softwareJsonLd)} />
       <script {...jsonLdProps(howToJsonLd)} />
       <script {...jsonLdProps(breadcrumbJsonLd)} />
-      {guideJsonLd && <script {...jsonLdProps(guideJsonLd)} />}
       {faqJsonLd && <script {...jsonLdProps(faqJsonLd)} />}
 
       <ToolClient

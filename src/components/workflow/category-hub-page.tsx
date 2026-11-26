@@ -30,10 +30,10 @@ export function CategoryHubPage({
   return (
     <div className="min-h-screen bg-bg-base text-text-primary">
       {/* ─── 1. HERO & CATEGORY HEADER ─── */}
-      <section className="pt-8 pb-10 sm:pt-12 sm:pb-14 border-b border-border-base/60 bg-gradient-to-b from-bg-surface/60 to-transparent">
+      <section className="pt-10 pb-12 sm:pt-14 sm:pb-16 border-b border-border-base bg-bg-warm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           {/* Breadcrumb Navigation */}
-          <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-xs font-semibold text-text-tertiary">
+          <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-xs font-medium text-text-tertiary">
             <Link href="/" className="hover:text-text-primary transition-colors">
               Home
             </Link>
@@ -41,31 +41,27 @@ export function CategoryHubPage({
             <span className="text-text-secondary">{config.title}</span>
           </nav>
 
-          <div className="text-center max-w-3xl mx-auto space-y-4">
-            {/* Category Suite Badge */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-xs font-extrabold tracking-wide uppercase">
-              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+          <div className="text-center max-w-3xl mx-auto space-y-3.5">
+            <p className="text-[12px] font-semibold uppercase tracking-[0.06em] text-accent">
               {config.badge}
-            </div>
+            </p>
 
-            {/* Main Headline */}
-            <h1 className="heading-xl text-text-primary tracking-tight font-extrabold sm:text-4xl md:text-5xl">
+            <h1 className="heading-xl text-text-primary">
               {config.title}
             </h1>
 
-            {/* Subtitle / Description */}
-            <p className="body-lg text-text-secondary max-w-2xl mx-auto leading-relaxed">
+            <p className="body-lg text-text-secondary max-w-2xl mx-auto">
               {config.subtitle}
             </p>
 
-            {/* Privacy & Browser Guarantee Badge */}
-            <div className="pt-2 flex items-center justify-center">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-2xl bg-bg-surface border border-border-base shadow-xs text-xs font-semibold text-text-secondary">
-                <span className="text-success font-bold">{<UiIcon name="lock" size={14} className="inline align-[-3px] mr-1" />} Private & Secure</span>
-                <span className="text-text-tertiary">•</span>
-                <span>Your files are processed in your browser</span>
-              </div>
-            </div>
+            <p className="pt-1 flex items-center justify-center gap-2 text-[13px] font-medium text-text-secondary">
+              <span className="text-success inline-flex items-center gap-1">
+                <UiIcon name="lock" size={14} />
+                Private &amp; Secure
+              </span>
+              <span className="text-text-tertiary">·</span>
+              <span>Your files are processed in your browser</span>
+            </p>
           </div>
         </div>
       </section>

@@ -33,7 +33,7 @@ const CONTACT_CARDS: Array<{
     title: "General & Support",
     description:
       "Questions about how a tool works, something not behaving as expected, or feedback on the site. Most messages get a reply within 1–2 business days.",
-    email: "support@fileswow.com",
+    email: "fileswow.contact@gmail.com",
     subject: "General question",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -47,7 +47,7 @@ const CONTACT_CARDS: Array<{
     title: "Bug Reports",
     description:
       "Found a tool that failed on a specific file? Tell us the tool name, your browser, and what happened — a screenshot or the error message helps us fix it fast.",
-    email: "support@fileswow.com",
+    email: "fileswow.contact@gmail.com",
     subject: "Bug report",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -61,7 +61,7 @@ const CONTACT_CARDS: Array<{
     title: "Privacy Requests",
     description:
       "Questions or requests about personal data under GDPR/CCPA — including access, correction, or deletion requests. See the Privacy Policy for what little we collect.",
-    email: "privacy@fileswow.com",
+    email: "fileswow.contact@gmail.com",
     subject: "Privacy request",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -74,7 +74,7 @@ const CONTACT_CARDS: Array<{
     title: "Legal & Copyright",
     description:
       "Terms-of-service questions, DMCA takedown notices, or intellectual-property concerns. We take copyright seriously and respond to valid notices promptly.",
-    email: "legal@fileswow.com",
+    email: "fileswow.contact@gmail.com",
     subject: "Legal inquiry",
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -103,13 +103,13 @@ export default function ContactPage() {
       {
         "@type": "ContactPoint",
         contactType: "customer support",
-        email: "support@fileswow.com",
+        email: "fileswow.contact@gmail.com",
         availableLanguage: "English",
       },
       {
         "@type": "ContactPoint",
         contactType: "legal",
-        email: "legal@fileswow.com",
+        email: "fileswow.contact@gmail.com",
         availableLanguage: "English",
       },
     ],
@@ -129,13 +129,7 @@ export default function ContactPage() {
           <span className="text-text-secondary">Contact</span>
         </nav>
 
-        <div className="flex items-start gap-4 mb-6">
-          <span
-            className="hidden sm:block w-1.5 self-stretch rounded-full bg-gradient-to-b from-accent-light to-accent shrink-0"
-            aria-hidden="true"
-          />
-          <h1 className="heading-xl text-text-primary">Contact us</h1>
-        </div>
+        <h1 className="heading-xl text-text-primary mb-4">Contact us</h1>
 
         <p className="body-lg text-text-secondary max-w-xl mb-10">
           FilesWow is built and maintained by a small team. Whether it&apos;s a
@@ -215,8 +209,8 @@ export default function ContactPage() {
               <span>
                 <strong className="text-text-primary">Copyright notices:</strong>{" "}
                 send DMCA notices to{" "}
-                <a href="mailto:legal@fileswow.com" className="font-semibold text-text-primary underline decoration-accent underline-offset-2 hover:bg-accent-subtle transition-colors">
-                  legal@fileswow.com
+                <a href="mailto:fileswow.contact@gmail.com" className="font-semibold text-text-primary underline decoration-accent underline-offset-2 hover:bg-accent-subtle transition-colors">
+                  fileswow.contact@gmail.com
                 </a>{" "}
                 with the work&apos;s identification, the URL in question, and
                 your contact details.

@@ -9,40 +9,37 @@ const SITE_NAME = "FilesWow.com";
 
 // Primary keyword cluster: "send files online / file transfer" head terms,
 // plus long-tails for "without app", "large files", "phone to PC" intent.
-const TITLE = "Send Files Online Free — P2P File Transfer Up to 50 GB, No Upload";
+const TITLE = "File Transfer Online Free — Send Files Up to 50 GB With a Code";
 const DESCRIPTION =
-  "Free file transfer up to 50 GB. Send files directly between devices with a 6-digit code or QR — peer-to-peer, end-to-end encrypted, no upload, no sign-up, no app. Works on phone, tablet & PC.";
+  "Free online file transfer up to 50 GB. Send files PC to PC or phone to PC using a 6-digit code or QR — peer-to-peer, end-to-end encrypted, no upload, no sign-up.";
 
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
   keywords: [
-    // Head terms
+    // Top Bing & search head terms
+    "file transfer online",
+    "online file transfer",
     "file transfer",
+    "free file transfer",
     "send files online",
-    "send files free",
-    "share files online",
+    "send files online free with code",
+    "file transfer online free 50gb",
+    "pc to pc file transfer online",
+    "p2p file transfer",
+    "transfer 50 gb file",
     // High-intent / feature long-tails
     "send large files free",
     "transfer files up to 50gb",
     "send files without uploading",
     "send files without app",
-    "p2p file transfer",
     "webrtc file sharing",
     "direct file transfer device to device",
-    // Use-case long-tails
     "transfer files from phone to pc",
     "send files from android to iphone",
-    "send photos from phone to computer",
-    "transfer videos without losing quality",
-    // Trust / comparison modifiers
     "encrypted file transfer",
-    "secure file sharing free",
     "no sign up file transfer",
-    "send files with code",
     "send files qr code",
-    "send anywhere alternative",
-    "wetransfer alternative free",
     "fileswow transfer",
   ],
   alternates: {

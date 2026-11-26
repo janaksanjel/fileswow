@@ -35,7 +35,7 @@ export function Accordion({
   const uid = useId();
 
   return (
-    <div className={`divide-y divide-border-base border border-border-base rounded-xl bg-bg-surface overflow-hidden ${className}`}>
+    <div className={`divide-y divide-border-base border border-border-base rounded-2xl bg-bg-surface overflow-hidden ${className}`}>
       {items.map((item, i) => {
         const isOpen = open === i;
         const buttonId = `${uid}-button-${i}`;

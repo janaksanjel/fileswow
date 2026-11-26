@@ -508,12 +508,16 @@ export const BLOG_POSTS: BlogPost[] = [
       "Split PDFs free in your browser: extract single pages, split by ranges, by file size for email limits, or by bookmarks. Which method fits which job, plus the workflow for big scanned documents.",
     keyword: "split pdf into multiple files",
     keywords: [
+      "how to split pdf pages",
       "split pdf into multiple files",
+      "how to split pdf files",
+      "how to split a pdf into multiple files",
+      "split pdf into pages",
+      "split pdf pages",
       "split pdf online free",
       "extract pages from pdf",
       "separate pdf pages",
       "split pdf by size",
-      "pdf splitter",
     ],
     category: "pdf",
     published: "2026-09-25",
@@ -1352,6 +1356,67 @@ export const BLOG_POSTS: BlogPost[] = [
       },
     ],
     related: ["add-page-numbers-pdf", "pdf-header-footer", "pdf-bates-numbering", "merge-pdf", "pdf-page-labels"],
+  },
+  {
+    slug: "how-to-transfer-large-files-online-free",
+    title: "How to Transfer Large Files Online Free (Up to 50 GB, PC to PC With a Code)",
+    shortTitle: "Transfer Large Files (50 GB)",
+    description:
+      "Send large files up to 50 GB online free — PC to PC or phone to PC — using a 6-digit code. Direct peer-to-peer WebRTC transfer with no cloud upload and no sign-up.",
+    keyword: "file transfer online",
+    keywords: [
+      "file transfer online",
+      "online file transfer",
+      "send files online free with code",
+      "file transfer online free 50gb",
+      "pc to pc file transfer online",
+      "p2p file transfer",
+      "transfer 50 gb file",
+    ],
+    category: "text",
+    published: "2026-11-26",
+    updated: "2026-11-26",
+    author: "FilesWow Team",
+    intro: [
+      "Most free file-sharing sites cap transfers at 2 GB, compress your videos, or force you to upload sensitive archives to a third-party cloud server first. When you just need to move a 10 GB video project from PC to PC, or send photos from your phone to a laptop, waiting twice (upload, then download) wastes time.",
+      "With FilesWow File Transfer, two browsers connect directly over an encrypted peer-to-peer WebRTC channel using a 6-digit pairing code. Nothing is uploaded to a storage server, and browsers that support streaming to disk (Chrome, Edge, Opera) can transfer up to 50 GB in one session.",
+    ],
+    sections: [
+      {
+        h2: "How to send files online with a 6-digit code",
+        paragraphs: [
+          "Both devices only need a modern web browser — no app install, no account, and no cables.",
+        ],
+        steps: [
+          "Open FilesWow File Transfer (/transfer) on the sending device and select or drop your files.",
+          "A 6-digit pairing code, QR code, and invite link appear immediately (valid for 10 minutes).",
+          "Open /transfer on the receiving PC or phone, enter the 6-digit code (or scan the QR code), and choose where to save.",
+          "Keep both tabs open until the progress bar finishes — bytes stream directly from sender to receiver.",
+        ],
+      },
+      {
+        h2: "Why peer-to-peer beats cloud uploads for large files",
+        paragraphs: [
+          "Cloud transfer tools upload your entire file to their server before the recipient can start downloading. On a 20 GB archive, that doubles total transfer time and leaves a copy on someone else's storage.",
+          "Peer-to-peer (P2P) WebRTC streams chunks directly between devices using DTLS 1.2+ encryption and parallel data channels. The signaling broker only introduces the two browsers; it never sees or stores your file data.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "How large a file can I transfer online for free?",
+        a: "Up to 50 GB per transfer when using a browser with File System Access streaming (Chrome, Edge, Opera). Safari and Firefox buffer in memory, so practical size depends on available RAM.",
+      },
+      {
+        q: "Does the recipient need an account or app?",
+        a: "No. They simply open fileswow.com/transfer in their browser and enter your 6-digit code or scan the QR code.",
+      },
+      {
+        q: "Are my files stored on any server?",
+        a: "No. Files travel directly between devices over an encrypted WebRTC DataChannel and are never uploaded to or stored on FilesWow servers.",
+      },
+    ],
+    related: ["p2p-text"],
   },
   ...EXTRA_BLOG_POSTS,
 ];

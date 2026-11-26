@@ -258,25 +258,24 @@ export function FileUpload({
           onDragLeave={handleDragLeave}
           onDragOver={handleDragOver}
           onDrop={handleDrop}
-          className={`flow-dropzone w-full flex flex-col items-center justify-center gap-3
-            px-3 sm:px-6 rounded-2xl border border-dashed cursor-pointer select-none
-            transition-[padding,background-color,border-color] duration-200
-            ${dragging ? "flow-dropzone-dragging border-transparent py-10 sm:py-14" : "border-border-strong py-7 sm:py-10 hover:border-accent/60 hover:bg-accent/[0.02]"}`}
+          className={`flow-dropzone group w-full flex flex-col items-center justify-center text-center
+            px-4 sm:px-8 rounded-2xl border-[1.5px] border-dashed cursor-pointer select-none
+            transition-all duration-200
+            ${dragging ? "flow-dropzone-dragging border-accent py-12 sm:py-16" : "border-border-strong py-9 sm:py-12 hover:border-accent/60 hover:bg-accent/[0.02]"}`}
         >
           <span
-            className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-200
-              ${dragging ? "bg-accent text-text-on-accent scale-110 shadow-md" : "bg-accent-subtle text-accent"}`}
+            className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-all duration-200
+              ${dragging ? "bg-accent text-text-on-accent scale-105 shadow-[var(--elevation-md)]" : "bg-bg-surface border border-border-base text-accent shadow-[var(--elevation-sm)] group-hover:scale-105"}`}
           >
             <svg
-              width="20"
-              height="20"
+              width="22"
+              height="22"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="1.75"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className={dragging ? "flow-upload-icon" : ""}
               aria-hidden="true"
             >
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -285,49 +284,47 @@ export function FileUpload({
             </svg>
           </span>
 
-          <div className="text-center px-2">
-            <p className="text-[14px] sm:text-[14.5px] font-bold text-text-primary">
-              {dragging ? "Drop your files here" : `Add your ${CATEGORY_HINTS[category] ?? "files"}`}
-            </p>
-            <p className="text-[12px] sm:text-[12.5px] text-text-tertiary mt-1">
-              {dragging ? (
-                "Release to add them"
-              ) : (
-                <>
-                  <span className="hidden sm:inline">
-                    Drag &amp; drop files here or{" "}
-                    <span className="text-accent font-semibold underline decoration-accent/40 decoration-2 underline-offset-4">
-                      Choose files
-                    </span>
-                    <span> · paste with <kbd className="kbd text-[11px] px-1.5 py-0.5">Ctrl+V</kbd></span>
-                  </span>
-                  <span className="sm:hidden text-accent font-semibold">
-                    Tap anywhere to choose files
-                  </span>
-                </>
-              )}
-            </p>
+          <p className="text-[16px] font-semibold text-text-primary tracking-[-0.01em] mb-1">
+            {dragging ? "Drop your files here" : `Add ${CATEGORY_HINTS[category] ?? "files"}`}
+          </p>
+          <p className="text-[13.5px] text-text-secondary max-w-md mb-5">
+            {dragging ? (
+              "Release to add them"
+            ) : (
+              <>
+                <span className="hidden sm:inline">
+                  Drag and drop here, browse your device, or paste with <kbd>⌘V</kbd>
+                </span>
+                <span className="sm:hidden">
+                  Tap to choose files from your device
+                </span>
+              </>
+            )}
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 w-full sm:w-auto">
+            <span className="btn-primary w-full sm:w-auto px-5 pointer-events-none">
+              {dragging ? "Release to drop" : "Choose files"}
+            </span>
             {!dragging && (
-              <div className="mt-2.5 flex items-center justify-center gap-2">
-                <button
-                  type="button"
-                  onClick={handlePasteFromClipboard}
-                  className="btn-secondary px-3.5 py-1 text-xs font-semibold flex items-center gap-1.5"
-                  title="Paste from clipboard"
-                >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                  </svg>
-                  Paste from clipboard
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={handlePasteFromClipboard}
+                className="btn-ghost w-full sm:w-auto text-[13px]"
+                title="Paste from clipboard (Ctrl+V / ⌘V)"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                </svg>
+                <span>Paste</span>
+              </button>
             )}
           </div>
 
           {!dragging && acceptLabel && (
-            <p className="text-[10px] font-bold text-text-tertiary px-2.5 py-1 bg-bg-elevated rounded-full uppercase tracking-wider">
-              {acceptLabel} · up to {maxFileSizeMB} MB
+            <p className="mt-5 text-[12px] text-text-tertiary">
+              <span className="font-medium text-text-secondary">{acceptLabel}</span> · up to {maxFileSizeMB} MB · Processed locally
             </p>
           )}
         </div>
@@ -335,8 +332,8 @@ export function FileUpload({
 
       {/* ── Validation error ────────────────────────────────── */}
       {validationError && (
-        <p className="mt-2.5 text-xs font-semibold text-danger flex items-center gap-1.5" role="alert">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+        <p className="mt-2.5 text-[13px] font-medium text-danger flex items-center gap-1.5" role="alert">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
             <circle cx="12" cy="12" r="10" />
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -345,29 +342,40 @@ export function FileUpload({
         </p>
       )}
 
-      {/* ── File list ───────────────────────────────────────── */}
+      {/* ── Grouped file list ───────────────────────────────── */}
       {files.length > 0 && (
-        <div className="mt-4">
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-[11px] font-bold uppercase tracking-widest text-text-tertiary">
-              {files.length} file{files.length !== 1 ? "s" : ""} added
+        <div className="mt-5">
+          <div className="flex items-center justify-between mb-2 px-1">
+            <p className="text-[12px] font-medium text-text-secondary">
+              {files.length} file{files.length !== 1 ? "s" : ""} · Ready
             </p>
-            <button
-              type="button"
-              onClick={onClearFiles}
-              className="text-[11px] font-semibold text-text-tertiary hover:text-danger transition-colors"
-            >
-              Clear all
-            </button>
+            <div className="flex items-center gap-3">
+              {supportsMultipleFiles && (
+                <button
+                  type="button"
+                  onClick={() => inputRef.current?.click()}
+                  className="text-[12.5px] font-medium text-accent hover:underline underline-offset-2 cursor-pointer"
+                >
+                  + Add more
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onClearFiles}
+                className="text-[12.5px] font-medium text-text-tertiary hover:text-danger transition-colors cursor-pointer"
+              >
+                Clear
+              </button>
+            </div>
           </div>
 
-          <ul className="space-y-1.5">
+          <ul className="rounded-2xl border border-border-base bg-bg-surface divide-y divide-border-base overflow-hidden">
             {files.map((item) => {
               const ext = extLabel(item.name);
               return (
                 <li
                   key={item.id}
-                  className="flow-row flex items-center gap-3 px-3 py-2.5 rounded-xl bg-bg-elevated/60 border border-border-base"
+                  className="flow-row flex items-center gap-3 px-3.5 py-2.5 transition-colors hover:bg-bg-elevated/50"
                 >
                   {item.previewUrl ? (
                     /* eslint-disable-next-line @next/next/no-img-element -- local object URL preview */
@@ -378,8 +386,8 @@ export function FileUpload({
                     />
                   ) : (
                     <span
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center text-[8.5px] font-black tracking-wide shrink-0 ${
-                        EXT_STYLES[ext] || "bg-bg-surface text-text-tertiary ring-1 ring-inset ring-border-strong"
+                      className={`w-9 h-9 rounded-lg flex items-center justify-center text-[10px] font-semibold tracking-wide shrink-0 ${
+                        EXT_STYLES[ext] || "bg-bg-elevated text-text-secondary"
                       }`}
                     >
                       {ext}
@@ -387,12 +395,12 @@ export function FileUpload({
                   )}
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-[13px] font-semibold text-text-primary truncate leading-tight">{item.name}</p>
-                    <p className="text-[11px] text-text-tertiary mt-0.5 leading-tight">{formatSize(item.size)}</p>
+                    <p className="text-[13.5px] font-medium text-text-primary truncate leading-tight">{item.name}</p>
+                    <p className="text-[11.5px] text-text-tertiary mt-0.5 leading-tight">{formatSize(item.size)}</p>
                   </div>
 
                   <span className="flow-check w-5 h-5 rounded-full bg-success/15 text-success flex items-center justify-center shrink-0" title="Ready">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
                   </span>
@@ -400,10 +408,10 @@ export function FileUpload({
                   <button
                     type="button"
                     onClick={() => onRemoveFile(item.id)}
-                    className="w-6 h-6 rounded-lg flex items-center justify-center text-text-tertiary hover:text-danger hover:bg-danger/10 transition-colors shrink-0"
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-text-tertiary hover:text-danger hover:bg-bg-elevated transition-colors shrink-0 cursor-pointer"
                     aria-label={`Remove ${item.name}`}
                   >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
                       <line x1="18" y1="6" x2="6" y2="18" />
                       <line x1="6" y1="6" x2="18" y2="18" />
                     </svg>
@@ -412,20 +420,6 @@ export function FileUpload({
               );
             })}
           </ul>
-
-          {supportsMultipleFiles && (
-            <button
-              type="button"
-              onClick={() => inputRef.current?.click()}
-              className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12.5px] font-semibold text-accent bg-accent-subtle hover:bg-accent/15 transition-colors"
-            >
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              Add more files
-            </button>
-          )}
         </div>
       )}
 

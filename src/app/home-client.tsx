@@ -1,23 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { ToolCard } from "@/components/tool-card";
 import { Accordion } from "@/components/ui/accordion";
 import { searchTools } from "@/lib/search";
 import { ToolIcon } from "@/components/icon";
 import { ALL_TOOLS, CATEGORY_COUNTS, type ToolDef, type ToolCategory } from "@/lib/catalog";
-import { POPULAR_DEFAULT_SLUGS } from "@/lib/usage";
+import {
+  POPULAR_DEFAULT_SLUGS,
+  subscribeUsage,
+  getTopToolsSnapshot,
+  getRecentToolsSnapshot,
+  getEmptyToolsSnapshot,
+  hasPersonalHistorySnapshot,
+} from "@/lib/usage";
 import { useReveal } from "@/lib/use-reveal";
 import { AdSlot } from "@/components/ad-unit";
 import { useI18n, type MessageKey } from "@/lib/i18n";
-import { useTheme } from "@/lib/theme-provider";
 import { BLOG_POSTS } from "@/lib/blog";
-import { FlyingMascot } from "@/components/flying-mascot";
 
-/* Curated popular order first, then everything else — the base list the
-   filter chips slice. Never rendered in full on the homepage. */
 const CURATED_POPULAR = new Set(POPULAR_DEFAULT_SLUGS);
 const ORDERED_TOOLS: ToolDef[] = [
   ...ALL_TOOLS.filter((t) => CURATED_POPULAR.has(t.slug)),
@@ -26,7 +29,6 @@ const ORDERED_TOOLS: ToolDef[] = [
 
 const TOOL_BY_SLUG = new Map(ALL_TOOLS.map((t) => [t.slug, t]));
 
-/* Quick actions under the hero search — real tools, real names */
 const QUICK_SLUGS = [
   "merge-pdf",
   "compress-pdf",
@@ -38,64 +40,45 @@ const QUICK_SLUGS = [
   "background-remove-image",
 ];
 
-/* Category cards — counts come from the catalog, never hardcoded */
-interface CategoryCardSpec {
-  category: ToolCategory;
+interface WorkbenchTabSpec {
+  id: ToolCategory;
   label: string;
   href: string;
-  blurb: string;
-  featured: string[];
-  wide?: boolean;
-  /** Bottom-row filler so the bento grid closes without an empty cell */
-  span2?: boolean;
+  count: number;
+  tools: string[];
 }
 
-const CATEGORY_CARDS: CategoryCardSpec[] = [
+const WORKBENCH_TABS: WorkbenchTabSpec[] = [
   {
-    category: "pdf",
-    label: "PDF Tools",
+    id: "pdf",
+    label: "PDF",
     href: "/pdf-tools",
-    blurb: "Merge, split, compress, sign and convert PDFs — page-level control without uploading a thing.",
-    /* The wide card spans two rows, so it carries more featured rows to fill
-       the extra height instead of leaving a void under the blurb. */
-    featured: [
-      "merge-pdf",
-      "compress-pdf",
-      "split-pdf",
-      "pdf-to-word",
-      "jpg-to-pdf",
-      "pdf-to-jpg",
-      "rotate-pdf",
-      "watermark-pdf",
-      "sign-pdf",
-    ],
-    wide: true,
+    count: CATEGORY_COUNTS.pdf,
+    tools: ["merge-pdf", "compress-pdf", "split-pdf", "pdf-to-word", "sign-pdf"],
   },
   {
-    category: "word",
-    label: "Word Tools",
+    id: "word",
+    label: "Word",
     href: "/word-tools",
-    blurb: "Convert, clean and secure DOCX files.",
-    featured: ["word-to-pdf", "merge-word", "split-word", "word-to-text"],
+    count: CATEGORY_COUNTS.word,
+    tools: ["word-to-pdf", "merge-word", "split-word", "word-to-text", "compress-word"],
   },
   {
-    category: "image",
-    label: "Image Tools",
+    id: "image",
+    label: "Image",
     href: "/image-tools",
-    blurb: "Convert, resize and retouch pictures.",
-    featured: ["compress-image", "background-remove-image", "resize-image", "crop-image"],
+    count: CATEGORY_COUNTS.image,
+    tools: ["compress-image", "background-remove-image", "resize-image", "crop-image", "jpg-to-pdf"],
   },
   {
-    category: "text",
-    span2: true,
-    label: "Text Tools",
-    href: "/text-tools",
-    blurb: "Send text straight between two devices.",
-    featured: ["p2p-text"],
+    id: "text",
+    label: "Text & P2P",
+    href: "/transfer",
+    count: CATEGORY_COUNTS.text,
+    tools: ["p2p-text"],
   },
 ];
 
-/* Popular-tool filter chips */
 type ChipId = "all" | "organize" | "convert" | "edit" | "optimize" | "security" | "image";
 
 const CHIPS: Array<{ id: ChipId; label: string; match: (t: ToolDef) => boolean }> = [
@@ -108,7 +91,6 @@ const CHIPS: Array<{ id: ChipId; label: string; match: (t: ToolDef) => boolean }
   { id: "image", label: "Image", match: (t) => t.category === "image" },
 ];
 
-/* Chip labels resolve through the i18n dictionary at render time */
 const CHIP_LABEL_KEYS: Record<ChipId, MessageKey> = {
   all: "home.chipAll",
   organize: "home.chipOrganize",
@@ -126,101 +108,12 @@ export function HomeClient() {
   const rootRef = useRef<HTMLDivElement>(null);
   useReveal(rootRef);
   const { t } = useI18n();
-  const { theme } = useTheme();
 
   const [heroQuery, setHeroQuery] = useState("");
   const [heroResults, setHeroResults] = useState<ToolDef[]>([]);
   const [heroSelectedIdx, setHeroSelectedIdx] = useState(0);
+  const [activeTab, setActiveTab] = useState<ToolCategory>("pdf");
   const router = useRouter();
-
-  // Debounced live search over the catalog
-  const mascotIframeRef = useRef<HTMLIFrameElement>(null);
-
-  // Sync theme changes with mascot iframe for dark mode
-  useEffect(() => {
-    const iframe = mascotIframeRef.current;
-    if (iframe?.contentWindow) {
-      iframe.contentWindow.postMessage({ type: "theme", theme }, "*");
-    }
-  }, [theme]);
-
-  // Forward tool hover to mascot speech bubble
-  useEffect(() => {
-    let lastReported = "";
-    let timeout: NodeJS.Timeout | null = null;
-
-    const handleMouseOver = (e: MouseEvent) => {
-      const target = (e.target as HTMLElement | null)?.closest(
-        'a[href^="/tools/"], button[data-tool], .hero-chip, [data-tool-name]'
-      );
-      if (!target) return;
-
-      let toolName = target.getAttribute("data-tool-name");
-      if (!toolName) {
-        const href = target.getAttribute("href");
-        if (href && href.startsWith("/tools/")) {
-          const slug = href.replace("/tools/", "").split("/")[0];
-          const tool = TOOL_BY_SLUG.get(slug);
-          if (tool) toolName = tool.name;
-        }
-      }
-      if (!toolName) {
-        const text = target.textContent?.trim();
-        if (text && text.length < 35) toolName = text;
-      }
-
-      if (toolName && toolName !== lastReported) {
-        lastReported = toolName;
-        if (timeout) clearTimeout(timeout);
-        timeout = setTimeout(() => {
-          lastReported = "";
-        }, 3000);
-
-        const iframe = mascotIframeRef.current;
-        iframe?.contentWindow?.postMessage(
-          {
-            type: "tool-hover",
-            name: toolName,
-          },
-          "*"
-        );
-      }
-    };
-
-    document.addEventListener("mouseover", handleMouseOver, { passive: true });
-    return () => {
-      document.removeEventListener("mouseover", handleMouseOver);
-      if (timeout) clearTimeout(timeout);
-    };
-  }, []);
-
-  // Forward pointermove across full website to mascot so Wowie looks at user's cursor anywhere
-  useEffect(() => {
-    const handleGlobalPointerMove = (e: MouseEvent) => {
-      const iframe = mascotIframeRef.current;
-      if (!iframe || !iframe.contentWindow) return;
-      const rect = iframe.getBoundingClientRect();
-      iframe.contentWindow.postMessage(
-        {
-          type: "pointermove",
-          clientX: e.clientX,
-          clientY: e.clientY,
-          rect: {
-            left: rect.left,
-            top: rect.top,
-            width: rect.width,
-            height: rect.height,
-          },
-          winW: window.innerWidth,
-          winH: window.innerHeight,
-        },
-        "*"
-      );
-    };
-
-    window.addEventListener("pointermove", handleGlobalPointerMove, { passive: true });
-    return () => window.removeEventListener("pointermove", handleGlobalPointerMove);
-  }, []);
 
   const heroQueryEmpty = heroQuery.trim() === "";
   useEffect(() => {
@@ -232,28 +125,88 @@ export function HomeClient() {
     return () => clearTimeout(timer);
   }, [heroQuery, heroQueryEmpty]);
 
+  const hasPersonalHistory = useSyncExternalStore(
+    subscribeUsage,
+    hasPersonalHistorySnapshot,
+    () => false
+  );
+  const topTools = useSyncExternalStore(
+    subscribeUsage,
+    getTopToolsSnapshot,
+    getEmptyToolsSnapshot
+  );
+  const recentTools = useSyncExternalStore(
+    subscribeUsage,
+    getRecentToolsSnapshot,
+    getEmptyToolsSnapshot
+  );
+
+  const smartQuickTools = useMemo(() => {
+    const defaultList = QUICK_SLUGS.map((s) => TOOL_BY_SLUG.get(s)).filter(Boolean) as ToolDef[];
+    if (!hasPersonalHistory) {
+      return defaultList.map((tool) => ({ tool, kind: "default" as const }));
+    }
+
+    const seen = new Set<string>();
+    const items: Array<{ tool: ToolDef; kind: "top" | "recent" | "related" | "default" }> = [];
+
+    for (const tool of topTools.slice(0, 5)) {
+      if (seen.has(tool.slug)) continue;
+      seen.add(tool.slug);
+      items.push({ tool, kind: "top" });
+    }
+    for (const tool of recentTools.slice(0, 3)) {
+      if (seen.has(tool.slug)) continue;
+      seen.add(tool.slug);
+      items.push({ tool, kind: "recent" });
+    }
+    for (const { tool } of items.slice(0, 3)) {
+      for (const relSlug of tool.relatedSlugs ?? []) {
+        if (seen.has(relSlug)) continue;
+        const rel = TOOL_BY_SLUG.get(relSlug);
+        if (rel) {
+          seen.add(rel.slug);
+          items.push({ tool: rel, kind: "related" });
+          break;
+        }
+      }
+      if (items.length >= 10) break;
+    }
+    for (const tool of defaultList) {
+      if (items.length >= 10) break;
+      if (seen.has(tool.slug)) continue;
+      seen.add(tool.slug);
+      items.push({ tool, kind: "default" });
+    }
+    return items.slice(0, 10);
+  }, [hasPersonalHistory, topTools, recentTools]);
+
+  const currentTab = WORKBENCH_TABS.find((tab) => tab.id === activeTab) ?? WORKBENCH_TABS[0];
+
   return (
     <div ref={rootRef}>
-      {/* ─── 1. Hero — search-first, left-aligned ─────────────────
-           Brand warm-white band (#FFF7ED via --bg-warm) */}
-      <section className="bg-bg-warm border-b border-border-base pt-10 sm:pt-16 pb-12 sm:pb-16 overflow-hidden">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-center">
-            <div className="lg:col-span-7 max-w-2xl">
-            <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-accent mb-4">
-              {t("home.heroEyebrow")}
-            </p>
+      {/* ─── 1. Asymmetric Product Hero ───────────────────────────── */}
+      <section className="bg-bg-surface border-b border-border-base py-12 sm:py-16 lg:py-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-start">
+          {/* Left: Direct Headline, Search & Smart Quick Tools */}
+          <div className="lg:col-span-7">
+            <div className="inline-flex items-center gap-2 text-[12.5px] font-medium text-text-secondary mb-4">
+              <span className="w-2 h-2 rounded-full bg-success" aria-hidden="true" />
+              <span>{ALL_TOOLS.length} browser-based tools · No uploads · Free</span>
+            </div>
+
             <h1 className="heading-xl text-text-primary mb-4 [text-wrap:balance]">
               {t("home.heroTitle")}
             </h1>
+
             <p className="body-lg text-text-secondary max-w-xl mb-7">
               {t("home.heroSubtitle")}
             </p>
 
-            {/* Search */}
-            <div className="relative max-w-xl mb-3.5">
-              <div className="flex items-center gap-3 h-14 px-4 sm:px-5 bg-bg-surface border border-border-strong rounded-xl shadow-sm transition-[border-color,box-shadow] duration-150 focus-within:border-accent focus-within:shadow-[0_0_0_3px_var(--accent-subtle)]">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-tertiary shrink-0" aria-hidden="true">
+            {/* Spotlight Search */}
+            <div className="relative max-w-xl mb-5">
+              <div className="flex items-center gap-3 h-13 px-4 bg-bg-input border border-border-base rounded-2xl transition-[border-color,background-color,box-shadow] duration-150 focus-within:bg-bg-surface focus-within:border-accent focus-within:shadow-[0_0_0_3px_var(--accent-subtle)]">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-tertiary shrink-0" aria-hidden="true">
                   <circle cx="11" cy="11" r="8" />
                   <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
@@ -275,38 +228,33 @@ export function HomeClient() {
                     }
                   }}
                   placeholder={t("home.searchPlaceholder").replace("{count}", String(ALL_TOOLS.length))}
-                  className="flex-1 bg-transparent h-full text-text-primary text-[15px] font-medium placeholder:text-text-tertiary outline-none min-w-0"
+                  className="flex-1 bg-transparent h-full text-text-primary text-[15px] placeholder:text-text-tertiary outline-none min-w-0"
                   aria-label="Search tools"
                 />
                 <kbd className="hidden sm:inline-flex shrink-0">⌘K</kbd>
               </div>
 
-              {/* Live results */}
               {!heroQueryEmpty && heroResults.length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-bg-surface rounded-xl border border-border-base shadow-[var(--elevation-xl)] overflow-hidden z-50 text-left animate-fade-in-up">
+                <div className="absolute top-full left-0 right-0 mt-2 bg-bg-surface rounded-2xl border border-border-base shadow-[var(--elevation-xl)] overflow-hidden z-50 text-left animate-fade-in-up">
                   <div className="py-1.5 max-h-[360px] overflow-y-auto">
                     {heroResults.map((tool, i) => (
                       <button
                         key={tool.slug}
                         onClick={() => router.push(`/tools/${tool.slug}`)}
                         onMouseEnter={() => setHeroSelectedIdx(i)}
-                        className={`w-full flex items-center gap-3 px-3.5 py-2.5 text-left transition-colors ${
-                          i === heroSelectedIdx ? "bg-accent-subtle" : "hover:bg-bg-hover"
+                        className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
+                          i === heroSelectedIdx ? "bg-accent-subtle" : "hover:bg-bg-elevated"
                         }`}
                       >
-                        <span className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ring-1 ring-inset ring-border-base bg-bg-elevated">
+                        <span className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 bg-bg-elevated">
                           <ToolIcon name={tool.slug} size={17} />
                         </span>
                         <span className="flex-1 min-w-0">
-                          <span className={`block text-[13.5px] font-semibold truncate ${i === heroSelectedIdx ? "text-accent" : "text-text-primary"}`}>
+                          <span className={`block text-[14px] font-medium truncate ${i === heroSelectedIdx ? "text-accent-ink" : "text-text-primary"}`}>
                             {tool.name}
                           </span>
-                          <span className="block text-[12px] text-text-tertiary truncate">{tool.description}</span>
+                          <span className="block text-[12px] text-text-secondary truncate">{tool.description}</span>
                         </span>
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-text-tertiary shrink-0" aria-hidden="true">
-                          <line x1="5" y1="12" x2="19" y2="12" />
-                          <polyline points="12 5 19 12 12 19" />
-                        </svg>
                       </button>
                     ))}
                   </div>
@@ -314,189 +262,220 @@ export function HomeClient() {
               )}
             </div>
 
-            <p className="text-[12.5px] text-text-tertiary mb-6">
-              {t("home.noUpload")}
-            </p>
-
-            {/* Quick actions */}
-            <nav aria-label="Popular actions" className="flex flex-wrap gap-2">
-              {QUICK_SLUGS.map((slug) => {
-                const tool = TOOL_BY_SLUG.get(slug);
-                if (!tool) return null;
-                return (
-                  <Link key={slug} href={`/tools/${slug}`} className="hero-chip">
-                    <ToolIcon name={slug} size={13} />
-                    {tool.name}
-                  </Link>
-                );
-              })}
+            {/* Smart Personalized Quick Actions (auto-ranked by usage & recency) */}
+            <nav aria-label="Quick tools" className="flex flex-wrap gap-2">
+              {smartQuickTools.map(({ tool }) => (
+                <Link
+                  key={tool.slug}
+                  href={`/tools/${tool.slug}`}
+                  className="hero-chip"
+                >
+                  <ToolIcon name={tool.slug} size={14} />
+                  <span>{tool.name}</span>
+                </Link>
+              ))}
             </nav>
           </div>
 
-          {/* Right Column: Wowie Mascot */}
-          <div className="lg:col-span-5 flex justify-center lg:justify-end">
-            <div className="w-full max-w-[360px] sm:max-w-[420px] lg:max-w-[440px] h-[380px] sm:h-[430px] relative">
-              <iframe
-                ref={mascotIframeRef}
-                src={`/mascot.html?theme=${theme}`}
-                title="Wowie — FilesWow mascot"
-                className="w-full h-full border-0 block bg-transparent"
-                style={{ background: "transparent", colorScheme: theme }}
-                loading="lazy"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+          {/* Right: Interactive Format Launcher Panel */}
+          <div className="lg:col-span-5">
+            <div className="rounded-2xl border border-border-base bg-bg-warm p-4 sm:p-5 shadow-[var(--elevation-sm)]">
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <div className="inline-flex p-1 rounded-xl bg-bg-elevated border border-border-base w-full">
+                  {WORKBENCH_TABS.map((tab) => {
+                    const active = tab.id === activeTab;
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`flex-1 py-1.5 px-2 rounded-lg text-[12.5px] font-medium transition-all cursor-pointer whitespace-nowrap ${
+                          active
+                            ? "bg-bg-surface text-text-primary shadow-[var(--elevation-sm)]"
+                            : "text-text-secondary hover:text-text-primary"
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
 
-      {/* ─── 2. Category cards — real counts, one card wider ─────── */}
-      <section className="pb-14 sm:pb-20" aria-labelledby="categories-heading">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6">
-          <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
-            <div>
-              <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-accent mb-2">
-                {t("home.categoriesEyebrow")}
-              </p>
-              <h2 id="categories-heading" className="heading-lg text-text-primary">
-                {t("home.categoriesTitle")}
-              </h2>
-              <p className="body-sm text-text-secondary mt-2">
-                {t("home.categoriesSub").replace("{count}", String(ALL_TOOLS.length))}
-              </p>
-            </div>
-            <Link href="/search" className="hidden sm:inline-flex items-center gap-1.5 text-[13px] font-semibold text-accent hover:gap-2.5 transition-all">
-              {t("home.browseAll")}
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
-              </svg>
-            </Link>
-          </div>
+              <ul className="rounded-xl border border-border-base bg-bg-surface divide-y divide-border-base overflow-hidden">
+                {currentTab.tools.map((slug) => {
+                  const tool = TOOL_BY_SLUG.get(slug);
+                  if (!tool) return null;
+                  return (
+                    <li key={slug}>
+                      <Link
+                        href={`/tools/${slug}`}
+                        className="group flex items-center gap-3 px-3.5 py-3 hover:bg-bg-elevated/60 transition-colors"
+                      >
+                        <ToolIcon name={slug} size={18} />
+                        <div className="min-w-0 flex-1">
+                          <span className="block text-[13.5px] font-medium text-text-primary group-hover:text-accent transition-colors truncate">
+                            {tool.name}
+                          </span>
+                          <span className="block text-[11.5px] text-text-tertiary truncate">
+                            {tool.description}
+                          </span>
+                        </div>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-tertiary group-hover:text-accent group-hover:translate-x-0.5 transition-all shrink-0" aria-hidden="true">
+                          <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                      </Link>
+                    </li>
+                  );
+                })}
+                {currentTab.id === "text" && (
+                  <li>
+                    <Link
+                      href="/transfer"
+                      className="group flex items-center gap-3 px-3.5 py-3 hover:bg-bg-elevated/60 transition-colors"
+                    >
+                      <span className="w-[18px] h-[18px] flex items-center justify-center text-accent shrink-0">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <line x1="22" y1="2" x2="11" y2="13" />
+                          <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                        </svg>
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <span className="block text-[13.5px] font-medium text-text-primary group-hover:text-accent transition-colors">
+                          P2P File Transfer
+                        </span>
+                        <span className="block text-[11.5px] text-text-tertiary truncate">
+                          Send files directly between devices over WebRTC
+                        </span>
+                      </div>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-text-tertiary group-hover:text-accent group-hover:translate-x-0.5 transition-all shrink-0" aria-hidden="true">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </Link>
+                  </li>
+                )}
+              </ul>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {CATEGORY_CARDS.map((card) => (
-              <CategoryCard key={card.category} spec={card} />
-            ))}
+              <div className="mt-3.5 flex items-center justify-between px-1 text-[12.5px]">
+                <span className="text-text-tertiary tabular-nums">
+                  {currentTab.count} tools in {currentTab.label}
+                </span>
+                <Link href={currentTab.href} className="font-medium text-accent-ink hover:underline underline-offset-2">
+                  Open {currentTab.label} hub →
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ─── 3. Popular tools — filter chips ─────────────────────── */}
+      {/* ─── 2. Popular Tools (Toolbar + Compact Grid) ───────────── */}
       <PopularTools />
 
-      {/* Ad — renders nothing (no gap) when no slot is configured */}
-      <AdSlot slot="home" label="leaderboard (home)" className="max-w-6xl mx-auto px-4 sm:px-6 py-10" />
+      {/* Ad — renders nothing when no slot is configured */}
+      <AdSlot slot="home" label="leaderboard (home)" className="max-w-6xl mx-auto px-4 sm:px-6 py-6" />
 
-      {/* ─── 4. How it works — horizontal sequence ───────────────── */}
-      <section className="border-t border-border-base" aria-labelledby="how-heading">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
-          <div className="max-w-2xl mb-12">
-            <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-accent mb-2">
-              {t("home.howEyebrow")}
-            </p>
-            <h2 id="how-heading" className="heading-lg text-text-primary mb-3">
-              {t("home.howTitle")}
+      {/* ─── 3. How It Works & Local Architecture (Unified Band) ─── */}
+      <section className="border-t border-border-base bg-bg-surface" aria-labelledby="architecture-heading">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
+          <div className="lg:col-span-6">
+            <h2 id="architecture-heading" className="heading-lg text-text-primary mb-3">
+              {t("home.privacyTitle")}
             </h2>
-            <p className="body-md text-text-secondary max-w-[56ch]">
-              {t("home.howIntro")}
+            <p className="body-md text-text-secondary mb-8 max-w-[52ch]">
+              {t("home.privacyIntro")}
             </p>
+
+            <ol className="space-y-5 border-t border-border-base pt-6">
+              {[
+                { num: "01", title: t("home.step1Title"), desc: t("home.step1Desc") },
+                { num: "02", title: t("home.step2Title"), desc: t("home.step2Desc") },
+                { num: "03", title: t("home.step3Title"), desc: t("home.step3Desc") },
+              ].map((step) => (
+                <li key={step.num} className="flex items-start gap-4">
+                  <span className="font-mono text-[12px] font-medium text-accent-ink pt-0.5 shrink-0">
+                    {step.num}
+                  </span>
+                  <div>
+                    <h3 className="text-[15px] font-semibold text-text-primary">{step.title}</h3>
+                    <p className="text-[13.5px] text-text-secondary leading-relaxed mt-0.5">{step.desc}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
           </div>
 
-          <ol className="grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-8 relative">
-            {/* Hairline connecting the three steps (desktop) */}
-            <span
-              className="hidden md:block absolute left-[24px] right-[calc(33.33%-24px)] top-6 h-px bg-border-base"
-              aria-hidden="true"
-            />
-            <HowStep
-              icon={
-                <>
-                  <path d="M13 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9z" />
-                  <path d="M13 3v6h6" />
-                  <path d="M12 13v4" />
-                  <path d="m10 15.5 2 2 2-2" />
-                </>
-              }
-              step="01"
-              title={t("home.step1Title")}
-              description={t("home.step1Desc")}
-            />
-            <HowStep
-              icon={
-                <>
-                  <line x1="4" y1="7" x2="20" y2="7" />
-                  <circle cx="9" cy="7" r="2.2" />
-                  <line x1="4" y1="13" x2="20" y2="13" />
-                  <circle cx="15" cy="13" r="2.2" />
-                  <line x1="4" y1="19" x2="20" y2="19" />
-                  <circle cx="8" cy="19" r="2.2" />
-                </>
-              }
-              step="02"
-              title={t("home.step2Title")}
-              description={t("home.step2Desc")}
-            />
-            <HowStep
-              icon={
-                <>
-                  <path d="M12 4v9" />
-                  <path d="m8.5 10.5 3.5 3 3.5-3" />
-                  <path d="M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2" />
-                </>
-              }
-              step="03"
-              title={t("home.step3Title")}
-              description={t("home.step3Desc")}
-            />
-          </ol>
+          <div className="lg:col-span-6 space-y-4">
+            <figure className="rounded-2xl border border-border-base bg-bg-warm p-5">
+              <figcaption className="text-[12px] font-semibold text-text-tertiary mb-3.5">
+                {t("home.otherSites")}
+              </figcaption>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <DiagramNode label={t("home.yourFile")} glyph={GLYPH_FILE} />
+                <DiagramArrow />
+                <DiagramNode label={t("home.theirServer")} glyph={GLYPH_SERVER} tone="muted" />
+                <DiagramArrow />
+                <DiagramNode label={t("home.result")} glyph={GLYPH_FILE} />
+              </div>
+              <p className="mt-3.5 text-[13px] text-text-secondary leading-relaxed">
+                {t("home.otherCaption")}
+              </p>
+            </figure>
+
+            <figure className="rounded-2xl border border-border-strong bg-bg-surface p-5 shadow-[var(--elevation-sm)]">
+              <figcaption className="text-[12px] font-semibold text-accent-ink mb-3.5">
+                {t("home.filesWow")}
+              </figcaption>
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <DiagramNode label={t("home.yourFile")} glyph={GLYPH_FILE} />
+                <DiagramArrow />
+                <DiagramNode label={t("home.thisBrowser")} glyph={GLYPH_BROWSER} tone="accent" />
+                <DiagramArrow />
+                <DiagramNode label={t("home.result")} glyph={GLYPH_FILE} tone="accent" />
+              </div>
+              <p className="mt-3.5 text-[13px] text-text-secondary leading-relaxed">
+                {t("home.ourCaption")}
+                <span className="font-semibold text-accent-ink">{t("home.ourCaptionAccent")}</span>.
+              </p>
+            </figure>
+          </div>
         </div>
       </section>
 
-      {/* ─── 5. Privacy — the diagram ────────────────────────────── */}
-      <PrivacySection />
-
-      {/* ─── 6. Latest guides ────────────────────────────────────── */}
-      <section className="border-t border-border-base" aria-labelledby="guides-heading">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
-          <div className="flex flex-wrap items-end justify-between gap-4 mb-8">
-            <div>
-              <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-accent mb-2">
-              {t("home.blogEyebrow")}
-            </p>
-              <h2 id="guides-heading" className="heading-lg text-text-primary">
-                {t("home.blogTitle")}
-              </h2>
-            </div>
-            <div className="flex items-center gap-4">
-              <Link href="/guides" className="hidden sm:inline-flex items-center gap-1.5 text-[13px] font-semibold text-text-secondary hover:text-accent transition-colors">
+      {/* ─── 4. Editorial Guides & Tutorials ─────────────────────── */}
+      <section className="border-t border-border-base bg-bg-base" aria-labelledby="guides-heading">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
+          <div className="flex flex-wrap items-baseline justify-between gap-4 mb-8">
+            <h2 id="guides-heading" className="heading-lg text-text-primary">
+              {t("home.blogTitle")}
+            </h2>
+            <div className="flex items-center gap-5 text-[13.5px] font-medium">
+              <Link href="/guides" className="text-text-secondary hover:text-text-primary transition-colors">
                 Reference Guides
               </Link>
-              <Link href="/blog" className="hidden sm:inline-flex items-center gap-1.5 text-[13px] font-semibold text-accent hover:gap-2.5 transition-all">
-                {t("home.allPosts")}
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
+              <Link href="/blog" className="text-accent-ink hover:underline underline-offset-2">
+                {t("home.allPosts")} →
               </Link>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 sm:gap-6">
-            {BLOG_POSTS.slice(0, 3).map((post) => (
-              <Link key={post.slug} href={`/blog/${post.slug}`} className="group flex flex-col border-t border-border-strong pt-4">
-                <h3 className="heading-sm text-text-primary mb-2 group-hover:text-accent transition-colors">
-                  {post.title}
-                </h3>
-                <p className="text-[13.5px] leading-relaxed text-text-secondary line-clamp-3">
-                  {post.description}
-                </p>
-                <span className="mt-3 inline-flex items-center gap-1 text-[13px] font-semibold text-accent">
-                  {t("home.readGuide")}
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-150 group-hover:translate-x-0.5" aria-hidden="true">
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                    <polyline points="12 5 19 12 12 19" />
-                  </svg>
+          <div className="rounded-2xl border border-border-base bg-bg-surface divide-y divide-border-base overflow-hidden">
+            {BLOG_POSTS.slice(0, 4).map((post) => (
+              <Link
+                key={post.slug}
+                href={`/blog/${post.slug}`}
+                className="group flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 hover:bg-bg-elevated/50 transition-colors"
+              >
+                <div className="min-w-0">
+                  <h3 className="text-[15px] font-semibold text-text-primary group-hover:text-accent transition-colors">
+                    {post.title}
+                  </h3>
+                  <p className="text-[13px] text-text-secondary line-clamp-1 mt-0.5">
+                    {post.description}
+                  </p>
+                </div>
+                <span className="text-[13px] font-medium text-accent-ink shrink-0">
+                  {t("home.readGuide")} →
                 </span>
               </Link>
             ))}
@@ -504,152 +483,25 @@ export function HomeClient() {
         </div>
       </section>
 
-      {/* ─── 7. FAQ ─────────────────────────────────────────────── */}
-      <section id="faq" className="border-t border-border-base" aria-labelledby="faq-heading">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
-          <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-accent mb-2">
-            FAQ
-          </p>
-          <h2 id="faq-heading" className="heading-lg text-text-primary mb-8">
-            {t("home.faqTitle")}
-          </h2>
-          <Accordion items={FAQ_ITEMS} defaultOpen={null} />
-        </div>
-      </section>
-
-      {/* ─── 8. Final CTA ───────────────────────────────────────── */}
-      <section className="border-t border-border-base bg-bg-warm" aria-labelledby="cta-heading">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-16 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-          <div>
-            <h2 id="cta-heading" className="heading-lg text-text-primary">
-              {t("home.ctaTitle")}
+      {/* ─── 5. FAQ (2-column split) ─────────────────────────────── */}
+      <section id="faq" className="border-t border-border-base bg-bg-surface" aria-labelledby="faq-heading">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+          <div className="lg:col-span-4">
+            <h2 id="faq-heading" className="heading-lg text-text-primary mb-2">
+              {t("home.faqTitle")}
             </h2>
-            <p className="body-md text-text-secondary mt-1.5">
-              {t("home.ctaSub")}
+            <p className="text-[14px] text-text-secondary leading-relaxed">
+              Common questions about browser processing, privacy, and supported formats.
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <Link href="/search" className="btn-secondary px-6 py-3 text-[15px]">
-              {t("home.ctaExplore")}
-            </Link>
-            <Link href="/tools/merge-pdf" className="btn-primary px-6 py-3 text-[15px]">
-              {t("home.ctaTry")}
-            </Link>
+          <div className="lg:col-span-8">
+            <Accordion items={FAQ_ITEMS} defaultOpen={null} />
           </div>
         </div>
       </section>
-
-      {/* Autonomous flying mascot bird — flies exclusively on the homepage */}
-      <FlyingMascot />
     </div>
   );
 }
-
-/* ─── Category card — one link, one tint, real counts ──────────── */
-
-/* One quiet glyph per category — identity, not decoration */
-const CATEGORY_GLYPHS: Record<string, React.ReactNode> = {
-  pdf: (
-    <>
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-    </>
-  ),
-  word: (
-    <>
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="8" y1="13" x2="16" y2="13" />
-      <line x1="8" y1="17" x2="13" y2="17" />
-    </>
-  ),
-  image: (
-    <>
-      <rect x="3" y="4" width="18" height="16" rx="2" />
-      <circle cx="8.5" cy="9.5" r="1.5" />
-      <path d="m21 16-5-5-9 9" />
-    </>
-  ),
-  text: (
-    <>
-      <line x1="4" y1="6" x2="20" y2="6" />
-      <line x1="4" y1="10" x2="20" y2="10" />
-      <line x1="4" y1="14" x2="16" y2="14" />
-      <line x1="4" y1="18" x2="12" y2="18" />
-    </>
-  ),
-};
-
-function CategoryCard({ spec }: { spec: CategoryCardSpec }) {
-  const count = CATEGORY_COUNTS[spec.category];
-  const featured = spec.featured.map((slug) => TOOL_BY_SLUG.get(slug)).filter(Boolean) as ToolDef[];
-
-  return (
-    <Link
-      href={spec.href}
-      className={`card card-interactive group p-5 sm:p-6 flex flex-col ${
-        spec.wide
-          ? "sm:col-span-2 lg:col-span-2 lg:row-span-2"
-          : spec.span2
-            ? "sm:col-span-2 lg:col-span-2"
-            : ""
-      }`}
-    >
-      <div className="flex items-start gap-3.5 mb-5">
-        <span
-          className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ring-1 ring-inset"
-          style={{ background: `color-mix(in srgb, var(--cat-${spec.category}) 10%, transparent)` }}
-        >
-          <span style={{ color: `var(--cat-${spec.category})` }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              {CATEGORY_GLYPHS[spec.category]}
-            </svg>
-          </span>
-        </span>
-        <div className="min-w-0 flex-1">
-          <h3 className="heading-sm text-text-primary group-hover:text-accent transition-colors">
-            {spec.label}
-          </h3>
-          <p className="text-[13px] leading-snug text-text-secondary mt-1 line-clamp-2">
-            {spec.blurb}
-          </p>
-        </div>
-        {/* Count — quiet neutral pill, top right */}
-        <span className="text-[12px] font-bold text-text-secondary bg-bg-elevated border border-border-base rounded-md px-2 py-0.5 tabular-nums shrink-0 mt-0.5" aria-hidden="true">
-          {count}
-        </span>
-      </div>
-
-      {/* Featured index — name left, one-line description right, hairline rows */}
-      <ul className="mt-auto border-t border-border-base divide-y divide-border-base">
-        {featured.map((tool) => (
-          <li key={tool.slug} className="flex items-center gap-3 py-2.5 text-[13.5px] leading-snug">
-            <span className="font-medium text-text-primary group-hover:text-accent transition-colors truncate">
-              {tool.name}
-            </span>
-            <svg
-              width="12"
-              height="12"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-              className="ml-auto text-text-tertiary opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-150 shrink-0"
-            >
-              <line x1="5" y1="12" x2="19" y2="12" />
-              <polyline points="12 5 19 12 12 19" />
-            </svg>
-          </li>
-        ))}
-      </ul>
-    </Link>
-  );
-}
-
-/* ─── Popular tools with filter chips ──────────────────────────── */
 
 function PopularTools() {
   const { t } = useI18n();
@@ -664,112 +516,83 @@ function PopularTools() {
   const visible = showAll ? matched.slice(0, MAX_VISIBLE) : matched.slice(0, DEFAULT_VISIBLE);
 
   return (
-    <section className="border-t border-border-base bg-bg-surface" aria-labelledby="popular-heading">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20">
-        <div className="max-w-2xl mb-6">
-          <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-accent mb-2">
-            {t("home.popularEyebrow")}
-          </p>
-          <h2 id="popular-heading" className="heading-lg text-text-primary mb-2">
-            {t("home.popularTitle")}
-          </h2>
-          <p className="body-md text-text-secondary">
-            {t("home.popularSub").replace("{count}", String(matched.length))}
-          </p>
+    <section className="py-14 sm:py-18" aria-labelledby="popular-heading">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-7">
+          <div>
+            <h2 id="popular-heading" className="heading-lg text-text-primary">
+              {t("home.popularTitle")}
+            </h2>
+            <p className="text-[13.5px] text-text-secondary mt-1">
+              {t("home.popularSub").replace("{count}", String(matched.length))}
+            </p>
+          </div>
+
+          <div className="inline-flex flex-wrap gap-1 p-1 rounded-xl bg-bg-elevated border border-border-base self-start" role="group" aria-label="Filter popular tools">
+            {CHIPS.map((c) => {
+              const active = chip === c.id;
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => {
+                    setChip(c.id);
+                    setShowAll(false);
+                  }}
+                  className={`px-3 py-1.5 min-h-8 rounded-lg text-[12.5px] font-medium transition-all cursor-pointer ${
+                    active
+                      ? "bg-bg-surface text-text-primary shadow-[var(--elevation-sm)]"
+                      : "text-text-secondary hover:text-text-primary"
+                  }`}
+                >
+                  {t(CHIP_LABEL_KEYS[c.id])}
+                </button>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Filter chips */}
-        <div className="flex flex-wrap gap-2 mb-7" role="group" aria-label="Filter popular tools">
-          {CHIPS.map((c) => (
-            <button
-              key={c.id}
-              type="button"
-              aria-pressed={chip === c.id}
-              onClick={() => {
-                setChip(c.id);
-                setShowAll(false);
-              }}
-              className="chip"
-            >
-              {t(CHIP_LABEL_KEYS[c.id])}
-            </button>
-          ))}
-        </div>
-
-        {/* Grid — remounts on chip change for a smooth 8px reflow */}
         <div
           key={chip}
-          className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 animate-fade-in-up"
+          className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 animate-fade-in-up"
         >
           {visible.map((tool, i) => (
             <ToolCard key={tool.slug} tool={tool} index={i} />
           ))}
         </div>
 
-        <div className="mt-7 flex flex-col items-center gap-3">
-          {!showAll && matched.length > DEFAULT_VISIBLE && (
-            <button type="button" className="btn-secondary px-6" onClick={() => setShowAll(true)}>
-              {t("home.showAll").replace("{count}", String(Math.min(matched.length, MAX_VISIBLE)))}
-            </button>
-          )}
-          <p className="text-[13px] text-text-tertiary">
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border-t border-border-base pt-5">
+          <p className="text-[13px] text-text-secondary">
             {t("home.showing")
               .replace("{n}", String(visible.length))
-              .replace("{m}", String(matched.length))} ·{" "}
-            <Link href="/search" className="font-semibold text-accent hover:underline underline-offset-2">
-              {t("home.browseAllCount").replace("{count}", String(ALL_TOOLS.length))}
-            </Link>
+              .replace("{m}", String(matched.length))}
           </p>
+          <div className="flex items-center gap-4">
+            {!showAll && matched.length > DEFAULT_VISIBLE && (
+              <button type="button" className="btn-secondary text-[13.5px]" onClick={() => setShowAll(true)}>
+                {t("home.showAll").replace("{count}", String(Math.min(matched.length, MAX_VISIBLE)))}
+              </button>
+            )}
+            <Link href="/search" className="text-[13.5px] font-medium text-accent-ink hover:underline underline-offset-2">
+              {t("home.browseAllCount").replace("{count}", String(ALL_TOOLS.length))} →
+            </Link>
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-/* ─── How-it-works step ────────────────────────────────────────── */
-
-function HowStep({
-  icon,
-  step,
-  title,
-  description,
-}: {
-  icon: React.ReactNode;
-  step: string;
-  title: string;
-  description: string;
-}) {
-  return (
-    <li className="relative">
-      <div className="flex items-center gap-3 mb-4">
-        <span className="w-12 h-12 rounded-full bg-bg-surface border border-border-base flex items-center justify-center text-text-secondary relative z-10">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            {icon}
-          </svg>
-        </span>
-        <span className="font-mono text-[11px] tracking-[0.14em] text-text-tertiary relative z-10 bg-bg-base pr-2">
-          {step}
-        </span>
-      </div>
-      <h3 className="heading-sm text-text-primary mb-1.5">{title}</h3>
-      <p className="text-[13.5px] leading-relaxed text-text-secondary max-w-[36ch]">
-        {description}
-      </p>
-    </li>
-  );
-}
-
-/* ─── Privacy diagram ──────────────────────────────────────────── */
-
 function DiagramNode({ label, glyph, tone = "default" }: { label: string; glyph: React.ReactNode; tone?: "default" | "accent" | "muted" }) {
   const toneClass =
     tone === "accent"
-      ? "border-accent/40 bg-accent-subtle text-text-primary"
+      ? "border-accent/30 bg-accent-subtle text-text-primary"
       : tone === "muted"
         ? "border-dashed border-border-strong text-text-secondary"
-        : "border-border-strong bg-bg-surface text-text-primary";
+        : "border-border-base bg-bg-elevated text-text-primary";
   return (
-    <span className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border text-[13px] font-medium ${toneClass}`}>
+    <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-[13px] font-medium ${toneClass}`}>
       <span className={tone === "accent" ? "text-accent" : "text-text-tertiary"} aria-hidden="true">
         {glyph}
       </span>
@@ -780,7 +603,7 @@ function DiagramNode({ label, glyph, tone = "default" }: { label: string; glyph:
 
 function DiagramArrow({ className = "" }: { className?: string }) {
   return (
-    <svg width="30" height="12" viewBox="0 0 30 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={`shrink-0 text-text-tertiary ${className}`} aria-hidden="true">
+    <svg width="24" height="12" viewBox="0 0 30 12" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={`shrink-0 text-text-tertiary ${className}`} aria-hidden="true">
       <line x1="1" y1="6" x2="25" y2="6" />
       <polyline points="20 1.5 25.5 6 20 10.5" />
     </svg>
@@ -810,76 +633,6 @@ const GLYPH_BROWSER = (
     <line x1="6.5" y1="6.5" x2="6.51" y2="6.5" />
   </svg>
 );
-
-function PrivacySection() {
-  const { t } = useI18n();
-  return (
-    <section className="border-t border-border-base bg-bg-surface" aria-labelledby="privacy-heading">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-16 sm:py-20 grid md:grid-cols-2 gap-10 md:gap-16 items-start">
-        <div className="reveal">
-          <p className="text-[12px] font-bold uppercase tracking-[0.08em] text-accent mb-2">
-            {t("home.privacyEyebrow")}
-          </p>
-          <h2 id="privacy-heading" className="heading-lg text-text-primary mb-3">
-            {t("home.privacyTitle")}
-          </h2>
-          <p className="body-md text-text-secondary max-w-[54ch] mb-5">
-            {t("home.privacyIntro")}
-          </p>
-          <ul className="space-y-2.5">
-            {[t("home.bulletOffline"), t("home.bulletNothing"), t("home.bulletNoAccount")].map((line) => (
-              <li key={line} className="flex items-center gap-2.5 text-[13.5px] text-text-secondary">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent shrink-0" aria-hidden="true">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                {line}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="space-y-4 reveal">
-          {/* Other sites */}
-          <figure className="card p-5">
-            <figcaption className="text-[12px] font-bold uppercase tracking-[0.08em] text-accent mb-4">
-              {t("home.otherSites")}
-            </figcaption>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <DiagramNode label={t("home.yourFile")} glyph={GLYPH_FILE} />
-              <DiagramArrow />
-              <DiagramNode label={t("home.theirServer")} glyph={GLYPH_SERVER} tone="muted" />
-              <DiagramArrow />
-              <DiagramNode label={t("home.result")} glyph={GLYPH_FILE} />
-            </div>
-            <p className="mt-4 text-[12.5px] text-text-tertiary leading-relaxed">
-              {t("home.otherCaption")}
-            </p>
-          </figure>
-
-          {/* FilesWow */}
-          <figure className="card p-5">
-            <figcaption className="font-mono text-[11px] uppercase tracking-[0.14em] text-accent mb-4">
-              {t("home.filesWow")}
-            </figcaption>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <DiagramNode label={t("home.yourFile")} glyph={GLYPH_FILE} />
-              <DiagramArrow />
-              <DiagramNode label={t("home.thisBrowser")} glyph={GLYPH_BROWSER} tone="accent" />
-              <DiagramArrow />
-              <DiagramNode label={t("home.result")} glyph={GLYPH_FILE} tone="accent" />
-            </div>
-            <p className="mt-4 text-[12.5px] text-text-secondary leading-relaxed">
-              {t("home.ourCaption")}
-              <span className="font-semibold text-accent">{t("home.ourCaptionAccent")}</span>.
-            </p>
-          </figure>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ─── FAQ — copy mirrors the FAQPage JSON-LD in page.tsx ───────── */
 
 const FAQ_ITEMS = [
   {

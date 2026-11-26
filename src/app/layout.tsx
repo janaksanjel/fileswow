@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Instrument_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { I18nProvider } from "@/lib/i18n";
@@ -10,34 +9,13 @@ import { AnalyticsConsentGate } from "@/components/analytics-consent-gate";
 import { SupportBot } from "@/components/support-bot";
 import { SITE_URL, SITE_NAME, absoluteUrl, jsonLdProps, TOOL_COUNT } from "@/lib/site";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-// Headings — Instrument Sans: an editorial grotesque that reads calm and
-// precise (clearly not Inter/system) while staying legible at small sizes.
-// Loaded via next/font with display:swap — never render-blocking.
-const instrumentSans = Instrument_Sans({
-  variable: "--font-heading-sans",
-  subsets: ["latin"],
-  display: "swap",
-});
-
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#131210" },
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#000000" },
+    { media: "(prefers-color-scheme: light)", color: "#f5f5f7" },
   ],
 };
 
@@ -149,7 +127,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer support",
-      email: "support@fileswow.com",
+      email: "fileswow.contact@gmail.com",
       availableLanguage: "English",
     },
   };
@@ -193,7 +171,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${instrumentSans.variable}`}
       suppressHydrationWarning
     >
       <head>

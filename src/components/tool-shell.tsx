@@ -96,10 +96,10 @@ export function ToolShell({
       </nav>
 
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-7">
         <div className="flex items-start gap-4">
           <span
-            className={`w-12 h-12 rounded-xl ring-1 ring-inset flex items-center justify-center shrink-0 ${categoryTile(
+            className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 ${categoryTile(
               tool.category
             )}`}
           >
@@ -120,20 +120,24 @@ export function ToolShell({
             </div>
             <p className="body-md text-text-secondary mt-1.5 max-w-xl">{tool.description}</p>
 
-            {/* Small, calm privacy indicator — on every tool */}
-            <div className="flex flex-wrap items-center gap-2 mt-3">
-              <span className="badge">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" className="text-success" aria-hidden="true">
+            {/* Calm privacy indicator */}
+            <p className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2.5 text-[12.5px] font-medium text-text-secondary">
+              <span className="inline-flex items-center gap-1.5 text-success">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                   <path d="M9 12l2 2 4-4" />
                 </svg>
-                {tool.slug === "p2p-text" ? "Peer-to-peer WebRTC" : "Browser-based"}
+                {tool.slug === "p2p-text" ? "Peer-to-peer WebRTC" : "Processed in your browser"}
               </span>
               {tool.slug !== "p2p-text" && tool.slug !== "pdf-create-from-url" && (
-                <span className="badge">No server storage</span>
+                <>
+                  <span className="text-text-tertiary" aria-hidden="true">·</span>
+                  <span>No server upload</span>
+                </>
               )}
-              <span className="badge">Free</span>
-            </div>
+              <span className="text-text-tertiary" aria-hidden="true">·</span>
+              <span>Free</span>
+            </p>
           </div>
         </div>
       </div>
