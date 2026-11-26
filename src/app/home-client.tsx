@@ -205,14 +205,6 @@ function QuickShortcutsSection() {
     }
   };
 
-  const togglePin = (slug: string) => {
-    if (pinnedSlugs.includes(slug)) {
-      savePinned(pinnedSlugs.filter((s) => s !== slug));
-    } else if (pinnedSlugs.length < MAX_QUICK_TOOLS && displayShortcuts.length < MAX_QUICK_TOOLS) {
-      savePinned([...pinnedSlugs, slug]);
-    }
-  };
-
   useEffect(() => {
     if (pickerOpen) {
       const timer = setTimeout(() => pickerInputRef.current?.focus(), 80);
@@ -230,7 +222,7 @@ function QuickShortcutsSection() {
   // Order:
   // 1. Last used tool(s) automatically go first
   // 2. User's custom pinned tools (preserving drag-and-drop order)
-  // 3. Most useful / top tools to fill up to 7 cards
+  // 3. Most useful / top tools to fill up to 7 cards (max 12 total)
   const displayShortcuts = useMemo(() => {
     const seen = new Set<string>();
     const items: Array<{ tool: ToolDef; badge: "Recent" | "Pinned" | "Popular"; isPinned: boolean }> = [];
@@ -271,6 +263,14 @@ function QuickShortcutsSection() {
 
     return items.slice(0, MAX_QUICK_TOOLS);
   }, [pinnedSlugs, recentTools, topTools]);
+
+  const togglePin = (slug: string) => {
+    if (pinnedSlugs.includes(slug)) {
+      savePinned(pinnedSlugs.filter((s) => s !== slug));
+    } else if (pinnedSlugs.length < MAX_QUICK_TOOLS && displayShortcuts.length < MAX_QUICK_TOOLS) {
+      savePinned([...pinnedSlugs, slug]);
+    }
+  };
 
   // Drag-and-drop reorder handler — persists full custom order to localStorage
   const handleDropOnCard = (targetSlug: string) => {
