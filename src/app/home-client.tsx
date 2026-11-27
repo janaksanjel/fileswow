@@ -300,12 +300,17 @@ function QuickShortcutsSection() {
   return (
     <section className="border-b border-border-base bg-bg-warm py-6 sm:py-8" aria-label="Quick tools">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="flex items-center justify-between gap-3 mb-4">
-          <div className="flex items-center gap-2.5">
-            <h1 className="heading-md text-text-primary">Quick Tools</h1>
-            <span className="text-[12px] text-text-tertiary hidden sm:inline">
-              · Drag to reorder
-            </span>
+        <div className="flex items-start sm:items-center justify-between gap-3 mb-4">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <h1 className="heading-md text-text-primary">Quick Tools</h1>
+              <span className="text-[12px] text-text-tertiary hidden sm:inline">
+                · Drag to reorder
+              </span>
+            </div>
+            <p className="text-[13px] text-text-secondary mt-0.5">
+              Free browser-based PDF, Word, Image, and Text tools — 100% private, zero file uploads.
+            </p>
           </div>
 
           {pinnedSlugs.length > 0 && (

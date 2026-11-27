@@ -5,30 +5,18 @@ import { ALL_TOOLS } from "@/lib/catalog";
 import { GUIDES } from "@/lib/guides";
 import { BLOG_POSTS } from "@/lib/blog";
 import { SITE_URL, absoluteUrl } from "@/lib/site";
+import { CORE_INDEXED_TOOL_SLUGS } from "@/lib/seo-index";
 
 /**
- * lastmod integrity: Google uses <lastmod> only when it is consistently
- * accurate. Shipping `new Date()` (build time) here stamps every URL as
- * "changed today" on every deploy — real content did not change — so the
- * dates get distrusted and crawl prioritization degrades (pages linger in
- * "Discovered – currently not indexed"). Keep this a real date and bump it
- * only when tool/content pages actually change.
+ * Keep lastmod accurate and bump only when tool/content pages actually change.
  */
-const CONTENT_LAST_UPDATED = "2026-11-26";
-
-const EXCLUDED_TOOL_SLUGS = new Set([
-  "pdf-to-word-2",
-  "word-to-pdf-2",
-  "image-to-pdf-image",
-  "recent-tools",
-  "command-palette",
-]);
+const CONTENT_LAST_UPDATED = "2026-11-27";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = SITE_URL;
   const contentDate = new Date(CONTENT_LAST_UPDATED);
 
-  // Static pages with high priority (/search is noindex, so omitted)
+  // Core landing, category hub, and trust pages (/search, /privacy, /terms, /disclaimer omitted from sitemap)
   const staticPages: MetadataRoute.Sitemap = [
     {
       url: base,
@@ -90,29 +78,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.5,
     },
-    {
-      url: absoluteUrl("/privacy"),
-      lastModified: contentDate,
-      changeFrequency: "monthly",
-      priority: 0.3,
-    },
-    {
-      url: absoluteUrl("/terms"),
-      lastModified: contentDate,
-      changeFrequency: "monthly",
-      priority: 0.3,
-    },
-    {
-      url: absoluteUrl("/disclaimer"),
-      lastModified: contentDate,
-      changeFrequency: "monthly",
-      priority: 0.3,
-    },
   ];
 
-  // Focus crawl budget on core Tier 1 tools (excluding duplicates & utility widgets)
-  const toolPages: MetadataRoute.Sitemap = ALL_TOOLS.filter(
-    (tool) => tool.tier === 1 && !EXCLUDED_TOOL_SLUGS.has(tool.slug)
+  // Focus crawl budget on curated flagship tools so Google indexes core pages fast
+  const toolPages: MetadataRoute.Sitemap = ALL_TOOLS.filter((tool) =>
+    CORE_INDEXED_TOOL_SLUGS.has(tool.slug)
   ).map((tool) => ({
     url: absoluteUrl(`/tools/${tool.slug}`),
     lastModified: contentDate,

@@ -5,6 +5,7 @@ import { absoluteUrl, toolUrl, categoryUrl, jsonLdProps } from "@/lib/site";
 import { getToolGuide, getToolFaq } from "@/lib/content";
 import { getBlogPostForTool } from "@/lib/blog";
 import { GUIDES } from "@/lib/guides";
+import { CORE_INDEXED_TOOL_SLUGS } from "@/lib/seo-index";
 import { ToolClient } from "./tool-client";
 
 interface ToolPageProps {
@@ -166,7 +167,10 @@ export async function generateMetadata({ params }: ToolPageProps): Promise<Metad
   const canonicalUrl = DUPLICATE_CANONICALS[slug]
     ? absoluteUrl(DUPLICATE_CANONICALS[slug])
     : toolUrl(tool.slug);
-  const shouldNoindex = NOINDEX_TOOL_SLUGS.has(slug) || tool.tier === 3;
+  const shouldNoindex =
+    NOINDEX_TOOL_SLUGS.has(slug) ||
+    tool.tier === 3 ||
+    !CORE_INDEXED_TOOL_SLUGS.has(slug);
 
   return {
     title,
