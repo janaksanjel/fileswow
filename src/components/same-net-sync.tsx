@@ -416,9 +416,9 @@ export function SameNetSync() {
 
   return (
     <div>
-    <section className="mb-10 rounded-2xl border border-border-base bg-bg-surface shadow-[var(--elevation-sm)] overflow-hidden">
+    <section className="mb-8 sm:mb-10 rounded-2xl border border-border-base bg-bg-surface shadow-[var(--elevation-sm)] overflow-hidden">
       {/* Header + Toolbar */}
-      <div className="px-4 sm:px-6 py-4 border-b border-border-base bg-bg-warm flex flex-col md:flex-row md:items-center justify-between gap-3">
+      <div className="px-3.5 sm:px-6 py-3.5 sm:py-4 border-b border-border-base bg-bg-warm flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <span className="inline-flex items-center gap-2 text-[13px] font-semibold text-text-primary">
             <span className="w-2.5 h-2.5 rounded-full bg-success" aria-hidden="true" />
@@ -516,7 +516,7 @@ export function SameNetSync() {
       </div>
 
       {/* Body */}
-      <div className="p-4 sm:p-6 space-y-3.5">
+      <div className="p-3.5 sm:p-6 space-y-3.5">
         {/* Real-time Typing Indicator */}
         {remoteTypingBy && (
           <div
@@ -577,7 +577,7 @@ export function SameNetSync() {
               suppressContentEditableWarning
               onInput={emitEditorChange}
               aria-label="Same-network rich text editor"
-              className="rte-content min-h-[260px] sm:min-h-[320px] p-4 text-[14.5px] text-text-primary leading-relaxed overflow-y-auto"
+              className="rte-content min-h-[220px] sm:min-h-[320px] p-3.5 sm:p-4 text-[14px] sm:text-[14.5px] text-text-primary leading-relaxed overflow-y-auto break-words"
             />
           </div>
         </div>
@@ -637,7 +637,7 @@ export function SameNetSync() {
         )}
 
         {/* Bottom Bar */}
-        <div className="flex items-center justify-between pt-1 text-[12px] text-text-tertiary">
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11.5px] sm:text-[12px] text-text-tertiary">
           <span className="inline-flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-success" aria-hidden="true" />
             {lastSyncedLabel} · Ephemeral (zero cloud retention)
@@ -703,7 +703,7 @@ export function SameNetSync() {
                 if (e.dataTransfer?.files?.length) void addAndShareFiles(e.dataTransfer.files);
               }}
               onClick={() => fileInputRef.current?.click()}
-              className={`rounded-2xl border-2 border-dashed p-8 text-center transition-colors cursor-pointer ${
+              className={`rounded-2xl border-2 border-dashed p-5 sm:p-8 text-center transition-colors cursor-pointer ${
                 dragOver
                   ? "border-accent bg-accent-subtle/40"
                   : "border-border-strong hover:border-accent/60 bg-bg-elevated/40"

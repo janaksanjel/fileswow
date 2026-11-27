@@ -1578,16 +1578,16 @@ export function TransferClient() {
 
   if (role === null) {
     return (
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <div className="max-w-5xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Mode Switcher: 50 GB File Transfer vs Quick Sync (Same Network) */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-          <div className="inline-flex p-1 rounded-2xl bg-bg-surface border border-border-base shadow-xs" role="tablist" aria-label="Transfer mode">
+        <div className="mb-5 sm:mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
+          <div className="w-full sm:w-auto grid grid-cols-2 sm:inline-flex p-1 rounded-2xl bg-bg-surface border border-border-base shadow-xs" role="tablist" aria-label="Transfer mode">
             <button
               type="button"
               role="tab"
               aria-selected={transferMode === "p2p"}
               onClick={() => selectTransferMode("p2p")}
-              className={`px-4 py-2 rounded-xl text-[13px] font-semibold transition-all cursor-pointer ${
+              className={`px-2.5 sm:px-4 py-2 rounded-xl text-[12px] sm:text-[13px] font-semibold text-center transition-all cursor-pointer truncate ${
                 transferMode === "p2p"
                   ? "bg-accent text-text-on-accent shadow-xs"
                   : "text-text-secondary hover:text-text-primary"
@@ -1600,16 +1600,16 @@ export function TransferClient() {
               role="tab"
               aria-selected={transferMode === "quick-sync"}
               onClick={() => selectTransferMode("quick-sync")}
-              className={`px-4 py-2 rounded-xl text-[13px] font-semibold transition-all cursor-pointer ${
+              className={`px-2.5 sm:px-4 py-2 rounded-xl text-[12px] sm:text-[13px] font-semibold text-center transition-all cursor-pointer truncate ${
                 transferMode === "quick-sync"
                   ? "bg-accent text-text-on-accent shadow-xs"
                   : "text-text-secondary hover:text-text-primary"
               }`}
             >
-              Quick Sync (Same Network)
+              Quick Sync (Same Net)
             </button>
           </div>
-          <span className="text-[12px] text-text-tertiary">
+          <span className="text-[11.5px] sm:text-[12px] text-text-tertiary">
             {transferMode === "quick-sync"
               ? "Instant text, URLs & file clipboard across your devices"
               : "Direct WebRTC P2P transfer up to 50 GB"}
@@ -1638,8 +1638,8 @@ export function TransferClient() {
         )}
 
         {/* Unified Send Files Window */}
-        <section id="send" aria-labelledby="send-heading" className="mb-10 scroll-mt-20 rounded-2xl border border-border-base bg-bg-surface shadow-[var(--elevation-sm)] overflow-hidden">
-          <div className="px-5 sm:px-7 py-5 border-b border-border-base bg-bg-warm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <section id="send" aria-labelledby="send-heading" className="mb-8 sm:mb-10 scroll-mt-20 rounded-2xl border border-border-base bg-bg-surface shadow-[var(--elevation-sm)] overflow-hidden">
+          <div className="px-4 sm:px-7 py-4 sm:py-5 border-b border-border-base bg-bg-warm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3">
             <div>
               <h1 id="send-heading" className="heading-md text-text-primary">
                 Send files straight to any device
@@ -1657,7 +1657,7 @@ export function TransferClient() {
             </span>
           </div>
 
-          <div className="p-5 sm:p-7">
+          <div className="p-4 sm:p-7">
             <FileUploader
               accept="*/*"
               multiple={true}
