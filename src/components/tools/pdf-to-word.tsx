@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { StepFlow, type StepOutput } from "@/components/step-flow";
 import type { ToolUIProps } from "@/components/tool-registry";
 import { convertPdfToWord } from "@/lib/engines/pdf-to-word";
+import type { OcrMode, OcrProgress } from "@/lib/engines/nepali-pdf-ocr";
 import { PdfDrawerPreview } from "@/components/pdf-drawer-preview";
 
 export default function PdfToWordTool({ onProcessing, onError }: ToolUIProps) {
@@ -13,6 +14,9 @@ export default function PdfToWordTool({ onProcessing, onError }: ToolUIProps) {
   const [outputs, setOutputs] = useState<StepOutput[]>([]);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [ocrMode, setOcrMode] = useState<OcrMode>("auto");
+  const [ocrLang, setOcrLang] = useState("nep+eng");
+  const [progress, setProgress] = useState<OcrProgress | null>(null);
 
   const handleFilesChanged = useCallback(async (next: File[]) => {
     setFiles(next);
@@ -33,9 +37,15 @@ export default function PdfToWordTool({ onProcessing, onError }: ToolUIProps) {
   const handleConvert = useCallback(async () => {
     if (!files.length) return;
     setProcessing(true);
+    setProgress(null);
+    setError(null);
     onProcessing?.(true);
     try {
-      const blob = await convertPdfToWord(files[0]);
+      const blob = await convertPdfToWord(files[0], {
+        ocrMode,
+        ocrLang,
+        onProgress: (p) => setProgress(p),
+      });
       setOutputs([
         {
           name: files[0].name.replace(/\.pdf$/i, ".docx"),
@@ -48,9 +58,10 @@ export default function PdfToWordTool({ onProcessing, onError }: ToolUIProps) {
       onError?.(msg);
     } finally {
       setProcessing(false);
+      setProgress(null);
       onProcessing?.(false);
     }
-  }, [files, onProcessing, onError]);
+  }, [files, ocrLang, ocrMode, onProcessing, onError]);
 
   const handleDownloadAll = useCallback(async () => {
     if (outputs.length === 0) return;
@@ -122,31 +133,105 @@ export default function PdfToWordTool({ onProcessing, onError }: ToolUIProps) {
               </button>
             </div>
 
-            {/* Quality & Language support card */}
-            <div className="p-4 rounded-xl bg-bg-elevated/70 border border-border-base space-y-2.5">
-              <div className="flex items-center gap-2">
-                <span className="w-6 h-6 rounded-md bg-accent-blue/15 text-accent-blue flex items-center justify-center text-[11px] font-bold">
-                  W
-                </span>
-                <span className="text-[13px] font-bold text-text-primary">
-                  High-Fidelity Word (.docx) Engine
-                </span>
+            {/* Conversion Mode (iLovePDF-style Free AI OCR + Digital Extraction) */}
+            <div className="p-4 rounded-xl bg-bg-elevated/70 border border-border-base space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-md bg-accent-blue/15 text-accent-blue flex items-center justify-center text-[11px] font-bold">
+                    W
+                  </span>
+                  <span className="text-[13px] font-bold text-text-primary">
+                    Conversion Engine &amp; Free AI OCR
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <label htmlFor="pdf-word-ocr-lang" className="text-[11px] font-semibold text-text-secondary">
+                    OCR Language:
+                  </label>
+                  <select
+                    id="pdf-word-ocr-lang"
+                    value={ocrLang}
+                    onChange={(e) => setOcrLang(e.target.value)}
+                    disabled={ocrMode === "off"}
+                    className="h-7 rounded-lg border border-border-strong bg-bg-input px-2 text-[11.5px] font-semibold text-text-primary cursor-pointer disabled:opacity-45"
+                  >
+                    <option value="nep+eng">Nepali + English</option>
+                    <option value="eng">English Only</option>
+                    <option value="hin+eng">Hindi + English</option>
+                  </select>
+                </div>
               </div>
-              <p className="text-[12px] text-text-secondary leading-relaxed">
-                Reconstructs exact paragraphs, headings, bold/italic styles, margins, and page breaks without cloud uploads.
-              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {[
+                  {
+                    id: "auto" as const,
+                    title: "Smart Auto (Recommended)",
+                    desc: "Extracts digital text & auto-runs AI OCR on scanned or Preeti Nepali pages.",
+                  },
+                  {
+                    id: "always" as const,
+                    title: "AI OCR (All Pages)",
+                    desc: "Best for scanned Nepali/English PDFs or broken fonts (100% free in browser).",
+                  },
+                  {
+                    id: "off" as const,
+                    title: "Fast Text Only",
+                    desc: "Instant digital text extraction without OCR.",
+                  },
+                ].map((opt) => {
+                  const selected = ocrMode === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setOcrMode(opt.id)}
+                      className={`text-left p-3 rounded-xl border transition-all cursor-pointer ${
+                        selected
+                          ? "border-accent bg-accent-subtle/60 shadow-xs"
+                          : "border-border-base bg-bg-input hover:border-border-strong"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-1.5">
+                        <span className={`text-[12px] font-bold ${selected ? "text-accent" : "text-text-primary"}`}>
+                          {opt.title}
+                        </span>
+                        {selected && (
+                          <span className="w-2 h-2 rounded-full bg-accent shrink-0" />
+                        )}
+                      </div>
+                      <p className="text-[11px] text-text-secondary mt-1 leading-snug">
+                        {opt.desc}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {processing && progress && (
+                <div className="pt-1 space-y-1.5">
+                  <div className="flex items-center justify-between text-[11px] font-medium text-text-secondary">
+                    <span>{progress.stage}</span>
+                    <span className="tabular-nums">{progress.percent}%</span>
+                  </div>
+                  <div className="h-1.5 w-full rounded-full bg-bg-surface overflow-hidden">
+                    <div
+                      className="h-full bg-accent transition-all duration-300"
+                      style={{ width: `${Math.max(5, progress.percent)}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="flex flex-wrap items-center gap-1.5 pt-1">
                 <span className="px-2 py-0.5 rounded-md bg-bg-surface border border-border-base text-[10.5px] font-semibold text-text-secondary">
-                  ✓ Universal Unicode (All Languages)
+                  ✓ Scanned &amp; Preeti Nepali Support
                 </span>
                 <span className="px-2 py-0.5 rounded-md bg-bg-surface border border-border-base text-[10.5px] font-semibold text-text-secondary">
-                  ✓ Hindi, Nepali & Devanagari
+                  ✓ Free Browser AI OCR (No Limits)
                 </span>
                 <span className="px-2 py-0.5 rounded-md bg-bg-surface border border-border-base text-[10.5px] font-semibold text-text-secondary">
-                  ✓ Arabic & Hebrew RTL
-                </span>
-                <span className="px-2 py-0.5 rounded-md bg-bg-surface border border-border-base text-[10.5px] font-semibold text-text-secondary">
-                  ✓ Chinese, Japanese, Korean
+                  ✓ Arabic, Hindi, CJK &amp; Latin
                 </span>
                 <span className="px-2 py-0.5 rounded-md bg-bg-surface border border-border-base text-[10.5px] font-semibold text-text-secondary">
                   ✓ 100% Client-Side

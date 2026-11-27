@@ -115,6 +115,7 @@ export interface ExtractedLine {
   minX: number;
   maxX: number;
   pageWidth: number;
+  pageHeight: number;
   runs: ExtractedRun[];
   fullText: string;
   avgFontSize: number;
@@ -133,15 +134,38 @@ interface RawPdfItem {
   hasEOL?: boolean;
 }
 
+import {
+  createOcrWorker,
+  normalizeDevanagariText,
+  ocrPdfPageToLines,
+  pageNeedsOcr,
+  type OcrMode,
+  type OcrProgress,
+} from "./nepali-pdf-ocr";
+
+export interface ExtractOptions {
+  ocrMode?: OcrMode;
+  ocrLang?: string;
+  onProgress?: (progress: OcrProgress) => void;
+}
+
+const DEVANAGARI_COMBINING_START_RE = /^[\u0900-\u0903\u093A-\u094F\u0951-\u0957\u0962-\u0963\u093C\u094D]/;
+
 /**
  * Extract structured, layout-aware lines from a PDF file.
- * Accurately calculates horizontal spacing and word separation.
+ * Automatically falls back to free browser AI OCR (Tesseract.js LSTM) on
+ * scanned pages, broken ToUnicode CMaps, or legacy Nepali fonts (Preeti, Kantipur, etc.).
  */
-export async function extractStructuredLines(file: File): Promise<{
+export async function extractStructuredLines(
+  file: File,
+  options: ExtractOptions = {}
+): Promise<{
   lines: ExtractedLine[];
   pageCount: number;
   detectedScripts: Set<string>;
+  ocrPages: number;
 }> {
+  const { ocrMode = "auto", ocrLang = "nep+eng", onProgress } = options;
   const pdfjsLib = await import("pdfjs-dist");
   pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
@@ -150,15 +174,65 @@ export async function extractStructuredLines(file: File): Promise<{
 
   const lines: ExtractedLine[] = [];
   const detectedScripts = new Set<string>();
+  let ocrPages = 0;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let ocrWorker: any = null;
 
-  for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-    const page = await pdf.getPage(pageNum);
-    const viewport = page.getViewport({ scale: 1.0 });
-    const pageWidth = viewport.width;
+  try {
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      onProgress?.({
+        page: pageNum,
+        totalPages: pdf.numPages,
+        stage: `Reading page ${pageNum} of ${pdf.numPages}…`,
+        percent: Math.round(((pageNum - 1) / pdf.numPages) * 100),
+      });
 
-    const textContent = await page.getTextContent();
-    const rawItems = (textContent.items || []) as RawPdfItem[];
-    if (rawItems.length === 0) continue;
+      const page = await pdf.getPage(pageNum);
+      const viewport = page.getViewport({ scale: 1.0 });
+      const pageWidth = viewport.width;
+      const pageHeight = viewport.height;
+
+      const textContent = await page.getTextContent();
+      const rawItems = (textContent.items || []) as RawPdfItem[];
+      const styles = (textContent.styles || {}) as Record<string, { fontFamily?: string }>;
+
+      const shouldRunOcr =
+        ocrMode === "always" ||
+        (ocrMode !== "off" && pageNeedsOcr(rawItems, styles));
+
+      if (shouldRunOcr) {
+        if (!ocrWorker) {
+          onProgress?.({
+            page: pageNum,
+            totalPages: pdf.numPages,
+            stage: `Loading AI OCR model (${ocrLang})…`,
+            percent: Math.round(((pageNum - 1) / pdf.numPages) * 100),
+          });
+          ocrWorker = await createOcrWorker(ocrLang, (p, status) => {
+            onProgress?.({
+              page: pageNum,
+              totalPages: pdf.numPages,
+              stage: `AI OCR page ${pageNum}/${pdf.numPages}: ${status}`,
+              percent: Math.round(((pageNum - 1 + p) / pdf.numPages) * 100),
+            });
+          });
+        } else {
+          onProgress?.({
+            page: pageNum,
+            totalPages: pdf.numPages,
+            stage: `AI OCR recognizing page ${pageNum} of ${pdf.numPages}…`,
+            percent: Math.round(((pageNum - 0.5) / pdf.numPages) * 100),
+          });
+        }
+
+        const ocrResult = await ocrPdfPageToLines(ocrWorker, page, pageNum, detectScriptInfo, 2.5);
+        lines.push(...ocrResult.lines);
+        for (const s of ocrResult.detectedScripts) detectedScripts.add(s);
+        ocrPages++;
+        continue;
+      }
+
+      if (rawItems.length === 0) continue;
 
     // Filter and normalize items
     interface ProcessedItem {
@@ -177,7 +251,7 @@ export async function extractStructuredLines(file: File): Promise<{
 
     for (const it of rawItems) {
       if (!it.str && !it.hasEOL) continue;
-      const normText = (it.str || "").normalize("NFC");
+      const normText = normalizeDevanagariText(it.str || "");
       const x = it.transform[4];
       const y = it.transform[5];
       const fontSize = Math.hypot(it.transform[1], it.transform[3]) || it.height || 10;
@@ -243,13 +317,24 @@ export async function extractStructuredLines(file: File): Promise<{
         if (script.scriptName) detectedScripts.add(script.scriptName);
         if (script.isRtl) anyRtl = true;
 
-        // Space insertion logic: if there is a visible gap between this item and the previous one
+        // Space / Tab insertion logic: preserve wide column gaps as tabs, normal word gaps as spaces,
+        // and never insert a space before Devanagari combining marks (matras/halant) or after halant.
         let wordPrefix = "";
         if (prevRight !== null) {
           const gap = item.x - prevRight;
-          // Typical space threshold in PDF: ~20% of font size
-          if (gap > item.fontSize * 0.22 && !lineText.endsWith(" ") && !item.text.startsWith(" ")) {
-            wordPrefix = " ";
+          const isDevanagariContinuation =
+            DEVANAGARI_COMBINING_START_RE.test(item.text) || lineText.endsWith("\u094D");
+          if (!isDevanagariContinuation) {
+            if (gap > item.fontSize * 2.4) {
+              wordPrefix = "\t";
+            } else if (
+              gap > item.fontSize * 0.22 &&
+              !lineText.endsWith(" ") &&
+              !lineText.endsWith("\t") &&
+              !item.text.startsWith(" ")
+            ) {
+              wordPrefix = " ";
+            }
           }
         }
 
@@ -300,6 +385,7 @@ export async function extractStructuredLines(file: File): Promise<{
           minX: minX === Infinity ? 0 : minX,
           maxX: maxX === -Infinity ? pageWidth : maxX,
           pageWidth,
+          pageHeight,
           runs,
           fullText: lineText.trim(),
           avgFontSize,
@@ -336,42 +422,66 @@ export async function extractStructuredLines(file: File): Promise<{
       }
     }
     flushLine();
+    }
+  } finally {
+    if (ocrWorker) {
+      try {
+        await ocrWorker.terminate();
+      } catch {
+        // Ignore worker termination error
+      }
+    }
   }
+
+  onProgress?.({
+    page: pdf.numPages,
+    totalPages: pdf.numPages,
+    stage: "Finalizing document…",
+    percent: 100,
+  });
 
   return {
     lines,
     pageCount: pdf.numPages,
     detectedScripts,
+    ocrPages,
   };
 }
 
 export interface WordParagraphModel {
   page: number;
+  minX: number;
+  avgFontSize: number;
+  spaceBeforePt: number;
   runs: ExtractedRun[];
   isHeading: boolean;
-  headingLevel?: 1 | 2;
   alignment: "left" | "center" | "right";
   isRtl?: boolean;
   isPageBreakBefore?: boolean;
-  isListItem?: boolean;
 }
+
+const LIST_ITEM_START_RE = /^([•●○▪▫\-–—*]|\d+[.)]|[क-ह][.)]|[०-९]+[.)])\s+/;
 
 /**
  * Converts a PDF file into a Microsoft Word (.docx) document.
- * Matches iLovePDF formatting quality: proper page breaks, alignment, font sizes, and scripts.
+ * Matches iLovePDF Premium formatting quality: exact page dimensions, margins,
+ * indents, vertical spacing, tab columns, alignments, font sizes, scripts,
+ * and automatic free AI OCR for scanned/Nepali PDFs.
  */
-export async function convertPdfToWord(file: File): Promise<Blob> {
+export async function convertPdfToWord(
+  file: File,
+  options: ExtractOptions = {}
+): Promise<Blob> {
   const {
     Document,
     Packer,
     Paragraph,
     TextRun,
     PageBreak,
-    HeadingLevel,
     AlignmentType,
   } = await import("docx");
 
-  const { lines } = await extractStructuredLines(file);
+  const { lines } = await extractStructuredLines(file, options);
 
   if (lines.length === 0) {
     const emptyDoc = new Document({
@@ -381,7 +491,7 @@ export async function convertPdfToWord(file: File): Promise<Blob> {
             new Paragraph({
               children: [
                 new TextRun({
-                  text: "No selectable text was found in this document. It may consist of scanned images. Please run OCR before converting to Word.",
+                  text: "No selectable text was found in this document. Try switching to 'AI OCR (All Pages)' for scanned PDFs.",
                   italics: true,
                   size: 24,
                   font: "Calibri",
@@ -395,12 +505,24 @@ export async function convertPdfToWord(file: File): Promise<Blob> {
     return Packer.toBlob(emptyDoc);
   }
 
+  // Page dimensions & document-level content bounds
+  const pageWidthPt = lines[0]?.pageWidth || 595.28; // A4 default
+  const pageHeightPt = lines[0]?.pageHeight || 841.89;
+
   // Calculate body font size by weighted character frequency
   const sizeWeights = new Map<number, number>();
+  let minContentX = Infinity;
+  let maxContentX = 0;
+
   for (const line of lines) {
     const s = Math.round(line.avgFontSize);
     sizeWeights.set(s, (sizeWeights.get(s) || 0) + line.fullText.length);
+    if (line.alignment === "left" && line.minX >= 10) {
+      minContentX = Math.min(minContentX, line.minX);
+    }
+    maxContentX = Math.max(maxContentX, line.maxX);
   }
+
   let bodyFontSize = 11;
   let maxWeight = 0;
   for (const [s, w] of sizeWeights) {
@@ -410,11 +532,19 @@ export async function convertPdfToWord(file: File): Promise<Blob> {
     }
   }
 
-  // Group lines into paragraphs
+  const baseLeftPt = minContentX !== Infinity ? Math.max(24, Math.min(minContentX, 110)) : 54;
+  const baseRightPt =
+    maxContentX > baseLeftPt + 100
+      ? Math.max(24, Math.min(pageWidthPt - maxContentX, 110))
+      : 54;
+  const bodyWrapThresholdX = Math.max(baseLeftPt + 150, maxContentX - 42);
+
+  // Group lines into paragraphs without destroying intentional line breaks
   const paragraphs: WordParagraphModel[] = [];
   let currentPara: WordParagraphModel | null = null;
   let lastPage = 0;
   let lastY: number | null = null;
+  let prevLine: ExtractedLine | null = null;
 
   const flushPara = () => {
     if (currentPara && currentPara.runs.length > 0) {
@@ -426,34 +556,55 @@ export async function convertPdfToWord(file: File): Promise<Blob> {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const isNewPage = line.page !== lastPage;
-    const isBig = line.avgFontSize >= bodyFontSize * 1.35;
+    const isBig = line.avgFontSize >= bodyFontSize * 1.32;
     const isHeading = isBig && line.fullText.length < 160;
+    const isListItem = LIST_ITEM_START_RE.test(line.fullText);
 
     const yGap = lastY !== null && !isNewPage ? lastY - line.y : 0;
+    const prevWrappedAtMargin =
+      prevLine !== null &&
+      prevLine.maxX >= bodyWrapThresholdX &&
+      prevLine.alignment === "left";
+    const indentChanged =
+      prevLine !== null && Math.abs(line.minX - prevLine.minX) > 12;
+
     const isParagraphBreak =
       isNewPage ||
+      !currentPara ||
       isHeading ||
-      (currentPara && currentPara.isHeading) ||
-      line.alignment !== currentPara?.alignment ||
-      yGap > line.avgFontSize * 1.75;
+      isListItem ||
+      currentPara.isHeading ||
+      line.alignment !== currentPara.alignment ||
+      indentChanged ||
+      !prevWrappedAtMargin ||
+      yGap > line.avgFontSize * 1.45;
 
     if (isParagraphBreak) {
       flushPara();
     }
 
     if (!currentPara) {
+      const extraGapPt =
+        !isNewPage && lastY !== null
+          ? Math.max(0, Math.min(yGap - line.avgFontSize * 1.2, 48))
+          : 0;
       currentPara = {
         page: line.page,
+        minX: line.minX,
+        avgFontSize: line.avgFontSize,
+        spaceBeforePt: Math.round(extraGapPt),
         runs: [...line.runs],
         isHeading,
-        headingLevel: line.avgFontSize >= bodyFontSize * 1.7 ? 1 : 2,
         alignment: line.alignment,
         isRtl: line.isRtl,
         isPageBreakBefore: isNewPage && line.page > 1,
       };
     } else {
-      // Append line runs to existing paragraph with space between lines
-      if (currentPara.runs.length > 0 && !currentPara.runs[currentPara.runs.length - 1].text.endsWith(" ")) {
+      // Append wrapped line runs with a space
+      if (
+        currentPara.runs.length > 0 &&
+        !currentPara.runs[currentPara.runs.length - 1].text.endsWith(" ")
+      ) {
         currentPara.runs.push({
           text: " ",
           fontSize: line.avgFontSize,
@@ -468,16 +619,16 @@ export async function convertPdfToWord(file: File): Promise<Blob> {
 
     lastPage = line.page;
     lastY = line.y;
+    prevLine = line;
   }
   flushPara();
 
-  // Rebuild into docx Paragraphs
+  // Rebuild into docx Paragraphs preserving exact size, indents, and spacing
   const docxElements: InstanceType<typeof Paragraph>[] = [];
 
   for (let idx = 0; idx < paragraphs.length; idx++) {
     const p = paragraphs[idx];
 
-    // If starting a new page from the PDF, insert an authentic Word PageBreak
     if (p.isPageBreakBefore) {
       docxElements.push(
         new Paragraph({
@@ -502,19 +653,22 @@ export async function convertPdfToWord(file: File): Promise<Blob> {
     if (p.alignment === "center") alignment = AlignmentType.CENTER;
     else if (p.alignment === "right" || p.isRtl) alignment = AlignmentType.RIGHT;
 
+    const indentTwips =
+      p.alignment === "left" && !p.isRtl
+        ? Math.max(0, Math.round((p.minX - baseLeftPt) * 20))
+        : 0;
+    const beforeTwips = Math.max(0, Math.round(p.spaceBeforePt * 20));
+
     docxElements.push(
       new Paragraph({
         children: runs,
         alignment,
         bidirectional: p.isRtl,
-        heading: p.isHeading
-          ? p.headingLevel === 1
-            ? HeadingLevel.HEADING_1
-            : HeadingLevel.HEADING_2
-          : undefined,
+        indent: indentTwips > 40 ? { left: indentTwips } : undefined,
         spacing: {
-          after: p.isHeading ? 160 : 90,
-          line: 276, // 1.15 line spacing
+          before: beforeTwips > 0 ? beforeTwips : undefined,
+          after: p.isHeading ? 100 : 40,
+          line: 264, // 1.1x clean document spacing
         },
       })
     );
@@ -525,11 +679,15 @@ export async function convertPdfToWord(file: File): Promise<Blob> {
       {
         properties: {
           page: {
+            size: {
+              width: Math.round(pageWidthPt * 20),
+              height: Math.round(pageHeightPt * 20),
+            },
             margin: {
-              top: 1000,
-              right: 1000,
-              bottom: 1000,
-              left: 1000,
+              top: 720,
+              right: Math.round(baseRightPt * 20),
+              bottom: 720,
+              left: Math.round(baseLeftPt * 20),
             },
           },
         },
