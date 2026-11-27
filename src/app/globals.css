@@ -244,6 +244,7 @@ html.theme-fade body::after {
 
 html {
   scroll-behavior: smooth;
+  overflow-x: clip;
 }
 
 body {

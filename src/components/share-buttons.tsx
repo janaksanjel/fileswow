@@ -136,15 +136,15 @@ export function ShareButtons({ url, title, label = "Share this tool" }: ShareBut
 
   return (
     <div className="space-y-3" aria-label={label}>
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-[12.5px] font-medium text-text-secondary mr-1">
+      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <span className="w-full sm:w-auto text-[12px] sm:text-[12.5px] font-medium text-text-secondary sm:mr-1">
           Share:
         </span>
 
         <button
           type="button"
           onClick={handleCopy}
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[12.5px] font-semibold shadow-xs transition-all cursor-pointer active:scale-[0.98] ${
+          className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-[12px] sm:text-[12.5px] font-semibold shadow-xs transition-all cursor-pointer active:scale-[0.98] ${
             copied
               ? "bg-success text-white border-success"
               : "bg-accent text-text-on-accent border-accent hover:bg-accent-hover hover:border-accent-hover"
@@ -165,7 +165,7 @@ export function ShareButtons({ url, title, label = "Share this tool" }: ShareBut
             rel="noopener noreferrer"
             onClick={() => triggerThankYou(p.name)}
             aria-label={`Share on ${p.name}`}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[12.5px] font-semibold shadow-xs transition-all active:scale-[0.98] ${p.brandClass}`}
+            className={`inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border text-[12px] sm:text-[12.5px] font-semibold shadow-xs transition-all active:scale-[0.98] ${p.brandClass}`}
           >
             {p.icon}
             <span>{p.name}</span>

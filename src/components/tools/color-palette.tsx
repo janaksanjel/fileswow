@@ -47,7 +47,7 @@ export default function ColorPaletteTool({ onError }: ToolUIProps) {
             <button onClick={() => { setFile(null); setColors([]); }} className="text-xs text-text-tertiary hover:text-danger">Remove</button>
           </div>
           {colors.length > 0 && (
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {colors.map((c, i) => (
                 <button key={i} onClick={() => navigator.clipboard.writeText(c)}
                   className="group relative aspect-square rounded-lg border border-border-base hover:scale-105 transition-transform"

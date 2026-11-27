@@ -11,7 +11,7 @@ export function OnboardingModal() {
   const { locale, setLocale } = useI18n();
   const { theme, set: setTheme } = useTheme();
   const [open, setOpen] = useState(false);
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2>(1);
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -45,9 +45,6 @@ export function OnboardingModal() {
 
   if (!open) return null;
 
-  const currentLocaleLabel =
-    LOCALES.find((item) => item.code === locale)?.label ?? "English";
-
   return (
     <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-4">
       {/* Backdrop */}
@@ -73,15 +70,15 @@ export function OnboardingModal() {
             <img src="/headerlogo-dark.png" alt="FilesWow" width={150} height={40} className="logo-dark h-7 sm:h-8 w-auto object-contain" />
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0" aria-label={`Step ${Math.min(step, 2)} of 2`}>
+          <div className="flex items-center gap-1.5 shrink-0" aria-label={`Step ${step} of 2`}>
             <span
               className={`h-1.5 rounded-full transition-all duration-200 ${
-                step === 1 ? "w-6 bg-accent" : step > 1 ? "w-2.5 bg-success" : "w-2 bg-border-strong"
+                step === 1 ? "w-6 bg-accent" : "w-2.5 bg-success"
               }`}
             />
             <span
               className={`h-1.5 rounded-full transition-all duration-200 ${
-                step === 2 ? "w-6 bg-accent" : step > 2 ? "w-2.5 bg-success" : "w-2 bg-border-strong"
+                step === 2 ? "w-6 bg-accent" : "w-2 bg-border-strong"
               }`}
             />
           </div>
@@ -278,58 +275,10 @@ export function OnboardingModal() {
               </button>
               <button
                 type="button"
-                onClick={() => setStep(3)}
+                onClick={finishOnboarding}
                 className="btn-primary min-h-[44px] px-5 py-2.5 text-[13.5px] flex items-center gap-1.5 cursor-pointer"
               >
-                <span>Continue</span>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <line x1="5" y1="12" x2="19" y2="12" />
-                  <polyline points="12 5 19 12 12 19" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Screen 3: Welcome & Celebration */}
-        {step === 3 && (
-          <div className="p-5 sm:p-7 text-center space-y-4 sm:space-y-5">
-            <div className="mx-auto w-14 h-14 rounded-2xl bg-success/15 border border-success/30 flex items-center justify-center text-3xl select-none">
-              <span aria-hidden="true">🎉</span>
-            </div>
-
-            <div>
-              <h2 className="text-[20px] sm:text-[22px] font-semibold tracking-tight text-text-primary">
-                Welcome to FilesWow! 😊
-              </h2>
-              <p className="text-[13.5px] sm:text-[14px] text-text-secondary mt-1.5 max-w-sm mx-auto leading-relaxed">
-                Congratulations, you&apos;re all set! Enjoy fast, private PDF, Word, Image, and Text tools right in your browser.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center justify-center gap-2 text-[12px] font-medium text-text-secondary">
-              <span className="px-3 py-1 rounded-full bg-bg-elevated border border-border-base">
-                Language: <strong className="text-text-primary">{currentLocaleLabel}</strong>
-              </span>
-              <span className="px-3 py-1 rounded-full bg-bg-elevated border border-border-base capitalize">
-                Theme: <strong className="text-text-primary">{theme}</strong>
-              </span>
-            </div>
-
-            <div className="pt-1 flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-center gap-2.5">
-              <button
-                type="button"
-                onClick={() => setStep(2)}
-                className="btn-secondary min-h-[44px] px-4 py-2.5 text-[13px] cursor-pointer"
-              >
-                Back
-              </button>
-              <button
-                type="button"
-                onClick={finishOnboarding}
-                className="btn-primary min-h-[44px] px-6 py-2.5 text-[14px] font-semibold flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <span>Start exploring</span>
+                <span>Get started</span>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <polyline points="20 6 9 17 4 12" />
                 </svg>

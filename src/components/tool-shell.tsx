@@ -79,38 +79,38 @@ export function ToolShell({
   const tierLabel = tool.tier === 2 ? "WASM" : tool.tier === 3 ? "BETA" : null;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+    <div className="max-w-5xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-8">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-xs font-medium text-text-tertiary mb-5" aria-label="Breadcrumb">
+      <nav className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs font-medium text-text-tertiary mb-4 sm:mb-5" aria-label="Breadcrumb">
         <Link href="/" className="hover:text-accent transition-colors">
           Home
         </Link>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" aria-hidden="true">
           <polyline points="9 18 15 12 9 6" />
         </svg>
         <Link href={categoryHref} className="hover:text-accent transition-colors">
           {categoryLabel}
         </Link>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="shrink-0" aria-hidden="true">
           <polyline points="9 18 15 12 9 6" />
         </svg>
-        <span className="text-text-secondary truncate">{tool.name}</span>
+        <span className="text-text-secondary truncate max-w-[200px] sm:max-w-none">{tool.name}</span>
       </nav>
 
       {/* Unified System Tool Window (Header + Workbench in one cohesive frame) */}
-      <div className="rounded-2xl border border-border-base bg-bg-surface shadow-[var(--elevation-sm)] overflow-hidden mb-10">
-        <div className="px-4 sm:px-7 py-4 sm:py-5 border-b border-border-base bg-bg-warm flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-          <div className="flex items-start sm:items-center gap-3.5 min-w-0">
+      <div className="rounded-2xl border border-border-base bg-bg-surface shadow-[var(--elevation-sm)] overflow-hidden mb-7 sm:mb-10">
+        <div className="px-3.5 sm:px-7 py-4 sm:py-5 border-b border-border-base bg-bg-warm flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-start sm:items-center gap-3 sm:gap-3.5 min-w-0">
             <span
-              className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${categoryTile(
+              className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 ${categoryTile(
                 tool.category
               )}`}
             >
-              <ToolIcon name={tool.slug} size={22} />
+              <ToolIcon name={tool.slug} size={20} />
             </span>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="heading-md text-text-primary">{tool.name}</h1>
+                <h1 className="text-[18px] sm:heading-md font-semibold text-text-primary leading-snug">{tool.name}</h1>
                 {tierLabel && (
                   <span
                     className={`badge badge-mono ${
@@ -166,11 +166,11 @@ export function ToolShell({
         )}
 
         {/* Tool workbench */}
-        <div className="p-4 sm:p-7">{children}</div>
+        <div className="p-3.5 sm:p-7">{children}</div>
       </div>
 
       {/* Share bar — 7 popular social platforms + copy link */}
-      <div className="mb-9 px-4 sm:px-5 py-3.5 rounded-2xl border border-border-base bg-bg-surface">
+      <div className="mb-7 sm:mb-9 px-3.5 sm:px-5 py-3.5 rounded-2xl border border-border-base bg-bg-surface">
         <ShareButtons
           url={toolUrl(tool.slug)}
           title={`${tool.name} — Free Online Tool on FilesWow.com`}
@@ -202,17 +202,17 @@ export function ToolShell({
 
       {/* How It Works */}
       {tool.howItWorks.length > 0 && (
-        <section className="mb-9 max-w-[68ch]" aria-labelledby="how-to-heading">
+        <section className="mb-8 sm:mb-9" aria-labelledby="how-to-heading">
           <h2 id="how-to-heading" className="heading-md text-text-primary mb-4">
             How to use it
           </h2>
-          <ol className="space-y-3">
+          <ol className="space-y-3 max-w-[72ch]">
             {tool.howItWorks.map((step, i) => (
-              <li key={i} className="flex items-start gap-3.5">
+              <li key={i} className="flex items-start gap-3">
                 <span className="font-mono text-[11px] text-text-tertiary w-6 shrink-0 pt-1">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <p className="text-[14.5px] text-text-secondary leading-relaxed">{step}</p>
+                <p className="text-[14px] sm:text-[14.5px] text-text-secondary leading-relaxed">{step}</p>
               </li>
             ))}
           </ol>
@@ -221,13 +221,13 @@ export function ToolShell({
 
       {/* Editorial guide — substantial hand-written content for this tool. */}
       {guide && guide.paragraphs.length > 0 && (
-        <section className="mb-9 max-w-[68ch]" aria-labelledby="guide-heading">
+        <section className="mb-8 sm:mb-9" aria-labelledby="guide-heading">
           <h2 id="guide-heading" className="heading-md text-text-primary mb-4">
             About {tool.name}
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-4 max-w-[72ch]">
             {guide.paragraphs.map((paragraph, i) => (
-              <p key={i} className="text-[14.5px] leading-relaxed text-text-secondary">
+              <p key={i} className="text-[14px] sm:text-[14.5px] leading-relaxed text-text-secondary">
                 {paragraph}
               </p>
             ))}
@@ -236,7 +236,7 @@ export function ToolShell({
       )}
 
       {/* Supported Formats, Use Cases, Limitations & Privacy Handling */}
-      <section className="mb-9 max-w-[68ch] grid gap-4 sm:grid-cols-2" aria-label="Tool specifications and handling">
+      <section className="mb-8 sm:mb-9 grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4" aria-label="Tool specifications and handling">
         <div className="p-4 sm:p-5 rounded-xl bg-bg-surface border border-border-base">
           <h2 className="text-[14px] font-bold text-text-primary mb-3">Supported Formats</h2>
           <div className="space-y-2.5 text-[13px] text-text-secondary">
@@ -282,7 +282,7 @@ export function ToolShell({
         const items = faq ?? tool.faq;
         if (items.length === 0) return null;
         return (
-          <section className="mb-9 max-w-[68ch]" aria-labelledby="faq-heading">
+          <section className="mb-8 sm:mb-9" aria-labelledby="faq-heading">
             <h2 id="faq-heading" className="heading-md text-text-primary mb-4">
               FAQ
             </h2>
@@ -294,7 +294,7 @@ export function ToolShell({
       {/* In-depth blog guide / tutorial cross-links */}
       {(relatedPost || relatedGuide) && (
         <section
-          className="mb-9 max-w-[68ch] space-y-4"
+          className="mb-8 sm:mb-9 grid grid-cols-1 md:grid-cols-2 gap-4"
           aria-labelledby="deep-guide-heading"
         >
           {relatedPost && (
@@ -360,7 +360,7 @@ export function ToolShell({
             </h2>
             <div className="flex-1 h-px bg-border-base" aria-hidden="true" />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
             {relatedTools.slice(0, 6).map((related) => (
               <ToolCard key={related.slug} tool={related} />
             ))}
