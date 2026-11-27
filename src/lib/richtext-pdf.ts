@@ -35,6 +35,8 @@ export interface RichTextPdfOptions {
   lineSpacing: PdfLineSpacing;
   pageNumbers: boolean;
   pageNumberPosition: PageNumberPosition;
+  /** Preserve exact visual formatting (fonts, tables, colors, spacing) at 3x high-DPI. */
+  preserveExactLayout?: boolean;
 }
 
 export interface RichTextPdfResult {
@@ -159,7 +161,13 @@ function styleOf(el: Element | null, fallback: TextStyle): TextStyle {
   if (w === "bold" || w === "bolder") weight = 700;
   else weight = parseInt(w, 10) || 400;
   const bgCss = cs.backgroundColor;
-  const hasBg = bgCss !== "rgba(0, 0, 0, 0)" && bgCss !== "transparent";
+  const parsedBg =
+    bgCss !== "rgba(0, 0, 0, 0)" && bgCss !== "transparent"
+      ? parseColor(bgCss)
+      : null;
+  // Ignore pure white pasted backgrounds (e.g. from Docs/Word) on a white PDF page
+  const isWhiteBg =
+    parsedBg !== null && parsedBg[0] >= 252 && parsedBg[1] >= 252 && parsedBg[2] >= 252;
   return {
     family: mapFontFamily(cs.fontFamily),
     size: Math.max(4, pxToPt(parseFloat(cs.fontSize) || 16)),
@@ -168,7 +176,7 @@ function styleOf(el: Element | null, fallback: TextStyle): TextStyle {
     underline: /underline/.test(deco),
     strike: /line-through/.test(deco),
     color: parseColor(cs.color),
-    bg: hasBg ? parseColor(bgCss) : null,
+    bg: isWhiteBg ? null : parsedBg,
   };
 }
 
@@ -218,13 +226,23 @@ function hasBlockChildren(el: HTMLElement): boolean {
 }
 
 /** Recursively append inline content (text, <br>, <img>, spans, links…) to the pending paragraph. */
-function walkInline(ctx: CollectCtx, node: Node, preserveSpaces: boolean): void {
+function walkInline(ctx: CollectCtx, node: Node, preserveSpaces: boolean, activeUrl?: string): void {
   if (node.nodeType === Node.TEXT_NODE) {
-    const raw = preserveSpaces
+    const parentEl = node.parentElement;
+    const isPre =
+      preserveSpaces ||
+      (parentEl ? window.getComputedStyle(parentEl).whiteSpace.startsWith("pre") : false);
+    const raw = isPre
       ? node.textContent ?? ""
       : (node.textContent ?? "").replace(/\s+/g, " ");
     if (raw === "") return;
-    ctx.segments.push({ text: sanitizeText(raw, ctx.replaced), style: styleOf(node.parentElement, ctx.baseStyle) });
+    const linkEl = parentEl?.closest("a");
+    const href = linkEl?.getAttribute("href") || undefined;
+    ctx.segments.push({
+      text: sanitizeText(raw, ctx.replaced),
+      style: styleOf(parentEl, ctx.baseStyle),
+      ...(href && /^https?:\/\//i.test(href) ? { url: href } : {}),
+    });
     return;
   }
   if (node.nodeType !== Node.ELEMENT_NODE) return;
@@ -247,8 +265,11 @@ function walkInline(ctx: CollectCtx, node: Node, preserveSpaces: boolean): void 
     ctx.blocks.push({ kind: "rule" });
     return;
   }
+  const ws = window.getComputedStyle(el).whiteSpace;
+  const nextPreserve = preserveSpaces || ws.startsWith("pre");
+  const nextUrl = tag === "A" ? el.getAttribute("href") || activeUrl : activeUrl;
   for (const child of Array.from(el.childNodes)) {
-    walkInline(ctx, child, preserveSpaces);
+    walkInline(ctx, child, nextPreserve, nextUrl);
   }
 }
 
@@ -386,14 +407,15 @@ function walkBlocks(ctx: CollectCtx, container: Node): void {
         continue;
       }
       flushParagraph(ctx, null);
-      walkInline(ctx, el, false);
+      const keepSpaces = window.getComputedStyle(el).whiteSpace.startsWith("pre");
+      walkInline(ctx, el, keepSpaces);
       // An element with no children at all is an explicit blank line.
       flushParagraph(ctx, el, el.childNodes.length === 0);
       continue;
     }
 
     // Inline element at block level: accumulate into the pending paragraph.
-    walkInline(ctx, el, false);
+    walkInline(ctx, el, window.getComputedStyle(el).whiteSpace.startsWith("pre"));
   }
 }
 
@@ -711,7 +733,13 @@ async function renderScriptAwarePdf(
   const allElms = tempDiv.querySelectorAll<HTMLElement>("*");
   allElms.forEach((el) => {
     const col = el.style.color;
-    if (col && (col.includes("255, 255, 255") || col.includes("240, 240, 240") || col.includes("var(--"))) {
+    if (
+      col &&
+      (col.includes("255, 255, 255") ||
+        col.includes("245, 245, 247") ||
+        col.includes("240, 240, 240") ||
+        col.includes("var(--"))
+    ) {
       el.style.color = `rgb(${PDF_INK[0]}, ${PDF_INK[1]}, ${PDF_INK[2]})`;
     }
   });
@@ -739,7 +767,7 @@ async function renderScriptAwarePdf(
   try {
     await Promise.all([waitForFonts(), waitForImages(tempDiv)]);
     canvas = await html2canvas(tempDiv, {
-      scale: 2,
+      scale: 3,
       useCORS: true,
       logging: false,
       backgroundColor: "#ffffff",
@@ -857,7 +885,7 @@ export async function richTextToPdf(root: HTMLElement, options: RichTextPdfOptio
   // Non-Latin scripts (Devanagari/Nepali, Arabic, Bengali, etc.) require complex text shaping
   // and Unicode fonts not supported by jsPDF's built-in 14 Type-1 fonts. Render them through
   // the script-aware high-fidelity pipeline so all conjuncts, matras, and glyphs render accurately.
-  if (hasNonWinAnsi(root.textContent ?? "")) {
+  if (options.preserveExactLayout || hasNonWinAnsi(root.textContent ?? "")) {
     return renderScriptAwarePdf(root, options);
   }
 

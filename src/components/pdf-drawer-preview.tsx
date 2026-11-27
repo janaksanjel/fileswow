@@ -670,7 +670,7 @@ function DrawerPageCanvas({
     <div
       id={`drawer-page-${pageNum}`}
       ref={containerRef}
-      className="relative flex flex-col items-center shadow-[0_4px_20px_rgba(0,0,0,0.08)] rounded-xl border border-border-base bg-white overflow-hidden shrink-0 transition-all"
+      className="relative flex flex-col items-center shadow-[0_4px_20px_rgba(0,0,0,0.08)] border border-border-base bg-white overflow-hidden shrink-0 transition-all"
       style={{
         width: `${pageSize.width}px`,
         minHeight: `${pageSize.height}px`,
