@@ -26,6 +26,7 @@ import Peer, { type DataConnection } from "peerjs";
 
 import { UiIcon, type UiIconName } from "@/components/ui-icon";
 import { FileUploader } from "@/components/file-uploader";
+import { SameNetSync } from "@/components/same-net-sync";
 // ─── Constants ───────────────────────────────────────────────────────────
 
 const CODE_LENGTH = 6;
@@ -1552,9 +1553,73 @@ export function TransferClient() {
   // ═══════════════════════════════════════════════════════════════════════
 
   // ── Landing: unified system window — upload on top, code input below ──
+  const [transferMode, setTransferMode] = useState<"p2p" | "quick-sync">("p2p");
+
+  useEffect(() => {
+    const syncFromHash = () => {
+      if (window.location.hash === "#quick-sync") {
+        setTransferMode("quick-sync");
+      } else if (window.location.hash === "#file-transfer") {
+        setTransferMode("p2p");
+      }
+    };
+    queueMicrotask(syncFromHash);
+    window.addEventListener("hashchange", syncFromHash);
+    return () => window.removeEventListener("hashchange", syncFromHash);
+  }, []);
+
+  const selectTransferMode = useCallback((mode: "p2p" | "quick-sync") => {
+    setTransferMode(mode);
+    const nextHash = mode === "quick-sync" ? "#quick-sync" : "#file-transfer";
+    if (window.location.hash !== nextHash) {
+      window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}${nextHash}`);
+    }
+  }, []);
+
   if (role === null) {
     return (
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Mode Switcher: 50 GB File Transfer vs Quick Sync (Same Network) */}
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <div className="inline-flex p-1 rounded-2xl bg-bg-surface border border-border-base shadow-xs" role="tablist" aria-label="Transfer mode">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={transferMode === "p2p"}
+              onClick={() => selectTransferMode("p2p")}
+              className={`px-4 py-2 rounded-xl text-[13px] font-semibold transition-all cursor-pointer ${
+                transferMode === "p2p"
+                  ? "bg-accent text-text-on-accent shadow-xs"
+                  : "text-text-secondary hover:text-text-primary"
+              }`}
+            >
+              50 GB File Transfer
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={transferMode === "quick-sync"}
+              onClick={() => selectTransferMode("quick-sync")}
+              className={`px-4 py-2 rounded-xl text-[13px] font-semibold transition-all cursor-pointer ${
+                transferMode === "quick-sync"
+                  ? "bg-accent text-text-on-accent shadow-xs"
+                  : "text-text-secondary hover:text-text-primary"
+              }`}
+            >
+              Quick Sync (Same Network)
+            </button>
+          </div>
+          <span className="text-[12px] text-text-tertiary">
+            {transferMode === "quick-sync"
+              ? "Instant text, URLs & file clipboard across your devices"
+              : "Direct WebRTC P2P transfer up to 50 GB"}
+          </span>
+        </div>
+
+        {transferMode === "quick-sync" ? (
+          <SameNetSync />
+        ) : (
+          <>
         {error && (
           <div className="mb-5 px-4 py-3 rounded-xl bg-danger/[0.05] border border-danger/25 flex items-start gap-3" role="alert">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-danger mt-0.5 shrink-0" aria-hidden="true">
@@ -1796,6 +1861,8 @@ export function TransferClient() {
             ))}
           </div>
         </section>
+          </>
+        )}
       </div>
     );
   }
