@@ -6,16 +6,21 @@ import { useTheme } from "@/lib/theme-provider";
 import { UiIcon } from "@/components/ui-icon";
 
 const ONBOARDING_STORAGE_KEY = "fileswow-onboarded";
+export const USER_NAME_STORAGE_KEY = "fileswow-user-name";
+export const USER_NAME_EVENT = "fileswow-user-name-changed";
 
 export function OnboardingModal() {
   const { locale, setLocale } = useI18n();
   const { theme, set: setTheme } = useTheme();
   const [open, setOpen] = useState(false);
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [nameInput, setNameInput] = useState("");
 
   useEffect(() => {
     queueMicrotask(() => {
       try {
+        const existingName = window.localStorage.getItem(USER_NAME_STORAGE_KEY);
+        if (existingName) setNameInput(existingName);
         if (!window.localStorage.getItem(ONBOARDING_STORAGE_KEY)) {
           setOpen(true);
         }
@@ -25,19 +30,28 @@ export function OnboardingModal() {
     });
   }, []);
 
-  const finishOnboarding = useCallback(() => {
+  const finishOnboarding = useCallback((saveName: boolean) => {
     try {
       window.localStorage.setItem(ONBOARDING_STORAGE_KEY, "1");
+      if (saveName) {
+        const trimmed = nameInput.trim();
+        if (trimmed) {
+          window.localStorage.setItem(USER_NAME_STORAGE_KEY, trimmed);
+        } else {
+          window.localStorage.removeItem(USER_NAME_STORAGE_KEY);
+        }
+        window.dispatchEvent(new Event(USER_NAME_EVENT));
+      }
     } catch {
       // Ignore storage errors
     }
     setOpen(false);
-  }, []);
+  }, [nameInput]);
 
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") finishOnboarding();
+      if (e.key === "Escape") finishOnboarding(false);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -50,7 +64,7 @@ export function OnboardingModal() {
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/50 backdrop-blur-md transition-opacity"
-        onClick={finishOnboarding}
+        onClick={() => finishOnboarding(false)}
         aria-hidden="true"
       />
 
@@ -61,7 +75,7 @@ export function OnboardingModal() {
         aria-label="Welcome setup"
         className="relative z-10 w-full max-w-md max-h-[92dvh] overflow-y-auto rounded-2xl sm:rounded-3xl bg-bg-surface border border-border-base shadow-[var(--elevation-xl)] animate-fade-in-up"
       >
-        {/* Top bar with logo & step indicator */}
+        {/* Top bar with logo & 3-step indicator */}
         <div className="px-4 sm:px-6 pt-5 pb-3.5 border-b border-border-base bg-bg-warm flex items-center justify-between gap-3 sticky top-0 z-10">
           <div className="flex items-center min-w-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -70,17 +84,19 @@ export function OnboardingModal() {
             <img src="/headerlogo-dark.png" alt="FilesWow" width={150} height={40} className="logo-dark h-7 sm:h-8 w-auto object-contain" />
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0" aria-label={`Step ${step} of 2`}>
-            <span
-              className={`h-1.5 rounded-full transition-all duration-200 ${
-                step === 1 ? "w-6 bg-accent" : "w-2.5 bg-success"
-              }`}
-            />
-            <span
-              className={`h-1.5 rounded-full transition-all duration-200 ${
-                step === 2 ? "w-6 bg-accent" : "w-2 bg-border-strong"
-              }`}
-            />
+          <div className="flex items-center gap-1.5 shrink-0" aria-label={`Step ${step} of 3`}>
+            {[1, 2, 3].map((idx) => (
+              <span
+                key={idx}
+                className={`h-1.5 rounded-full transition-all duration-200 ${
+                  step === idx
+                    ? "w-6 bg-accent"
+                    : step > idx
+                    ? "w-2.5 bg-success"
+                    : "w-2 bg-border-strong"
+                }`}
+              />
+            ))}
           </div>
         </div>
 
@@ -89,7 +105,7 @@ export function OnboardingModal() {
           <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
             <div>
               <p className="text-[11px] sm:text-[11.5px] font-semibold uppercase tracking-[0.08em] text-accent-ink mb-1">
-                Step 1 of 2
+                Step 1 of 3
               </p>
               <h2 className="text-[18px] sm:text-[20px] font-semibold tracking-tight text-text-primary">
                 Choose your language
@@ -150,7 +166,7 @@ export function OnboardingModal() {
             <div className="pt-1 flex items-center justify-between gap-3">
               <button
                 type="button"
-                onClick={finishOnboarding}
+                onClick={() => finishOnboarding(false)}
                 className="min-h-[44px] px-3 py-2 text-[13px] font-medium text-text-tertiary hover:text-text-primary transition-colors cursor-pointer"
               >
                 Skip
@@ -175,7 +191,7 @@ export function OnboardingModal() {
           <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
             <div>
               <p className="text-[11px] sm:text-[11.5px] font-semibold uppercase tracking-[0.08em] text-accent-ink mb-1">
-                Step 2 of 2
+                Step 2 of 3
               </p>
               <h2 className="text-[18px] sm:text-[20px] font-semibold tracking-tight text-text-primary">
                 Choose your theme
@@ -275,7 +291,70 @@ export function OnboardingModal() {
               </button>
               <button
                 type="button"
-                onClick={finishOnboarding}
+                onClick={() => setStep(3)}
+                className="btn-primary min-h-[44px] px-5 py-2.5 text-[13.5px] flex items-center gap-1.5 cursor-pointer"
+              >
+                <span>Continue</span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                  <polyline points="12 5 19 12 12 19" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Screen 3: Enter Your Name */}
+        {step === 3 && (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              finishOnboarding(true);
+            }}
+            className="p-4 sm:p-6 space-y-4 sm:space-y-5"
+          >
+            <div>
+              <p className="text-[11px] sm:text-[11.5px] font-semibold uppercase tracking-[0.08em] text-accent-ink mb-1">
+                Step 3 of 3
+              </p>
+              <h2 className="text-[18px] sm:text-[20px] font-semibold tracking-tight text-text-primary">
+                Enter your name
+              </h2>
+              <p className="text-[13px] sm:text-[13.5px] text-text-secondary mt-1">
+                Personalize your workspace — you can edit your name anytime in the top bar.
+              </p>
+            </div>
+
+            <div>
+              <label htmlFor="onboarding-name-input" className="block text-[12px] font-semibold text-text-secondary mb-1.5">
+                Your name
+              </label>
+              <input
+                id="onboarding-name-input"
+                type="text"
+                maxLength={32}
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                placeholder="e.g. Alex"
+                autoFocus
+                className="input h-11 text-[14.5px]"
+              />
+            </div>
+
+            <div className="pt-1 flex items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => setStep(2)}
+                className="btn-secondary min-h-[44px] px-4 py-2.5 text-[13px] flex items-center gap-1.5 cursor-pointer"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="19" y1="12" x2="5" y2="12" />
+                  <polyline points="12 19 5 12 12 5" />
+                </svg>
+                <span>Back</span>
+              </button>
+              <button
+                type="submit"
                 className="btn-primary min-h-[44px] px-5 py-2.5 text-[13.5px] flex items-center gap-1.5 cursor-pointer"
               >
                 <span>Get started</span>
@@ -284,7 +363,7 @@ export function OnboardingModal() {
                 </svg>
               </button>
             </div>
-          </div>
+          </form>
         )}
       </div>
     </div>

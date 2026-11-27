@@ -8,7 +8,7 @@ import { SearchModal } from "@/components/search-modal";
 import { ToolIcon } from "@/components/icon";
 import { Footer } from "@/components/footer";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { OnboardingModal } from "@/components/onboarding-modal";
+import { OnboardingModal, USER_NAME_EVENT, USER_NAME_STORAGE_KEY } from "@/components/onboarding-modal";
 import { AccessibilityWidget } from "@/components/accessibility-widget";
 import { ALL_TOOLS, type ToolCategory } from "@/lib/catalog";
 import { DEFAULT_HEADER_THEME, getToolGradient } from "@/lib/tool-theme";
@@ -116,6 +116,42 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [userName, setUserName] = useState<string>("");
+  const [editingName, setEditingName] = useState(false);
+  const [draftName, setDraftName] = useState("");
+
+  useEffect(() => {
+    const syncName = () => {
+      try {
+        setUserName(window.localStorage.getItem(USER_NAME_STORAGE_KEY) || "");
+      } catch {
+        // Ignore storage errors
+      }
+    };
+    queueMicrotask(syncName);
+    window.addEventListener(USER_NAME_EVENT, syncName);
+    window.addEventListener("storage", syncName);
+    return () => {
+      window.removeEventListener(USER_NAME_EVENT, syncName);
+      window.removeEventListener("storage", syncName);
+    };
+  }, []);
+
+  const saveHeaderName = () => {
+    const trimmed = draftName.trim();
+    setUserName(trimmed);
+    setEditingName(false);
+    try {
+      if (trimmed) {
+        window.localStorage.setItem(USER_NAME_STORAGE_KEY, trimmed);
+      } else {
+        window.localStorage.removeItem(USER_NAME_STORAGE_KEY);
+      }
+      window.dispatchEvent(new Event(USER_NAME_EVENT));
+    } catch {
+      // Ignore storage errors
+    }
+  };
 
   // Determine active tool/category so its submenu starts open
   const activeTool = pathname.startsWith("/tools/")
@@ -457,12 +493,66 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <img src="/headerlogo-dark.png" alt="FilesWow" width={160} height={44} className="h-8 sm:h-10 w-auto object-contain" />
               </Link>
 
-              {/* Active tool pill in website header */}
-              {activeTool && (
-                <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-[12.5px] font-semibold text-white min-w-0">
-                  <ToolIcon name={activeTool.slug} size={14} />
-                  <span className="truncate max-w-[200px]">{activeTool.name}</span>
-                </div>
+              {/* Editable user name beside hamburger toggle */}
+              {editingName ? (
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    saveHeaderName();
+                  }}
+                  className="flex items-center gap-1"
+                >
+                  <input
+                    type="text"
+                    maxLength={32}
+                    value={draftName}
+                    onChange={(e) => setDraftName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") setEditingName(false);
+                    }}
+                    placeholder="Your name"
+                    autoFocus
+                    aria-label="Edit your name"
+                    className="h-8 w-24 sm:w-36 px-2.5 rounded-lg bg-white/20 text-white placeholder:text-white/70 border border-white/30 text-[12.5px] font-medium focus:outline-none focus:border-white"
+                  />
+                  <button
+                    type="submit"
+                    aria-label="Save name"
+                    className="w-7 h-7 rounded-lg bg-white/20 hover:bg-white/30 text-white flex items-center justify-center transition-colors cursor-pointer"
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditingName(false)}
+                    aria-label="Cancel editing name"
+                    className="w-7 h-7 rounded-lg hover:bg-white/15 text-white/80 hover:text-white flex items-center justify-center transition-colors cursor-pointer"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <line x1="18" y1="6" x2="6" y2="18" />
+                      <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                  </button>
+                </form>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDraftName(userName);
+                    setEditingName(true);
+                  }}
+                  title={userName ? "Click to edit your name" : "Add your name"}
+                  className="group inline-flex items-center gap-0 hover:gap-1.5 h-8 px-3 rounded-full bg-white/15 hover:bg-white/25 border border-white/25 text-[12px] sm:text-[12.5px] font-semibold text-white transition-all cursor-pointer max-w-[110px] sm:max-w-[180px]"
+                >
+                  <span className="truncate">
+                    {userName ? `Hi, ${userName}` : "Add name"}
+                  </span>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" className="w-0 opacity-0 group-hover:w-[11px] group-hover:opacity-85 transition-all duration-150 shrink-0 overflow-hidden" aria-hidden="true">
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                  </svg>
+                </button>
               )}
             </div>
 
