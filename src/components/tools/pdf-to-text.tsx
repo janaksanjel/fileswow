@@ -14,12 +14,11 @@ export default function PdfToTextTool({ onProcessing, onError }: ToolUIProps) {
   const [processing, setProcessing] = useState(false);
   const [copied, setCopied] = useState(false);
   const [ocrMode, setOcrMode] = useState<OcrMode>("auto");
-  const [ocrLang, setOcrLang] = useState("nep+eng");
   const [progress, setProgress] = useState<OcrProgress | null>(null);
   const [meta, setMeta] = useState<{ pageCount: number; ocrPages: number } | null>(null);
 
   const runExtract = useCallback(
-    async (targetFile: File, mode: OcrMode, lang: string) => {
+    async (targetFile: File, mode: OcrMode) => {
       setProcessing(true);
       setProgress(null);
       setText("");
@@ -28,7 +27,6 @@ export default function PdfToTextTool({ onProcessing, onError }: ToolUIProps) {
       try {
         const result = await extractStructuredLines(targetFile, {
           ocrMode: mode,
-          ocrLang: lang,
           onProgress: (p) => setProgress(p),
         });
 
@@ -72,9 +70,9 @@ export default function PdfToTextTool({ onProcessing, onError }: ToolUIProps) {
       const f = files[0];
       if (!f) return;
       setFile(f);
-      await runExtract(f, ocrMode, ocrLang);
+      await runExtract(f, ocrMode);
     },
-    [ocrLang, ocrMode, runExtract]
+    [ocrMode, runExtract]
   );
 
   const handleCopy = async () => {
@@ -95,7 +93,7 @@ export default function PdfToTextTool({ onProcessing, onError }: ToolUIProps) {
         <div className="flex flex-wrap items-center gap-1.5">
           {(
             [
-              { id: "auto", label: "Smart Auto (Nepali + OCR)" },
+              { id: "auto", label: "Smart Auto (All Languages + OCR)" },
               { id: "always", label: "Force AI OCR" },
               { id: "off", label: "Fast Text Only" },
             ] as const
@@ -106,7 +104,7 @@ export default function PdfToTextTool({ onProcessing, onError }: ToolUIProps) {
               disabled={processing}
               onClick={() => {
                 setOcrMode(m.id);
-                if (file) void runExtract(file, m.id, ocrLang);
+                if (file) void runExtract(file, m.id);
               }}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors cursor-pointer disabled:opacity-50 ${
                 ocrMode === m.id
@@ -118,26 +116,9 @@ export default function PdfToTextTool({ onProcessing, onError }: ToolUIProps) {
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-2">
-          <label htmlFor="pdf-txt-ocr-lang" className="text-xs font-semibold text-text-secondary">
-            OCR Language:
-          </label>
-          <select
-            id="pdf-txt-ocr-lang"
-            value={ocrLang}
-            disabled={processing || ocrMode === "off"}
-            onChange={(e) => {
-              const nextLang = e.target.value;
-              setOcrLang(nextLang);
-              if (file) void runExtract(file, ocrMode, nextLang);
-            }}
-            className="h-8 rounded-lg border border-border-strong bg-bg-input px-2 text-xs font-semibold text-text-primary cursor-pointer disabled:opacity-50"
-          >
-            <option value="nep+eng">Nepali + English</option>
-            <option value="eng">English Only</option>
-            <option value="hin+eng">Hindi + English</option>
-          </select>
-        </div>
+        <span className="px-2.5 py-1 rounded-full bg-accent-subtle text-accent text-[11px] font-semibold">
+          Auto-Detects Any Language
+        </span>
       </div>
 
       {!file ? (
@@ -145,7 +126,7 @@ export default function PdfToTextTool({ onProcessing, onError }: ToolUIProps) {
           accept=".pdf"
           onFilesSelected={handleFile}
           label="Drop a PDF to extract text"
-          description="Supports Nepali (Unicode, Preeti & scanned PDFs), English, and multilingual documents — 100% free in your browser"
+          description="Supports all world languages — digital Unicode, legacy fonts & scanned PDFs — 100% free in your browser"
         />
       ) : (
         <div className="space-y-4">

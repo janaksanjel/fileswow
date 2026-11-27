@@ -8,6 +8,7 @@ import type { ToolUIProps } from "@/components/tool-registry";
 import { UiIcon } from "@/components/ui-icon";
 import {
   createOcrWorker,
+  detectOcrLanguageAuto,
   renderPdfPageToCanvas,
   type OcrProgress,
 } from "@/lib/engines/nepali-pdf-ocr";
@@ -19,7 +20,6 @@ export default function OcrPdfTool({ onProcessing, onError }: ToolUIProps) {
   const [copied, setCopied] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [pageCount, setPageCount] = useState(0);
-  const [ocrLang, setOcrLang] = useState("nep+eng");
   const [progress, setProgress] = useState<OcrProgress | null>(null);
 
   const handleFile = useCallback(async (files: File[]) => {
@@ -59,11 +59,26 @@ export default function OcrPdfTool({ onProcessing, onError }: ToolUIProps) {
       setProgress({
         page: 1,
         totalPages,
-        stage: `Loading AI OCR model (${ocrLang})…`,
-        percent: 5,
+        stage: "Auto-detecting document language…",
+        percent: 3,
       });
 
-      worker = await createOcrWorker(ocrLang, (p, status) => {
+      const firstPage = await pdf.getPage(1);
+      const firstContent = await firstPage.getTextContent();
+      const detectedLang = await detectOcrLanguageAuto(
+        firstPage,
+        firstContent.items as Array<{ str?: string; fontName?: string }>,
+        firstContent.styles as Record<string, { fontFamily?: string }>
+      );
+
+      setProgress({
+        page: 1,
+        totalPages,
+        stage: `Loading AI OCR (${detectedLang})…`,
+        percent: 6,
+      });
+
+      worker = await createOcrWorker(detectedLang, (p, status) => {
         setProgress((prev) => ({
           page: prev?.page ?? 1,
           totalPages,
@@ -137,8 +152,8 @@ export default function OcrPdfTool({ onProcessing, onError }: ToolUIProps) {
         <DropZone
           accept=".pdf"
           onFilesSelected={handleFile}
-          label="Drop a scanned or Nepali PDF"
-          description="Free browser-based AI OCR makes scanned & Preeti/Unicode Nepali PDFs searchable and copyable"
+          label="Drop a scanned PDF"
+          description="Free browser-based AI OCR makes scanned PDFs in any world language searchable and copyable"
         />
       ) : (
         <div className="space-y-4">
@@ -166,22 +181,14 @@ export default function OcrPdfTool({ onProcessing, onError }: ToolUIProps) {
 
           <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl bg-bg-elevated border border-border-base">
             <div>
-              <p className="text-xs font-bold text-text-primary">Free AI OCR Language</p>
+              <p className="text-xs font-bold text-text-primary">Free AI OCR · Auto Language Detection</p>
               <p className="text-[11px] text-text-secondary">
-                Runs 100% locally in your browser — no file uploads or limits.
+                Automatically detects any script &amp; runs 100% locally in your browser — no limits.
               </p>
             </div>
-            <select
-              value={ocrLang}
-              onChange={(e) => setOcrLang(e.target.value)}
-              disabled={processing}
-              aria-label="OCR Language"
-              className="h-8 rounded-lg border border-border-strong bg-bg-input px-2.5 text-xs font-semibold text-text-primary cursor-pointer"
-            >
-              <option value="nep+eng">Nepali + English</option>
-              <option value="eng">English Only</option>
-              <option value="hin+eng">Hindi + English</option>
-            </select>
+            <span className="px-2.5 py-1 rounded-full bg-accent-subtle text-accent text-[11px] font-semibold">
+              All World Languages
+            </span>
           </div>
 
           {processing && progress && (

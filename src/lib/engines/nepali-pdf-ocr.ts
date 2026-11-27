@@ -8,6 +8,70 @@ import type { ExtractedLine, ExtractedRun } from "./pdf-to-word";
 
 export type OcrMode = "auto" | "always" | "off";
 
+export interface OcrLanguageOption {
+  code: string;
+  label: string;
+  group: "Popular" | "South Asian" | "East & SE Asian" | "European" | "Middle East & Africa";
+}
+
+export const OCR_LANGUAGES: OcrLanguageOption[] = [
+  { code: "eng", label: "English", group: "Popular" },
+  { code: "nep+eng", label: "Nepali + English", group: "Popular" },
+  { code: "hin+eng", label: "Hindi + English", group: "Popular" },
+  { code: "spa+eng", label: "Spanish + English", group: "Popular" },
+  { code: "fra+eng", label: "French + English", group: "Popular" },
+  { code: "deu+eng", label: "German + English", group: "Popular" },
+  { code: "ara+eng", label: "Arabic + English", group: "Popular" },
+  { code: "chi_sim+eng", label: "Chinese (Simplified) + English", group: "Popular" },
+
+  { code: "nep", label: "Nepali (नेपाली)", group: "South Asian" },
+  { code: "hin", label: "Hindi (हिन्दी)", group: "South Asian" },
+  { code: "ben+eng", label: "Bengali + English", group: "South Asian" },
+  { code: "mar+eng", label: "Marathi + English", group: "South Asian" },
+  { code: "guj+eng", label: "Gujarati + English", group: "South Asian" },
+  { code: "pan+eng", label: "Punjabi + English", group: "South Asian" },
+  { code: "tam+eng", label: "Tamil + English", group: "South Asian" },
+  { code: "tel+eng", label: "Telugu + English", group: "South Asian" },
+  { code: "kan+eng", label: "Kannada + English", group: "South Asian" },
+  { code: "mal+eng", label: "Malayalam + English", group: "South Asian" },
+  { code: "sin+eng", label: "Sinhala + English", group: "South Asian" },
+  { code: "urd+eng", label: "Urdu + English", group: "South Asian" },
+
+  { code: "chi_tra+eng", label: "Chinese (Traditional) + English", group: "East & SE Asian" },
+  { code: "jpn+eng", label: "Japanese + English", group: "East & SE Asian" },
+  { code: "kor+eng", label: "Korean + English", group: "East & SE Asian" },
+  { code: "tha+eng", label: "Thai + English", group: "East & SE Asian" },
+  { code: "vie+eng", label: "Vietnamese + English", group: "East & SE Asian" },
+  { code: "ind+eng", label: "Indonesian + English", group: "East & SE Asian" },
+  { code: "msa+eng", label: "Malay + English", group: "East & SE Asian" },
+  { code: "mya+eng", label: "Myanmar (Burmese) + English", group: "East & SE Asian" },
+
+  { code: "por+eng", label: "Portuguese + English", group: "European" },
+  { code: "ita+eng", label: "Italian + English", group: "European" },
+  { code: "nld+eng", label: "Dutch + English", group: "European" },
+  { code: "pol+eng", label: "Polish + English", group: "European" },
+  { code: "rus+eng", label: "Russian + English", group: "European" },
+  { code: "ukr+eng", label: "Ukrainian + English", group: "European" },
+  { code: "tur+eng", label: "Turkish + English", group: "European" },
+  { code: "ell+eng", label: "Greek + English", group: "European" },
+  { code: "swe+eng", label: "Swedish + English", group: "European" },
+  { code: "ron+eng", label: "Romanian + English", group: "European" },
+  { code: "ces+eng", label: "Czech + English", group: "European" },
+
+  { code: "fas+eng", label: "Persian / Farsi + English", group: "Middle East & Africa" },
+  { code: "heb+eng", label: "Hebrew + English", group: "Middle East & Africa" },
+  { code: "amh+eng", label: "Amharic + English", group: "Middle East & Africa" },
+  { code: "swa+eng", label: "Swahili + English", group: "Middle East & Africa" },
+];
+
+export const OCR_LANGUAGE_GROUPS = [
+  "Popular",
+  "South Asian",
+  "East & SE Asian",
+  "European",
+  "Middle East & Africa",
+] as const;
+
 export interface OcrProgress {
   page: number;
   totalPages: number;
@@ -227,6 +291,96 @@ export async function ocrPdfPageToLines(
   canvas.height = 0;
 
   return { lines, rawText, detectedScripts: scripts };
+}
+
+const SCRIPT_TO_OCR_LANG: Record<string, string> = {
+  Devanagari: "nep+eng",
+  Arabic: "ara+eng",
+  Han: "chi_sim+eng",
+  HanS: "chi_sim+eng",
+  HanT: "chi_tra+eng",
+  Japanese: "jpn+eng",
+  Hangul: "kor+eng",
+  Cyrillic: "rus+eng",
+  Bengali: "ben+eng",
+  Tamil: "tam+eng",
+  Telugu: "tel+eng",
+  Gujarati: "guj+eng",
+  Gurmukhi: "pan+eng",
+  Kannada: "kan+eng",
+  Malayalam: "mal+eng",
+  Sinhala: "sin+eng",
+  Thai: "tha+eng",
+  Hebrew: "heb+eng",
+  Greek: "ell+eng",
+  Latin: "eng",
+};
+
+/**
+ * Automatically detect the best Tesseract OCR language pack for a PDF page
+ * using font metadata, partial text scripts, and Tesseract OSD script detection.
+ */
+export async function detectOcrLanguageAuto(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  pdfPage: any,
+  rawItems?: Array<{ str?: string; fontName?: string }>,
+  styles?: Record<string, { fontFamily?: string }>
+): Promise<string> {
+  // 1. Check font names & any partial text items first (instant, zero download)
+  if (rawItems && rawItems.length > 0) {
+    let combinedText = "";
+    for (const item of rawItems) {
+      const fn = item.fontName || "";
+      const ff = (styles && fn ? styles[fn]?.fontFamily : "") || "";
+      if (LEGACY_NEPALI_FONT_RE.test(fn) || LEGACY_NEPALI_FONT_RE.test(ff)) {
+        return "nep+eng";
+      }
+      if (item.str) combinedText += item.str;
+    }
+    if (/[\u0900-\u097F]/.test(combinedText)) return "nep+eng";
+    if (/[\u0600-\u06FF]/.test(combinedText)) return "ara+eng";
+    if (/[\u4E00-\u9FFF]/.test(combinedText)) return "chi_sim+eng";
+    if (/[\u3040-\u30FF]/.test(combinedText)) return "jpn+eng";
+    if (/[\uAC00-\uD7AF]/.test(combinedText)) return "kor+eng";
+    if (/[\u0400-\u04FF]/.test(combinedText)) return "rus+eng";
+    if (/[\u0980-\u09FF]/.test(combinedText)) return "ben+eng";
+    if (/[\u0B80-\u0BFF]/.test(combinedText)) return "tam+eng";
+    if (/[\u0E00-\u0E7F]/.test(combinedText)) return "tha+eng";
+    if (/[\u0590-\u05FF]/.test(combinedText)) return "heb+eng";
+  }
+
+  // 2. For pure scanned pages, run Tesseract OSD (Orientation & Script Detection)
+  // OSD requires OEM.TESSERACT_ONLY (0) + legacyCore/legacyLang since it is a legacy model, not LSTM.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let osdWorker: any = null;
+  try {
+    const { canvas } = await renderPdfPageToCanvas(pdfPage, 1.5);
+    const Tesseract = await import("tesseract.js");
+    osdWorker = await Tesseract.createWorker("osd", Tesseract.OEM.TESSERACT_ONLY, {
+      legacyCore: true,
+      legacyLang: true,
+    });
+    const detected = await osdWorker.detect(canvas);
+    canvas.width = 0;
+    canvas.height = 0;
+
+    const script = detected?.data?.script as string | undefined;
+    if (script && SCRIPT_TO_OCR_LANG[script]) {
+      return SCRIPT_TO_OCR_LANG[script];
+    }
+  } catch {
+    // Fall back gracefully if OSD cannot run
+  } finally {
+    if (osdWorker) {
+      try {
+        await osdWorker.terminate();
+      } catch {
+        // Ignore
+      }
+    }
+  }
+
+  return "eng";
 }
 
 /**

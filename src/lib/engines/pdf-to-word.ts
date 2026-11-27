@@ -136,6 +136,7 @@ interface RawPdfItem {
 
 import {
   createOcrWorker,
+  detectOcrLanguageAuto,
   normalizeDevanagariText,
   ocrPdfPageToLines,
   pageNeedsOcr,
@@ -165,7 +166,7 @@ export async function extractStructuredLines(
   detectedScripts: Set<string>;
   ocrPages: number;
 }> {
-  const { ocrMode = "auto", ocrLang = "nep+eng", onProgress } = options;
+  const { ocrMode = "auto", ocrLang, onProgress } = options;
   const pdfjsLib = await import("pdfjs-dist");
   pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 
@@ -177,6 +178,7 @@ export async function extractStructuredLines(
   let ocrPages = 0;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let ocrWorker: any = null;
+  let resolvedOcrLang = ocrLang || "";
 
   try {
     for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
@@ -202,13 +204,22 @@ export async function extractStructuredLines(
 
       if (shouldRunOcr) {
         if (!ocrWorker) {
+          if (!resolvedOcrLang) {
+            onProgress?.({
+              page: pageNum,
+              totalPages: pdf.numPages,
+              stage: "Auto-detecting document language…",
+              percent: Math.round(((pageNum - 1) / pdf.numPages) * 100),
+            });
+            resolvedOcrLang = await detectOcrLanguageAuto(page, rawItems, styles);
+          }
           onProgress?.({
             page: pageNum,
             totalPages: pdf.numPages,
-            stage: `Loading AI OCR model (${ocrLang})…`,
+            stage: `Loading AI OCR (${resolvedOcrLang})…`,
             percent: Math.round(((pageNum - 1) / pdf.numPages) * 100),
           });
-          ocrWorker = await createOcrWorker(ocrLang, (p, status) => {
+          ocrWorker = await createOcrWorker(resolvedOcrLang, (p, status) => {
             onProgress?.({
               page: pageNum,
               totalPages: pdf.numPages,

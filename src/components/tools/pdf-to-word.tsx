@@ -15,7 +15,6 @@ export default function PdfToWordTool({ onProcessing, onError }: ToolUIProps) {
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ocrMode, setOcrMode] = useState<OcrMode>("auto");
-  const [ocrLang, setOcrLang] = useState("nep+eng");
   const [progress, setProgress] = useState<OcrProgress | null>(null);
 
   const handleFilesChanged = useCallback(async (next: File[]) => {
@@ -43,7 +42,6 @@ export default function PdfToWordTool({ onProcessing, onError }: ToolUIProps) {
     try {
       const blob = await convertPdfToWord(files[0], {
         ocrMode,
-        ocrLang,
         onProgress: (p) => setProgress(p),
       });
       setOutputs([
@@ -61,7 +59,7 @@ export default function PdfToWordTool({ onProcessing, onError }: ToolUIProps) {
       setProgress(null);
       onProcessing?.(false);
     }
-  }, [files, ocrLang, ocrMode, onProcessing, onError]);
+  }, [files, ocrMode, onProcessing, onError]);
 
   const handleDownloadAll = useCallback(async () => {
     if (outputs.length === 0) return;
@@ -144,22 +142,9 @@ export default function PdfToWordTool({ onProcessing, onError }: ToolUIProps) {
                     Conversion Engine &amp; Free AI OCR
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <label htmlFor="pdf-word-ocr-lang" className="text-[11px] font-semibold text-text-secondary">
-                    OCR Language:
-                  </label>
-                  <select
-                    id="pdf-word-ocr-lang"
-                    value={ocrLang}
-                    onChange={(e) => setOcrLang(e.target.value)}
-                    disabled={ocrMode === "off"}
-                    className="h-7 rounded-lg border border-border-strong bg-bg-input px-2 text-[11.5px] font-semibold text-text-primary cursor-pointer disabled:opacity-45"
-                  >
-                    <option value="nep+eng">Nepali + English</option>
-                    <option value="eng">English Only</option>
-                    <option value="hin+eng">Hindi + English</option>
-                  </select>
-                </div>
+                <span className="px-2.5 py-1 rounded-full bg-accent-subtle text-accent text-[11px] font-semibold">
+                  Auto-Detects Any Language
+                </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -167,12 +152,12 @@ export default function PdfToWordTool({ onProcessing, onError }: ToolUIProps) {
                   {
                     id: "auto" as const,
                     title: "Smart Auto (Recommended)",
-                    desc: "Extracts digital text & auto-runs AI OCR on scanned or Preeti Nepali pages.",
+                    desc: "Extracts digital text & auto-runs AI OCR on scanned or non-Unicode pages.",
                   },
                   {
                     id: "always" as const,
                     title: "AI OCR (All Pages)",
-                    desc: "Best for scanned Nepali/English PDFs or broken fonts (100% free in browser).",
+                    desc: "Best for scanned PDFs or custom/legacy fonts in any language (100% free).",
                   },
                   {
                     id: "off" as const,
@@ -225,13 +210,13 @@ export default function PdfToWordTool({ onProcessing, onError }: ToolUIProps) {
 
               <div className="flex flex-wrap items-center gap-1.5 pt-1">
                 <span className="px-2 py-0.5 rounded-md bg-bg-surface border border-border-base text-[10.5px] font-semibold text-text-secondary">
-                  ✓ Scanned &amp; Preeti Nepali Support
+                  ✓ Any World Language (All Scripts)
                 </span>
                 <span className="px-2 py-0.5 rounded-md bg-bg-surface border border-border-base text-[10.5px] font-semibold text-text-secondary">
                   ✓ Free Browser AI OCR (No Limits)
                 </span>
                 <span className="px-2 py-0.5 rounded-md bg-bg-surface border border-border-base text-[10.5px] font-semibold text-text-secondary">
-                  ✓ Arabic, Hindi, CJK &amp; Latin
+                  ✓ Preserves Layout &amp; Spacing
                 </span>
                 <span className="px-2 py-0.5 rounded-md bg-bg-surface border border-border-base text-[10.5px] font-semibold text-text-secondary">
                   ✓ 100% Client-Side
