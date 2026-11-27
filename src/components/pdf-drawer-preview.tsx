@@ -213,7 +213,7 @@ export function PdfDrawerPreview({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={`fixed inset-y-0 right-0 z-[101] w-full ${
+        className={`drawer-panel fixed inset-y-0 right-0 z-[101] w-full ${
           showThumbnails && isPdf && totalPages > 1
             ? "sm:w-[640px] md:w-[820px]"
             : "sm:w-[580px] md:w-[720px]"

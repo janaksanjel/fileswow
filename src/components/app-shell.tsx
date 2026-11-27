@@ -486,7 +486,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               aria-hidden="true"
             />
             <aside
-              className="relative w-72 max-w-[85vw] h-full bg-bg-surface border-r border-border-base shadow-[var(--elevation-xl)] z-10"
+              className="drawer-panel relative w-72 max-w-[85vw] h-full bg-bg-surface border-r border-border-base shadow-[var(--elevation-xl)] z-10"
               role="dialog"
               aria-modal="true"
               aria-label="Tools menu"

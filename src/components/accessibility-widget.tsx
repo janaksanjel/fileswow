@@ -288,7 +288,7 @@ export function AccessibilityWidget({ onGradient = false }: { onGradient?: boole
               role="dialog"
               aria-modal="true"
               aria-label="Accessibility tools"
-              className="fixed inset-y-0 right-0 z-[106] w-full max-w-[360px] bg-bg-surface border-l border-border-base shadow-[var(--elevation-xl)] flex flex-col animate-slide-left"
+              className="drawer-panel fixed inset-y-0 right-0 z-[106] w-full max-w-[360px] bg-bg-surface border-l border-border-base shadow-[var(--elevation-xl)] flex flex-col animate-slide-left"
             >
               {/* Header */}
               <div className="px-4 sm:px-5 py-3.5 border-b border-border-base flex items-center justify-between gap-3 shrink-0">

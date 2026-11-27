@@ -954,7 +954,7 @@ kbd,
 }
 
 /* ───── Dialogs ───────────────────────────────────────────────────── */
-[role="dialog"] {
+[role="dialog"]:not(.drawer-panel) {
   background: var(--bg-surface) !important;
   box-shadow: var(--elevation-xl) !important;
   border-radius: var(--radius-2xl) !important;
