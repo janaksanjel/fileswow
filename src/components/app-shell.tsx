@@ -240,6 +240,52 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         )}
       </div>
 
+      {/* Mobile user greeting & inline name editor */}
+      {isMobile && (
+        <div className="px-4 py-2.5 border-b border-border-base bg-bg-warm flex items-center justify-between gap-2 shrink-0">
+          {editingName ? (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                saveHeaderName();
+              }}
+              className="flex items-center gap-1.5 w-full"
+            >
+              <input
+                type="text"
+                maxLength={32}
+                value={draftName}
+                onChange={(e) => setDraftName(e.target.value)}
+                placeholder="Your name"
+                autoFocus
+                aria-label="Edit your name"
+                className="input h-8 text-[12.5px] flex-1"
+              />
+              <button
+                type="submit"
+                className="btn-primary h-8 px-2.5 text-[12px] shrink-0"
+              >
+                Save
+              </button>
+            </form>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setDraftName(userName);
+                setEditingName(true);
+              }}
+              className="w-full flex items-center justify-between text-[13px] font-semibold text-text-primary hover:text-accent transition-colors cursor-pointer"
+            >
+              <span className="truncate">
+                {userName ? `Hi, ${userName}` : "Add your name"}
+              </span>
+              <span className="text-[11px] font-medium text-text-tertiary">Edit</span>
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Scrollable Menu + Sub-menus */}
       <nav className="flex-1 overflow-y-auto px-2.5 py-3 space-y-5" aria-label="Workspace navigation">
         {/* Core Workspace */}
@@ -493,14 +539,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 <img src="/headerlogo-dark.png" alt="FilesWow" width={160} height={44} className="h-8 sm:h-10 w-auto object-contain" />
               </Link>
 
-              {/* Editable user name beside hamburger toggle */}
+              {/* Editable user name beside hamburger toggle (desktop/tablet; mobile drawer shows it cleanly on small screens) */}
               {editingName ? (
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
                     saveHeaderName();
                   }}
-                  className="flex items-center gap-1"
+                  className="hidden sm:flex items-center gap-1"
                 >
                   <input
                     type="text"
@@ -513,7 +559,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     placeholder="Your name"
                     autoFocus
                     aria-label="Edit your name"
-                    className="h-8 w-24 sm:w-36 px-2.5 rounded-lg bg-white/20 text-white placeholder:text-white/70 border border-white/30 text-[12.5px] font-medium focus:outline-none focus:border-white"
+                    className="h-8 w-28 sm:w-36 px-2.5 rounded-lg bg-white/20 text-white placeholder:text-white/70 border border-white/30 text-[12.5px] font-medium focus:outline-none focus:border-white"
                   />
                   <button
                     type="submit"
@@ -544,7 +590,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                     setEditingName(true);
                   }}
                   title={userName ? "Click to edit your name" : "Add your name"}
-                  className="group inline-flex items-center gap-0 hover:gap-1.5 h-8 px-3 rounded-full bg-white/15 hover:bg-white/25 border border-white/25 text-[12px] sm:text-[12.5px] font-semibold text-white transition-all cursor-pointer max-w-[110px] sm:max-w-[180px]"
+                  className="hidden sm:inline-flex group items-center gap-0 hover:gap-1.5 h-8 px-3 rounded-full bg-white/15 hover:bg-white/25 border border-white/25 text-[12.5px] font-semibold text-white transition-all cursor-pointer max-w-[180px]"
                 >
                   <span className="truncate">
                     {userName ? `Hi, ${userName}` : "Add name"}

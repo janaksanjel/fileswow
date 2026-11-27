@@ -17,6 +17,7 @@ import {
 import { useReveal } from "@/lib/use-reveal";
 import { AdSlot } from "@/components/ad-unit";
 import { useI18n, type MessageKey } from "@/lib/i18n";
+import { BLOG_POSTS } from "@/lib/blog";
 
 const PINNED_STORAGE_KEY = "fileswow-pinned-tools";
 const MAX_QUICK_TOOLS = 12;
@@ -137,8 +138,58 @@ export function HomeClient() {
         </div>
       </section>
 
-      {/* ─── 4. FAQ (2-column split) ─────────────────────────────── */}
-      <section id="faq" className="border-t border-border-base bg-bg-base" aria-labelledby="faq-heading">
+      {/* ─── 4. Practical Guides & Tutorials (AdSense editorial value) ── */}
+      <section className="border-t border-border-base bg-bg-base py-12 sm:py-16" aria-labelledby="guides-heading">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-7">
+            <div>
+              <h2 id="guides-heading" className="heading-lg text-text-primary">
+                Practical Guides &amp; Tutorials
+              </h2>
+              <p className="text-[14px] text-text-secondary mt-1">
+                Step-by-step workflows, format comparisons, and document privacy best practices.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 text-[13px] font-semibold">
+              <Link href="/guides" className="text-accent-ink hover:underline">
+                All guides →
+              </Link>
+              <Link href="/blog" className="text-text-secondary hover:text-text-primary hover:underline">
+                Read blog →
+              </Link>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {BLOG_POSTS.slice(0, 3).map((post) => (
+              <Link
+                key={post.slug}
+                href={`/blog/${post.slug}`}
+                className="group rounded-2xl border border-border-base bg-bg-surface p-5 hover:border-accent/40 hover:shadow-[var(--elevation-sm)] transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <span className="inline-block text-[11px] font-semibold uppercase tracking-[0.06em] text-accent-ink mb-2">
+                    {post.category} Guide
+                  </span>
+                  <h3 className="text-[15.5px] font-semibold text-text-primary group-hover:text-accent transition-colors leading-snug mb-2">
+                    {post.title}
+                  </h3>
+                  <p className="text-[13px] text-text-secondary leading-relaxed line-clamp-3">
+                    {post.description}
+                  </p>
+                </div>
+                <span className="mt-4 inline-flex items-center gap-1 text-[12.5px] font-semibold text-accent-ink">
+                  Read guide
+                  <span aria-hidden="true">→</span>
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── 5. FAQ (2-column split) ─────────────────────────────── */}
+      <section id="faq" className="border-t border-border-base bg-bg-surface" aria-labelledby="faq-heading">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
           <div className="lg:col-span-4">
             <h2 id="faq-heading" className="heading-lg text-text-primary mb-2">
@@ -300,18 +351,8 @@ function QuickShortcutsSection() {
   return (
     <section className="border-b border-border-base bg-bg-warm py-6 sm:py-8" aria-label="Quick tools">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="flex items-start sm:items-center justify-between gap-3 mb-4">
-          <div>
-            <div className="flex items-center gap-2.5">
-              <h1 className="heading-md text-text-primary">Quick Tools</h1>
-              <span className="text-[12px] text-text-tertiary hidden sm:inline">
-                · Drag to reorder
-              </span>
-            </div>
-            <p className="text-[13px] text-text-secondary mt-0.5">
-              Free browser-based PDF, Word, Image, and Text tools — 100% private, zero file uploads.
-            </p>
-          </div>
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <h1 className="heading-md text-text-primary">Quick Tools</h1>
 
           {pinnedSlugs.length > 0 && (
             <button
