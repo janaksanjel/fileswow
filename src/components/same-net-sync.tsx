@@ -27,6 +27,30 @@ interface SyncPayload {
 }
 
 const MAX_LAN_SLOTS = 6;
+const SYNC_DRAFT_STORAGE_KEY = "fileswow-quick-sync-draft-v1";
+
+function saveDraft(nextHtml: string, nextText: string) {
+  try {
+    if (!nextText.trim() && !nextHtml.trim()) {
+      window.localStorage.removeItem(SYNC_DRAFT_STORAGE_KEY);
+      return;
+    }
+    window.localStorage.setItem(
+      SYNC_DRAFT_STORAGE_KEY,
+      JSON.stringify({ html: nextHtml, text: nextText })
+    );
+  } catch {
+    // Ignore storage quota or private-mode errors
+  }
+}
+
+function clearDraft() {
+  try {
+    window.localStorage.removeItem(SYNC_DRAFT_STORAGE_KEY);
+  } catch {
+    // Ignore storage errors
+  }
+}
 
 function hashNetworkKey(input: string): string {
   let hash = 2166136261;
@@ -73,6 +97,29 @@ export function SameNetSync() {
     textRef.current = text;
   }, [html, text]);
 
+  // Restore saved draft on mount so page reloads never wipe text until cleared
+  useEffect(() => {
+    try {
+      const raw = window.localStorage.getItem(SYNC_DRAFT_STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw) as { html?: string; text?: string };
+      const savedHtml = typeof parsed.html === "string" ? parsed.html : "";
+      const savedText = typeof parsed.text === "string" ? parsed.text : "";
+      if (!savedHtml && !savedText) return;
+      htmlRef.current = savedHtml;
+      textRef.current = savedText;
+      if (editorRef.current) {
+        editorRef.current.innerHTML = savedHtml || savedText;
+      }
+      queueMicrotask(() => {
+        setHtml(savedHtml);
+        setText(savedText);
+      });
+    } catch {
+      // Ignore malformed storage
+    }
+  }, []);
+
   useEffect(() => {
     return () => {
       if (typingClearTimerRef.current !== null) {
@@ -86,6 +133,11 @@ export function SameNetSync() {
     setText(nextText);
     if (editorRef.current && editorRef.current.innerHTML !== nextHtml) {
       editorRef.current.innerHTML = nextHtml;
+    }
+    if (!nextHtml.trim() && !nextText.trim()) {
+      clearDraft();
+    } else {
+      saveDraft(nextHtml, nextText);
     }
   }, []);
 
@@ -301,6 +353,7 @@ export function SameNetSync() {
     const nextText = el.innerText;
     setHtml(nextHtml);
     setText(nextText);
+    saveDraft(nextHtml, nextText);
     setLastSyncedLabel("just now");
 
     const now = Date.now();
