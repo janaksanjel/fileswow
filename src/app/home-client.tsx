@@ -19,7 +19,23 @@ import { useI18n, type MessageKey } from "@/lib/i18n";
 import { BLOG_POSTS } from "@/lib/blog";
 
 const PINNED_STORAGE_KEY = "fileswow-pinned-tools";
-const MAX_QUICK_TOOLS = 12;
+const MAX_QUICK_TOOLS = 16;
+
+const DEFAULT_QUICK_TOOL_SLUGS = [
+  "merge-pdf",
+  "split-pdf",
+  "compress-pdf",
+  "pdf-to-word",
+  "text-to-pdf",
+  "word-to-pdf",
+  "pdf-stamp",
+  "excel-to-pdf",
+  "edit-pdf",
+  "pdf-to-jpg",
+  "jpg-to-pdf",
+  "sign-pdf",
+  "watermark-pdf",
+];
 
 const CURATED_POPULAR = new Set(POPULAR_DEFAULT_SLUGS);
 const ORDERED_TOOLS: ToolDef[] = [
@@ -220,17 +236,22 @@ function QuickShortcutsSection() {
   const [dragOverSlug, setDragOverSlug] = useState<string | null>(null);
   const pickerInputRef = useRef<HTMLInputElement>(null);
 
-  // Load saved custom shortcuts from localStorage
+  // Load saved custom shortcuts from localStorage; seed iLovePDF-style defaults on first visit
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(PINNED_STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
+      if (raw === null) {
+        const defaults = DEFAULT_QUICK_TOOL_SLUGS.filter((s) => TOOL_BY_SLUG.has(s)).slice(0, MAX_QUICK_TOOLS);
+        queueMicrotask(() => setPinnedSlugs(defaults));
+        return;
+      }
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        queueMicrotask(() =>
           setPinnedSlugs(
             parsed.filter((s) => typeof s === "string" && TOOL_BY_SLUG.has(s)).slice(0, MAX_QUICK_TOOLS)
-          );
-        }
+          )
+        );
       }
     } catch {
       // Ignore storage errors

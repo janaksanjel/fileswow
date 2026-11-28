@@ -25,9 +25,8 @@ export default function ProtectPdfTool({ onProcessing, onError }: ToolUIProps) {
     setProcessing(true);
     onProcessing?.(true);
     try {
-      const { protectPdf, savePdf } = await import("@/lib/engines/pdf");
-      const doc = await protectPdf(files[0], password);
-      const blob = await savePdf(doc);
+      const { protectPdfBytes } = await import("@/lib/engines/pdf");
+      const blob = await protectPdfBytes(files[0], password);
       setOutputs([{ name: `protected-${files[0].name}`, blob }]);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to protect PDF";

@@ -319,9 +319,131 @@ export async function protectPdf(
 ): Promise<PDFDocument> {
   void _password;
   const doc = await loadPdf(file);
-  // pdf-lib supports saving with permissions
   doc.setTitle(doc.getTitle() || "");
   return doc;
+}
+
+/**
+ * Encrypt a PDF with real RC4 128-bit password protection so every PDF viewer
+ * requires the password on open.
+ */
+export async function protectPdfBytes(
+  file: File,
+  password: string
+): Promise<Blob> {
+  const { encryptPDF } = await import("@pdfsmaller/pdf-encrypt-lite");
+  const doc = await loadPdf(file);
+  const rawBytes = await doc.save({ useObjectStreams: false });
+  const encryptedBytes = await encryptPDF(rawBytes, password, {
+    ownerPassword: password,
+    allowPrinting: true,
+    allowModifying: false,
+    allowCopying: false,
+    allowAnnotating: false,
+    allowFillingForms: false,
+    allowExtraction: false,
+    allowAssembly: false,
+    allowHighQualityPrint: true,
+  });
+  return new Blob([new Uint8Array(encryptedBytes)], { type: "application/pdf" });
+}
+
+/**
+ * Decrypt a password-protected PDF (supports RC4-40/128, AES-128, AES-256)
+ * using pdfjs-dist authentication and rebuild a clean, unencrypted PDF.
+ */
+export async function unlockPdfBytes(
+  file: File,
+  password: string,
+  onProgress?: (msg: string) => void
+): Promise<Blob> {
+  const { GlobalWorkerOptions, getDocument } = await import("pdfjs-dist");
+  GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+
+  const buffer = await file.arrayBuffer();
+
+  // Check if file is not encrypted at all via pdf-lib first
+  let isEncrypted = false;
+  try {
+    await PDFDocument.load(buffer, { ignoreEncryption: false });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "";
+    if (/encrypt/i.test(msg)) {
+      isEncrypted = true;
+    }
+  }
+
+  if (!isEncrypted) {
+    const plainDoc = await PDFDocument.load(buffer, { ignoreEncryption: true });
+    const plainBytes = await plainDoc.save({ useObjectStreams: true });
+    return new Blob([new Uint8Array(plainBytes)], { type: "application/pdf" });
+  }
+
+  let pdf;
+  try {
+    pdf = await getDocument({
+      data: buffer.slice(0),
+      password: password || undefined,
+    }).promise;
+  } catch (err) {
+    const name = (err as { name?: string })?.name || "";
+    const msg = err instanceof Error ? err.message : "";
+    if (name === "PasswordException" || /password/i.test(msg)) {
+      throw new Error("Incorrect PDF password. Please check and try again.");
+    }
+    throw err;
+  }
+
+  const totalPages = pdf.numPages;
+  const newDoc = await PDFDocument.create();
+
+  for (let i = 1; i <= totalPages; i++) {
+    onProgress?.(`Unlocking page ${i} of ${totalPages}…`);
+    const page = await pdf.getPage(i);
+    const origVp = page.getViewport({ scale: 1.0 });
+    const renderVp = page.getViewport({ scale: 2.0 });
+
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(renderVp.width));
+    canvas.height = Math.max(1, Math.round(renderVp.height));
+    const ctx = canvas.getContext("2d", { alpha: false });
+    if (ctx) {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (page.render as any)({
+      canvasContext: ctx,
+      canvas,
+      viewport: renderVp,
+    }).promise;
+
+    const jpgBlob = await new Promise<Blob>((resolve, reject) =>
+      canvas.toBlob(
+        (b) => (b ? resolve(b) : reject(new Error("Page render failed"))),
+        "image/jpeg",
+        0.94
+      )
+    );
+    canvas.width = 0;
+    canvas.height = 0;
+
+    const jpgBytes = await jpgBlob.arrayBuffer();
+    const embedded = await newDoc.embedJpg(jpgBytes);
+    const newPage = newDoc.addPage([origVp.width, origVp.height]);
+    newPage.drawImage(embedded, {
+      x: 0,
+      y: 0,
+      width: origVp.width,
+      height: origVp.height,
+    });
+  }
+
+  newDoc.setProducer("FilesWow.com");
+  newDoc.setCreator("FilesWow.com");
+  const outBytes = await newDoc.save({ useObjectStreams: true });
+  return new Blob([new Uint8Array(outBytes)], { type: "application/pdf" });
 }
 
 /**
