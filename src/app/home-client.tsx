@@ -10,7 +10,6 @@ import { ALL_TOOLS, type ToolDef } from "@/lib/catalog";
 import {
   POPULAR_DEFAULT_SLUGS,
   subscribeUsage,
-  getTopToolsSnapshot,
   getRecentToolsSnapshot,
   getEmptyToolsSnapshot,
 } from "@/lib/usage";
@@ -62,10 +61,13 @@ export function HomeClient() {
 
   return (
     <div ref={rootRef}>
-      {/* ─── 1. Quick Shortcuts (Custom Pinned + Most Useful) ─────── */}
+      {/* ─── 1. Quick Tools (User Pinned Only) ─────────────────── */}
       <QuickShortcutsSection />
 
-      {/* ─── 2. Most Useful Tools (Toolbar + Compact Grid) ───────── */}
+      {/* ─── 2. Recently Used Tools ──────────────────────────────── */}
+      <RecentlyUsedSection />
+
+      {/* ─── 3. Most Useful Tools (Toolbar + Compact Grid) ───────── */}
       <PopularTools />
 
       {/* Ad — renders nothing when no slot is configured */}
@@ -218,17 +220,6 @@ function QuickShortcutsSection() {
   const [dragOverSlug, setDragOverSlug] = useState<string | null>(null);
   const pickerInputRef = useRef<HTMLInputElement>(null);
 
-  const topTools = useSyncExternalStore(
-    subscribeUsage,
-    getTopToolsSnapshot,
-    getEmptyToolsSnapshot
-  );
-  const recentTools = useSyncExternalStore(
-    subscribeUsage,
-    getRecentToolsSnapshot,
-    getEmptyToolsSnapshot
-  );
-
   // Load saved custom shortcuts from localStorage
   useEffect(() => {
     try {
@@ -270,26 +261,11 @@ function QuickShortcutsSection() {
     }
   }, [pickerOpen]);
 
-  // Order:
-  // 1. Last used tool(s) automatically go first
-  // 2. User's custom pinned tools (preserving drag-and-drop order)
-  // 3. Most useful / top tools to fill up to 7 cards (max 12 total)
+  // Only show tools explicitly added/pinned by the user (no auto-injected recents or defaults)
   const displayShortcuts = useMemo(() => {
     const seen = new Set<string>();
-    const items: Array<{ tool: ToolDef; badge: "Recent" | "Pinned" | "Popular"; isPinned: boolean }> = [];
+    const items: Array<{ tool: ToolDef; badge: "Pinned"; isPinned: boolean }> = [];
 
-    // 1. Last used tool goes first automatically
-    for (const tool of recentTools.slice(0, 2)) {
-      if (seen.has(tool.slug)) continue;
-      seen.add(tool.slug);
-      items.push({
-        tool,
-        badge: "Recent",
-        isPinned: pinnedSlugs.includes(tool.slug),
-      });
-    }
-
-    // 2. Custom pinned tools
     for (const slug of pinnedSlugs) {
       if (seen.has(slug)) continue;
       const tool = TOOL_BY_SLUG.get(slug);
@@ -299,21 +275,8 @@ function QuickShortcutsSection() {
       }
     }
 
-    // 3. Most useful / popular fallback
-    const fallbackTools =
-      topTools.length > 0
-        ? topTools
-        : (POPULAR_DEFAULT_SLUGS.slice(0, 7).map((s) => TOOL_BY_SLUG.get(s)).filter(Boolean) as ToolDef[]);
-
-    for (const tool of fallbackTools) {
-      if (items.length >= 7) break;
-      if (seen.has(tool.slug)) continue;
-      seen.add(tool.slug);
-      items.push({ tool, badge: "Popular", isPinned: false });
-    }
-
     return items.slice(0, MAX_QUICK_TOOLS);
-  }, [pinnedSlugs, recentTools, topTools]);
+  }, [pinnedSlugs]);
 
   const togglePin = (slug: string) => {
     if (pinnedSlugs.includes(slug)) {
@@ -560,6 +523,53 @@ function QuickShortcutsSection() {
           </div>
         </div>
       )}
+    </section>
+  );
+}
+
+/* ─── Recently Used Tools (Separate Section Below Quick Tools) ── */
+
+function RecentlyUsedSection() {
+  const recentTools = useSyncExternalStore(
+    subscribeUsage,
+    getRecentToolsSnapshot,
+    getEmptyToolsSnapshot
+  );
+
+  if (recentTools.length === 0) return null;
+
+  return (
+    <section className="border-b border-border-base bg-bg-base py-6 sm:py-8" aria-label="Recently used tools">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="flex items-center justify-between gap-3 mb-4">
+          <h2 className="heading-md text-text-primary">Recently Used</h2>
+          <span className="text-[12px] text-text-tertiary">
+            Your latest opened tools
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+          {recentTools.slice(0, 8).map((tool) => (
+            <Link
+              key={tool.slug}
+              href={`/tools/${tool.slug}`}
+              className="group flex items-center gap-3 p-3 sm:p-3.5 rounded-xl bg-bg-surface border border-border-base hover:border-accent/40 hover:shadow-[var(--elevation-sm)] transition-all"
+            >
+              <span className="w-9 h-9 rounded-lg bg-bg-elevated flex items-center justify-center shrink-0">
+                <ToolIcon name={tool.slug} size={18} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block text-[13.5px] font-semibold text-text-primary group-hover:text-accent transition-colors truncate">
+                  {tool.name}
+                </span>
+                <span className="block text-[11.5px] text-text-tertiary truncate">
+                  Recent
+                </span>
+              </span>
+            </Link>
+          ))}
+        </div>
+      </div>
     </section>
   );
 }
