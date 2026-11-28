@@ -207,7 +207,7 @@ export function DropZone({
       />
 
       {/* Zone proper */}
-      <div className={`flex flex-col items-center justify-center text-center px-4 sm:px-8 transition-all duration-200 ${isDragging ? "py-12 sm:py-16" : "py-9 sm:py-12"}`}>
+      <div className={`flex flex-col items-center justify-center text-center px-4 sm:px-8 transition-all duration-200 ${isDragging ? "min-h-[clamp(150px,26dvh,240px)] py-6" : "min-h-[clamp(140px,24dvh,210px)] py-5"}`}>
         <span
           className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-all duration-200 ${
             isDragging

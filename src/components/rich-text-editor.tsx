@@ -679,7 +679,7 @@ export default function RichTextEditor({
       }
     >
       {/* ─── Xoditor-style Toolbar ─── */}
-      <div className="flex flex-wrap items-center gap-1 p-1.5 rounded-xl bg-bg-elevated border border-border-base">
+      <div className="flex flex-wrap items-center gap-0.5 sm:gap-1 p-1 sm:p-1.5 rounded-xl bg-bg-elevated border border-border-base">
         {/* History */}
         <button type="button" disabled={sourceMode} className={TB_BASE} onMouseDown={(e) => e.preventDefault()} onClick={() => exec("undo")} title="Undo (Ctrl+Z)" aria-label="Undo">
           <svg {...TB_SVG_PROPS}><path d="M3 7v6h6" /><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13" /></svg>
@@ -1093,8 +1093,8 @@ export default function RichTextEditor({
             sourceMode
               ? "hidden"
               : pageView
-                ? `overflow-y-auto rounded-t-xl bg-[#eef1f6] dark:bg-[#0f172a]/70 p-3 sm:p-6 ${
-                    fullscreen ? "flex-1 min-h-0" : "min-h-[420px] max-h-[68vh]"
+                ? `overflow-y-auto rounded-t-xl bg-[#eef1f6] dark:bg-[#0f172a]/70 p-2.5 sm:p-4 ${
+                    fullscreen ? "flex-1 min-h-0" : "h-[clamp(190px,36dvh,380px)]"
                   }`
                 : ""
           }`}
@@ -1121,9 +1121,9 @@ export default function RichTextEditor({
               onBlur={saveSelection}
               className={`rte-content text-[15px] leading-relaxed text-text-primary outline-none ${
                 pageView
-                  ? "min-h-[480px] px-7 sm:px-14 py-8 sm:py-12"
+                  ? "min-h-[175px] px-5 sm:px-10 py-5 sm:py-7"
                   : `overflow-y-auto rounded-t-xl px-5 py-4 ${
-                      fullscreen ? "flex-1 min-h-0" : "min-h-[380px] max-h-[65vh]"
+                      fullscreen ? "flex-1 min-h-0" : "h-[clamp(190px,36dvh,380px)]"
                     }`
               }`}
             />

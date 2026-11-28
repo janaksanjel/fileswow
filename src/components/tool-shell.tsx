@@ -79,9 +79,9 @@ export function ToolShell({
   const tierLabel = tool.tier === 2 ? "WASM" : tool.tier === 3 ? "BETA" : null;
 
   return (
-    <div className="max-w-5xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-8">
+    <div className="max-w-5xl mx-auto px-3.5 sm:px-6 lg:px-8 py-3 sm:py-5">
       {/* Breadcrumb */}
-      <nav className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs font-medium text-text-tertiary mb-4 sm:mb-5" aria-label="Breadcrumb">
+      <nav className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs font-medium text-text-tertiary mb-3 sm:mb-3.5" aria-label="Breadcrumb">
         <Link href="/" className="hover:text-accent transition-colors">
           Home
         </Link>
@@ -98,8 +98,8 @@ export function ToolShell({
       </nav>
 
       {/* Unified System Tool Window (Header + Workbench in one cohesive frame) */}
-      <div className="rounded-2xl border border-border-base bg-bg-surface shadow-[var(--elevation-sm)] overflow-hidden mb-7 sm:mb-10">
-        <div className="px-3.5 sm:px-7 py-4 sm:py-5 border-b border-border-base bg-bg-warm flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+      <div className="rounded-2xl border border-border-base bg-bg-surface shadow-[var(--elevation-sm)] overflow-hidden mb-6 sm:mb-8">
+        <div className="px-3.5 sm:px-6 py-3 sm:py-4 border-b border-border-base bg-bg-warm flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4">
           <div className="flex items-start sm:items-center gap-3 sm:gap-3.5 min-w-0">
             <span
               className={`w-10 h-10 sm:w-11 sm:h-11 rounded-xl flex items-center justify-center shrink-0 ${categoryTile(
@@ -166,7 +166,7 @@ export function ToolShell({
         )}
 
         {/* Tool workbench */}
-        <div className="relative min-h-[340px] p-3.5 sm:p-7">{children}</div>
+        <div className="relative min-h-[clamp(200px,34dvh,320px)] p-3 sm:p-5">{children}</div>
       </div>
 
       {/* Share bar — 7 popular social platforms + copy link */}

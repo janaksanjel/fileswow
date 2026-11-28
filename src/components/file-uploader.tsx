@@ -4,6 +4,86 @@ import { PdfDrawerPreview } from "./pdf-drawer-preview";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+/**
+ * Renders a crisp page-1 thumbnail for PDFs, an image preview for images,
+ * or a clean file-type badge for other formats.
+ */
+function FileThumbPreview({ file, ext }: { file: File; ext: string }) {
+  const [thumbUrl, setThumbUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    let objUrl: string | null = null;
+
+    if (file.type.startsWith("image/")) {
+      objUrl = URL.createObjectURL(file);
+      queueMicrotask(() => {
+        if (!cancelled) setThumbUrl(objUrl);
+      });
+      return () => {
+        cancelled = true;
+        if (objUrl) URL.revokeObjectURL(objUrl);
+      };
+    }
+
+    if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+      void (async () => {
+        try {
+          const pdfjsLib = await import("pdfjs-dist");
+          pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+          const buf = await file.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+          const page = await pdf.getPage(1);
+          const vp = page.getViewport({ scale: 0.45 });
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(vp.width));
+          canvas.height = Math.max(1, Math.round(vp.height));
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            await page.render({ canvas, canvasContext: ctx, viewport: vp }).promise;
+            const dataUrl = canvas.toDataURL("image/jpeg", 0.8);
+            canvas.width = 0;
+            canvas.height = 0;
+            if (!cancelled) setThumbUrl(dataUrl);
+          }
+        } catch {
+          // Fallback to PDF badge
+        }
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    return undefined;
+  }, [file]);
+
+  if (thumbUrl) {
+    return (
+      /* eslint-disable-next-line @next/next/no-img-element -- local generated preview data/object URL */
+      <img
+        src={thumbUrl}
+        alt=""
+        className="w-full h-[116px] object-contain rounded-lg bg-white border border-border-base/70 shadow-2xs"
+      />
+    );
+  }
+
+  return (
+    <div className="w-full h-[116px] rounded-lg bg-bg-elevated border border-border-base flex items-center justify-center">
+      <span
+        className={`px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wide ${
+          EXT_STYLES[ext] || "bg-bg-surface text-text-secondary"
+        }`}
+      >
+        {ext}
+      </span>
+    </div>
+  );
+}
+
 /* ─── Public types ─────────────────────────────────────────────── */
 
 export interface UploadedFile {
@@ -374,243 +454,236 @@ export function FileUploader({
     <div>
       {hiddenInput}
 
-      {/* ── Upload area ─────────────────────────────────────── */}
-      <div
-        role="button"
-        tabIndex={0}
-        aria-label="Add files"
-        onClick={() => inputRef.current?.click()}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            inputRef.current?.click();
-          }
-        }}
-        onDragEnter={handleDragEnter}
-        onDragLeave={handleDragLeave}
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
-        className={`flow-dropzone group w-full flex flex-col items-center justify-center text-center rounded-2xl border-[1.5px] border-dashed cursor-pointer select-none px-4 sm:px-8 transition-all duration-200 ${
-          dragging
-            ? "flow-dropzone-dragging border-accent py-12 sm:py-16"
-            : "border-border-strong py-9 sm:py-12 hover:border-accent/60 hover:bg-accent/[0.02]"
-        }`}
-      >
-        <span
-          className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-all duration-200 ${
+      {/* ── Upload area (hidden once files are added, replaced by clean card workspace + "+" button) ── */}
+      {!hasFiles && (
+        <div
+          role="button"
+          tabIndex={0}
+          aria-label="Add files"
+          onClick={() => inputRef.current?.click()}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              inputRef.current?.click();
+            }
+          }}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          className={`flow-dropzone group w-full flex flex-col items-center justify-center text-center rounded-2xl border-[1.5px] border-dashed cursor-pointer select-none px-4 sm:px-8 transition-all duration-200 ${
             dragging
-              ? "bg-accent text-text-on-accent scale-105 shadow-[var(--elevation-md)]"
-              : "bg-bg-surface border border-border-base text-accent shadow-[var(--elevation-sm)] group-hover:scale-105"
+              ? "flow-dropzone-dragging border-accent min-h-[clamp(150px,26dvh,240px)] py-6"
+              : "border-border-strong min-h-[clamp(140px,24dvh,210px)] py-5 hover:border-accent/60 hover:bg-accent/[0.02]"
           }`}
         >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.75"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
+          <span
+            className={`w-12 h-12 rounded-2xl flex items-center justify-center mb-4 transition-all duration-200 ${
+              dragging
+                ? "bg-accent text-text-on-accent scale-105 shadow-[var(--elevation-md)]"
+                : "bg-bg-surface border border-border-base text-accent shadow-[var(--elevation-sm)] group-hover:scale-105"
+            }`}
           >
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="17 8 12 3 7 8" />
-            <line x1="12" y1="3" x2="12" y2="15" />
-          </svg>
-        </span>
-
-        <p className="text-[16px] font-semibold text-text-primary tracking-[-0.01em] mb-1">
-          {dragging ? "Drop files to add" : selectLabel}
-        </p>
-
-        <p className="text-[13.5px] text-text-secondary max-w-md mb-5">
-          {dragging ? (
-            "Release to load files on your device"
-          ) : (
-            <>
-              <span className="hidden sm:inline">
-                Drag and drop here, browse your device, or paste with <kbd>⌘V</kbd>
-              </span>
-              <span className="sm:hidden">
-                Tap to choose files from your device
-              </span>
-            </>
-          )}
-        </p>
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 w-full sm:w-auto">
-          <span className="btn-primary w-full sm:w-auto px-5 pointer-events-none">
-            {dragging ? "Release to drop" : selectLabel}
-          </span>
-          {!dragging && (
-            <button
-              type="button"
-              onClick={handlePasteFromClipboard}
-              className="btn-ghost w-full sm:w-auto text-[13px]"
-              title="Paste file or image from clipboard (Ctrl+V / ⌘V)"
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.75"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-              </svg>
-              <span>Paste</span>
-            </button>
-          )}
-        </div>
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="17 8 12 3 7 8" />
+              <line x1="12" y1="3" x2="12" y2="15" />
+            </svg>
+          </span>
 
-        {!dragging && (
-          <p className="mt-5 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[12px] text-text-tertiary">
-            {(acceptLabel || hint) && (
+          <p className="text-[16px] font-semibold text-text-primary tracking-[-0.01em] mb-1">
+            {dragging ? "Drop files to add" : selectLabel}
+          </p>
+
+          <p className="text-[13.5px] text-text-secondary max-w-md mb-5">
+            {dragging ? (
+              "Release to load files on your device"
+            ) : (
               <>
-                <span className="font-medium text-text-secondary">{hint || acceptLabel}</span>
-                <span aria-hidden="true">·</span>
+                <span className="hidden sm:inline">
+                  Drag and drop here, browse your device, or paste with <kbd>⌘V</kbd>
+                </span>
+                <span className="sm:hidden">
+                  Tap to choose files from your device
+                </span>
               </>
             )}
-            <span className="inline-flex items-center gap-1">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-success shrink-0" aria-hidden="true">
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                <path d="M9 12l2 2 4-4" />
-              </svg>
-              Processed locally on your device
-            </span>
           </p>
-        )}
-      </div>
 
-      {/* ── Grouped file list ───────────────────────────────── */}
-      {hasFiles && (
-        <div className="mt-5">
-          <div className="flex items-center justify-between mb-2 px-1">
-            <p className="text-[12px] font-medium text-text-secondary">
-              {items.length} file{items.length !== 1 ? "s" : ""}
-              {allDone ? " · Ready" : ""}
-            </p>
-            <div className="flex items-center gap-3">
-              {(!maxFiles || items.length < maxFiles) && (
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    inputRef.current?.click();
-                  }}
-                  className="text-[12.5px] font-medium text-accent hover:underline underline-offset-2 cursor-pointer"
-                >
-                  + Add more
-                </button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-2 w-full sm:w-auto">
+            <span className="btn-primary w-full sm:w-auto px-5 pointer-events-none">
+              {dragging ? "Release to drop" : selectLabel}
+            </span>
+            {!dragging && (
+              <button
+                type="button"
+                onClick={handlePasteFromClipboard}
+                className="btn-ghost w-full sm:w-auto text-[13px]"
+                title="Paste file or image from clipboard (Ctrl+V / ⌘V)"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                </svg>
+                <span>Paste</span>
+              </button>
+            )}
+          </div>
+
+          {!dragging && (
+            <p className="mt-5 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[12px] text-text-tertiary">
+              {(acceptLabel || hint) && (
+                <>
+                  <span className="font-medium text-text-secondary">{hint || acceptLabel}</span>
+                  <span aria-hidden="true">·</span>
+                </>
               )}
+              <span className="inline-flex items-center gap-1">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-success shrink-0" aria-hidden="true">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  <path d="M9 12l2 2 4-4" />
+                </svg>
+                Processed locally on your device
+              </span>
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* ── Clean iLovePDF-style Uploaded Cards + Floating "+" Add Button ── */}
+      {hasFiles && (
+        <div
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          className={`relative rounded-2xl border p-4 sm:p-5 transition-colors ${
+            dragging
+              ? "border-accent bg-accent/[0.04]"
+              : "border-border-base bg-bg-elevated/45"
+          }`}
+        >
+          {/* Floating "+" button with count badge in top-right corner */}
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-2">
+            {items.length > 1 && (
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   clearAll();
                 }}
-                className="text-[12.5px] font-medium text-text-tertiary hover:text-danger transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-full bg-bg-surface border border-border-base text-[11px] font-semibold text-text-tertiary hover:text-danger transition-colors cursor-pointer"
               >
-                Clear
+                Clear all
               </button>
-            </div>
+            )}
+            {(!maxFiles || items.length < maxFiles) && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  inputRef.current?.click();
+                }}
+                title="Add more files"
+                aria-label="Add more files"
+                className="relative w-10 h-10 rounded-full bg-accent text-white shadow-md hover:scale-105 transition-transform flex items-center justify-center cursor-pointer"
+              >
+                <span className="absolute -top-1.5 -left-1.5 min-w-[20px] h-5 px-1 rounded-full bg-text-primary text-bg-base text-[10.5px] font-bold flex items-center justify-center tabular-nums shadow-xs">
+                  {items.length}
+                </span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+              </button>
+            )}
           </div>
 
-          <ul className="rounded-2xl border border-border-base bg-bg-surface divide-y divide-border-base overflow-hidden">
-            {items.map((item, i) => {
+          {/* Centered thumbnail card grid */}
+          <div className="flex flex-wrap items-center justify-center gap-3 max-h-[clamp(190px,34dvh,300px)] overflow-y-auto py-2 pr-8">
+            {items.map((item) => {
               const ext = extLabel(item.file.name);
               const isRemoving = removing.has(item.id);
               const isUploading = item.status === "uploading";
               return (
-                <li
+                <div
                   key={item.id}
-                  className={`flow-row flex items-center gap-3 px-3.5 py-2.5 transition-colors hover:bg-bg-elevated/50 ${
-                    isRemoving ? "flow-row-removing" : ""
+                  className={`group relative w-[132px] sm:w-[146px] rounded-xl bg-bg-surface border border-border-base shadow-sm p-2.5 flex flex-col items-center text-center transition-all hover:border-accent/50 ${
+                    isRemoving ? "opacity-40 scale-95" : ""
                   }`}
-                  style={{ animationDelay: `${Math.min(i, 8) * 25}ms` }}
                 >
-                  {item.file.type.startsWith("image/") ? (
-                    /* eslint-disable-next-line @next/next/no-img-element -- local object URLs, not optimized assets */
-                    <img
-                      src={URL.createObjectURL(item.file)}
-                      alt=""
-                      className="w-9 h-9 rounded-lg object-cover border border-border-base shrink-0"
-                      onLoad={(e) => {
-                        setTimeout(() => URL.revokeObjectURL((e.target as HTMLImageElement).src), 100);
-                      }}
-                    />
-                  ) : (
-                    <span
-                      className={`w-9 h-9 rounded-lg flex items-center justify-center text-[10px] font-semibold tracking-wide shrink-0 ${
-                        EXT_STYLES[ext] || "bg-bg-elevated text-text-secondary"
-                      }`}
-                    >
-                      {ext}
-                    </span>
-                  )}
-
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[13.5px] font-medium text-text-primary truncate leading-tight">
-                      {item.file.name}
-                    </p>
-                    {isUploading ? (
-                      <div className="mt-1.5 flex items-center gap-2">
-                        <div className="flow-progress h-[3px] rounded-full flex-1 max-w-[160px]" />
-                        <span className="text-[11px] font-medium text-accent tabular-nums">
-                          {Math.round(item.progress)}%
-                        </span>
-                      </div>
-                    ) : (
-                      <p className="text-[11.5px] text-text-tertiary mt-0.5 leading-tight">
-                        {formatSize(item.file.size)}
-                        {item.status === "error" && <span className="text-danger font-medium"> · Failed</span>}
-                      </p>
+                  {/* Card action pills (Preview + Remove) */}
+                  <div className="absolute top-1.5 right-1.5 z-10 flex items-center gap-1 opacity-90 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                    {isPreviewableFile(item.file) && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewFile(item.file);
+                        }}
+                        title={`Preview ${item.file.name}`}
+                        aria-label={`Preview ${item.file.name}`}
+                        className="w-6 h-6 rounded-full bg-bg-surface/95 border border-border-base text-text-secondary hover:text-accent shadow-xs flex items-center justify-center cursor-pointer"
+                      >
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      </button>
                     )}
-                  </div>
-
-                  {item.status === "done" && !isRemoving && (
-                    <span className="flow-check w-5 h-5 rounded-full bg-success/15 text-success flex items-center justify-center shrink-0" title="Ready">
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                    </span>
-                  )}
-                  {isUploading && (
-                    <span className="w-4 h-4 rounded-full border-2 border-border-strong border-t-accent animate-spin-slow shrink-0" />
-                  )}
-
-                  {isPreviewableFile(item.file) && (
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
-                        setPreviewFile(item.file);
+                        removeFile(item.id);
                       }}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-text-tertiary hover:text-accent hover:bg-bg-elevated transition-colors shrink-0 cursor-pointer"
-                      title={`Preview ${item.file.name}`}
-                      aria-label={`Preview ${item.file.name}`}
+                      title={`Remove ${item.file.name}`}
+                      aria-label={`Remove ${item.file.name}`}
+                      className="w-6 h-6 rounded-full bg-bg-surface/95 border border-border-base text-text-secondary hover:text-danger shadow-xs flex items-center justify-center cursor-pointer"
                     >
-                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                        <circle cx="12" cy="12" r="3" />
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
                       </svg>
                     </button>
-                  )}
+                  </div>
 
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeFile(item.id);
-                    }}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center text-text-tertiary hover:text-danger hover:bg-bg-elevated transition-colors shrink-0 cursor-pointer"
-                    aria-label={`Remove ${item.file.name}`}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-                      <line x1="18" y1="6" x2="6" y2="18" />
-                      <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                  </button>
-                </li>
+                  <FileThumbPreview file={item.file} ext={ext} />
+
+                  <p className="mt-2 w-full text-[11.5px] font-semibold text-text-primary truncate" title={item.file.name}>
+                    {item.file.name}
+                  </p>
+                  {isUploading ? (
+                    <div className="mt-1 w-full flex items-center gap-1.5">
+                      <div className="flow-progress h-[3px] rounded-full flex-1" />
+                      <span className="text-[10px] font-medium text-accent tabular-nums">
+                        {Math.round(item.progress)}%
+                      </span>
+                    </div>
+                  ) : (
+                    <p className="text-[10.5px] text-text-tertiary mt-0.5 tabular-nums">
+                      {formatSize(item.file.size)}
+                    </p>
+                  )}
+                </div>
               );
             })}
-          </ul>
+          </div>
+
+          {/* Subtle status line */}
+          <p className="mt-2 text-center text-[11px] text-text-tertiary">
+            {items.length} file{items.length !== 1 ? "s" : ""} {allDone ? "ready" : "loading…"} · Click × to remove{(!maxFiles || items.length < maxFiles) ? " or + to add more" : ""}
+          </p>
         </div>
       )}
       {/* Right Drawer Preview for uploaded file */}
