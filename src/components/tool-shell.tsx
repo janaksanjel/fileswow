@@ -166,7 +166,7 @@ export function ToolShell({
         )}
 
         {/* Tool workbench */}
-        <div className="p-3.5 sm:p-7">{children}</div>
+        <div className="relative min-h-[260px] p-3.5 sm:p-7">{children}</div>
       </div>
 
       {/* Share bar — 7 popular social platforms + copy link */}

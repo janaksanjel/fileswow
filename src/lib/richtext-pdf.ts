@@ -766,8 +766,16 @@ async function renderScriptAwarePdf(
   let canvas: HTMLCanvasElement;
   try {
     await Promise.all([waitForFonts(), waitForImages(tempDiv)]);
+    const estHeight = Math.max(1, tempDiv.scrollHeight);
+    // Keep total canvas height under ~13,500px so 10+ page documents never hit browser canvas limits or freeze RAM
+    const safeScale =
+      estHeight <= 3600
+        ? 3
+        : estHeight <= 9000
+          ? 2
+          : Math.max(1.25, Math.min(2, 13500 / estHeight));
     canvas = await html2canvas(tempDiv, {
-      scale: 3,
+      scale: safeScale,
       useCORS: true,
       logging: false,
       backgroundColor: "#ffffff",
@@ -831,9 +839,13 @@ async function renderScriptAwarePdf(
     currentY += sliceH;
   }
 
+  const useFastJpeg = pageSlices.length > 4;
   for (let i = 0; i < pageSlices.length; i++) {
     if (i > 0) {
       doc.addPage([pageW, pageH], options.orientation);
+      if (i % 2 === 0) {
+        await new Promise((r) => setTimeout(r, 0));
+      }
     }
     const slice = pageSlices[i];
     const sliceCanvas = document.createElement("canvas");
@@ -845,10 +857,18 @@ async function renderScriptAwarePdf(
       sCtx.fillRect(0, 0, cW, slice.height);
       sCtx.drawImage(canvas, 0, slice.y, cW, slice.height, 0, 0, cW, slice.height);
     }
-    const sliceImg = sliceCanvas.toDataURL("image/png");
+    const sliceImg = useFastJpeg
+      ? sliceCanvas.toDataURL("image/jpeg", 0.94)
+      : sliceCanvas.toDataURL("image/png");
     const sliceHeightPt = slice.height / pxPerPt;
-    doc.addImage(sliceImg, "PNG", marginPt, marginPt, contentW, sliceHeightPt);
+    doc.addImage(sliceImg, useFastJpeg ? "JPEG" : "PNG", marginPt, marginPt, contentW, sliceHeightPt);
+    sliceCanvas.width = 0;
+    sliceCanvas.height = 0;
   }
+
+  // Free master canvas memory immediately
+  canvas.width = 0;
+  canvas.height = 0;
 
   if (options.pageNumbers) {
     const total = pageSlices.length;

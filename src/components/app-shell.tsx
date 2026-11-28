@@ -10,6 +10,7 @@ import { Footer } from "@/components/footer";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { OnboardingModal, USER_NAME_EVENT, USER_NAME_STORAGE_KEY } from "@/components/onboarding-modal";
 import { AccessibilityWidget } from "@/components/accessibility-widget";
+import { GlobalAppleToastHost } from "@/components/apple-toast";
 import { ALL_TOOLS, type ToolCategory } from "@/lib/catalog";
 import { DEFAULT_HEADER_THEME, getToolGradient } from "@/lib/tool-theme";
 
@@ -465,6 +466,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      <GlobalAppleToastHost />
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
 
       <div className="min-h-screen flex bg-bg-base overflow-x-clip">

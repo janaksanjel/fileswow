@@ -241,6 +241,13 @@ export default function RichTextEditor({
     | { type: "link"; url: string }
   >(null);
 
+  // Microsoft Word-style Page View (real-time A4 sheet & page breaks)
+  const [pageView, setPageView] = useState(true);
+  const [pageCount, setPageCount] = useState(1);
+  const syncTimerRef = useRef<number | null>(null);
+  const lastSelCheckRef = useRef(0);
+  const PAGE_HEIGHT_PX = 980; // Approx printable A4 height inside the editor sheet
+
   const syncStats = useCallback(() => {
     const editor = editorRef.current;
     if (!editor) return;
@@ -251,6 +258,8 @@ export default function RichTextEditor({
     setWordCount(text.trim() ? text.trim().split(/\s+/).length : 0);
     setIsEmpty(empty);
     editor.dataset.empty = empty ? "true" : "false";
+    const estPages = Math.max(1, Math.ceil((editor.scrollHeight || 1) / PAGE_HEIGHT_PX));
+    setPageCount(estPages);
 
     if (/[\u0900-\u097F]/.test(text)) {
       void import("@/lib/script-fonts").then(({ prepareScriptFonts }) => {
@@ -259,10 +268,38 @@ export default function RichTextEditor({
     }
   }, []);
 
-  // Track active formatting under caret
+  // Debounced stats sync so typing in 10+ page documents stays instant with zero reflow lag
+  const scheduleSyncStats = useCallback(() => {
+    const editor = editorRef.current;
+    if (editor) {
+      const quickEmpty = editor.childNodes.length === 0;
+      if (quickEmpty !== isEmpty && quickEmpty) setIsEmpty(true);
+      else if (!quickEmpty && isEmpty) setIsEmpty(false);
+    }
+    if (syncTimerRef.current !== null) {
+      window.clearTimeout(syncTimerRef.current);
+    }
+    syncTimerRef.current = window.setTimeout(() => {
+      syncTimerRef.current = null;
+      syncStats();
+    }, 180);
+  }, [isEmpty, syncStats]);
+
+  useEffect(() => {
+    return () => {
+      if (syncTimerRef.current !== null) {
+        window.clearTimeout(syncTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Track active formatting under caret (throttled so 10+ page docs never lag)
   useEffect(() => {
     const handler = () => {
       if (sourceMode) return;
+      const now = performance.now();
+      if (now - lastSelCheckRef.current < 100) return;
+      lastSelCheckRef.current = now;
       const sel = window.getSelection();
       const editor = editorRef.current;
       if (!sel || !editor || !sel.anchorNode || !editor.contains(sel.anchorNode)) return;
@@ -931,6 +968,17 @@ export default function RichTextEditor({
         </button>
         <button
           type="button"
+          className={`${TB_BASE} gap-1 px-2 text-xs ${pageView && !sourceMode ? TB_ACTIVE : ""}`}
+          onClick={() => setPageView((v) => !v)}
+          disabled={sourceMode}
+          title="Toggle Microsoft Word Page View (real-time A4 pagination)"
+          aria-label="Toggle Page View"
+        >
+          <svg {...TB_SVG_PROPS} width={14} height={14}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+          <span className="hidden sm:inline">Page</span>
+        </button>
+        <button
+          type="button"
           className={`${TB_BASE} gap-1 px-2 text-xs ${sourceMode ? TB_ACTIVE : ""}`}
           onClick={toggleSourceMode}
           title="Toggle HTML Source View (CodeMirror-style)"
@@ -1033,7 +1081,7 @@ export default function RichTextEditor({
         }}
       />
 
-      {/* ─── Editor Canvas + HTML Source View ─── */}
+      {/* ─── Editor Canvas + Microsoft Word Page View + HTML Source View ─── */}
       <div
         className={`relative rounded-xl border border-border-strong bg-bg-input focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/20 transition-all flex flex-col ${
           fullscreen ? "flex-1 min-h-0" : ""
@@ -1041,28 +1089,75 @@ export default function RichTextEditor({
       >
         {/* Visual WYSIWYG Canvas (always mounted so onEditorReady & PDF export work in Source mode too) */}
         <div
-          ref={editorRef}
-          contentEditable
-          suppressContentEditableWarning
-          role="textbox"
-          aria-multiline="true"
-          aria-label="Rich text document"
-          id={editorId}
-          spellCheck
-          data-empty="true"
-          onInput={syncStats}
-          onPaste={handlePaste}
-          onBlur={saveSelection}
-          className={`rte-content overflow-y-auto rounded-t-xl px-5 py-4 text-[15px] leading-relaxed text-text-primary outline-none ${
-            fullscreen ? "flex-1 min-h-0" : "min-h-[380px] max-h-[65vh]"
-          } ${sourceMode ? "hidden" : ""}`}
-        />
+          className={`${
+            sourceMode
+              ? "hidden"
+              : pageView
+                ? `overflow-y-auto rounded-t-xl bg-[#eef1f6] dark:bg-[#0f172a]/70 p-3 sm:p-6 ${
+                    fullscreen ? "flex-1 min-h-0" : "min-h-[420px] max-h-[68vh]"
+                  }`
+                : ""
+          }`}
+        >
+          <div
+            className={
+              pageView
+                ? "relative w-full max-w-[794px] mx-auto bg-white dark:bg-[#1e293b] border border-border-base/80 shadow-[0_4px_24px_rgba(0,0,0,0.08)] rounded-sm"
+                : "relative"
+            }
+          >
+            <div
+              ref={editorRef}
+              contentEditable
+              suppressContentEditableWarning
+              role="textbox"
+              aria-multiline="true"
+              aria-label="Rich text document"
+              id={editorId}
+              spellCheck
+              data-empty="true"
+              onInput={scheduleSyncStats}
+              onPaste={handlePaste}
+              onBlur={saveSelection}
+              className={`rte-content text-[15px] leading-relaxed text-text-primary outline-none ${
+                pageView
+                  ? "min-h-[480px] px-7 sm:px-14 py-8 sm:py-12"
+                  : `overflow-y-auto rounded-t-xl px-5 py-4 ${
+                      fullscreen ? "flex-1 min-h-0" : "min-h-[380px] max-h-[65vh]"
+                    }`
+              }`}
+            />
 
-        {!sourceMode && isEmpty && (
-          <div className="pointer-events-none absolute top-4 left-5 right-5 text-[15px] text-text-tertiary select-none">
-            Start typing, or paste text — <span className="font-semibold">formatting is kept</span> (bold, colors, tables, lists, links, Nepali &amp; Latin fonts…)
+            {/* Real-time Word page break indicators (non-intrusive overlay, never affects PDF DOM) */}
+            {pageView && pageCount > 1 && (
+              <div className="pointer-events-none absolute inset-x-0 top-0 bottom-0 overflow-hidden" aria-hidden="true">
+                {Array.from({ length: pageCount - 1 }, (_, i) => (
+                  <div
+                    key={i}
+                    style={{ top: `${(i + 1) * PAGE_HEIGHT_PX}px` }}
+                    className="absolute inset-x-0 border-t border-dashed border-accent/40 flex justify-end pr-3"
+                  >
+                    <span className="-mt-2.5 px-2 py-0.5 rounded-full bg-bg-elevated border border-border-base text-[10px] font-semibold text-text-tertiary shadow-xs">
+                      Page {i + 2}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {isEmpty && (
+              <div
+                className={`pointer-events-none absolute text-[15px] text-text-tertiary select-none ${
+                  pageView
+                    ? "top-8 sm:top-12 left-7 sm:left-14 right-7 sm:right-14"
+                    : "top-4 left-5 right-5"
+                }`}
+              >
+                Start typing, or paste text — <span className="font-semibold">formatting is kept</span> (bold, colors, tables, lists, links, all languages…)
+              </div>
+            )}
           </div>
-        )}
+        </div>
 
         {/* CodeMirror-style Line-Numbered HTML Source Editor */}
         {sourceMode && (
@@ -1096,7 +1191,7 @@ export default function RichTextEditor({
         <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-2 border-t border-border-base text-[11px] text-text-tertiary">
           <div className="flex items-center gap-3">
             <span>
-              {wordCount.toLocaleString()} words · {charCount.toLocaleString()} chars · ~{readingMinutes} min read
+              {pageCount} page{pageCount === 1 ? "" : "s"} · {wordCount.toLocaleString()} words · {charCount.toLocaleString()} chars · ~{readingMinutes} min read
             </span>
             {sourceMode && (
               <span className="px-1.5 py-0.5 rounded bg-accent-subtle text-accent font-semibold">

@@ -4,13 +4,14 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import { ToolShell } from "@/components/tool-shell";
 import { recordToolVisit } from "@/lib/usage";
 import { ProgressBar } from "@/components/progress-bar";
+import { emitAppleToast } from "@/components/apple-toast";
 import { ToolRenderer, hasToolComponent } from "@/components/tool-registry";
 import { ToolIcon } from "@/components/icon";
 import { pingIndexNow } from "@/lib/indexnow-ping";
 import type { ToolDef } from "@/lib/catalog";
 import type { ToolGuide } from "@/lib/content";
 
-const MIN_LOADING_MS = 1800; // every tool shows ≥ 1.8 s of progress
+const MIN_LOADING_MS = 450; // snappy Apple-like progress window so toast fires right when output appears
 
 interface ToolClientProps {
   tool: ToolDef;
@@ -35,7 +36,13 @@ export function ToolClient({ tool, relatedTools, guide, faq, relatedPost, relate
   // Bumped by "Try again" — remounts the tool UI so it restarts clean.
   const [attempt, setAttempt] = useState(0);
   const startRef = useRef(0);
+  const hasErrorRef = useRef(false);
   const pendingStop = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleError = useCallback((msg: string | null) => {
+    hasErrorRef.current = Boolean(msg);
+    setError(msg);
+  }, []);
 
   const handleProcessing = useCallback((value: boolean) => {
     if (value) {
@@ -44,18 +51,26 @@ export function ToolClient({ tool, relatedTools, guide, faq, relatedPost, relate
         clearTimeout(pendingStop.current);
         pendingStop.current = null;
       }
+      hasErrorRef.current = false;
       startRef.current = performance.now();
       setProcessing(true);
     } else {
-      // Stop — enforce minimum duration
+      // Stop — enforce minimum duration, then show Apple completion toast
       const elapsed = performance.now() - startRef.current;
       const remaining = Math.max(0, MIN_LOADING_MS - elapsed);
       pendingStop.current = setTimeout(() => {
         setProcessing(false);
         pendingStop.current = null;
+        if (!hasErrorRef.current) {
+          const totalSec = ((performance.now() - startRef.current) / 1000).toFixed(1);
+          emitAppleToast(
+            `${tool.name} complete`,
+            `Processed locally in ${totalSec}s`
+          );
+        }
       }, remaining);
     }
-  }, []);
+  }, [tool.name]);
 
   const handleRetry = useCallback(() => {
     if (pendingStop.current) {
@@ -94,7 +109,7 @@ export function ToolClient({ tool, relatedTools, guide, faq, relatedPost, relate
       relatedGuide={relatedGuide}
     >
       {/* Processing indicator (state 3) */}
-      <ProgressBar active={processing} />
+      <ProgressBar active={processing} label={`Processing ${tool.name}…`} />
 
       {/* Error (state 5) — plain language first, detail second, retry third */}
       {error && (
@@ -147,7 +162,7 @@ export function ToolClient({ tool, relatedTools, guide, faq, relatedPost, relate
           slug={tool.slug}
           attempt={attempt}
           onProcessing={handleProcessing}
-          onError={setError}
+          onError={handleError}
         />
       ) : (
         <FallbackToolUI tool={tool} />

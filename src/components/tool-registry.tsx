@@ -3,7 +3,8 @@
 // Each tool is code-split — only loads when the user opens that specific tool.
 
 import dynamic from "next/dynamic";
-import { ComponentType } from "react";
+import { ComponentType, Suspense } from "react";
+import { ToolChunkLoader } from "./apple-toast";
 
 export interface ToolUIProps {
   onProcessing?: (processing: boolean) => void;
@@ -262,7 +263,11 @@ export function ToolRenderer({
 }) {
   const Component = toolComponents[slug];
   if (!Component) return null;
-  return <Component key={attempt} onProcessing={onProcessing} onError={onError} />;
+  return (
+    <Suspense fallback={<ToolChunkLoader />}>
+      <Component key={attempt} onProcessing={onProcessing} onError={onError} />
+    </Suspense>
+  );
 }
 
 export function getToolComponent(slug: string) {

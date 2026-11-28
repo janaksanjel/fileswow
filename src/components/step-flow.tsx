@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { FileUploader } from "./file-uploader";
 import { DownloadButton } from "./download-button";
 import { PdfDrawerPreview } from "./pdf-drawer-preview";
+import { emitAppleToast } from "./apple-toast";
 
 /* ─── Types ──────────────────────────────────────────────────────── */
 
@@ -244,7 +245,18 @@ export function StepFlow({
      later) to avoid a synchronous cascading render. */
   useEffect(() => {
     if (outputs.length === 0) return;
-    const raf = requestAnimationFrame(() => setStep((s) => (s === 2 ? 3 : s)));
+    const raf = requestAnimationFrame(() => {
+      setStep((s) => {
+        if (s === 2) {
+          emitAppleToast(
+            "Complete",
+            `${outputs.length} file${outputs.length > 1 ? "s" : ""} ready to download`
+          );
+          return 3;
+        }
+        return s;
+      });
+    });
     return () => cancelAnimationFrame(raf);
   }, [outputs.length]);
 

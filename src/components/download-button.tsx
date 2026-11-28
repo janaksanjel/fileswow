@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { PdfDrawerPreview } from "./pdf-drawer-preview";
+import { emitAppleToast } from "./apple-toast";
 
 interface DownloadButtonProps {
   blob: Blob;
@@ -31,6 +32,7 @@ export function DownloadButton({
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    emitAppleToast("Downloaded", filename);
     setTimeout(() => setDownloading(false), 500);
   }, [blob, filename]);
 
