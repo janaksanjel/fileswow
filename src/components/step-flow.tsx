@@ -267,7 +267,7 @@ export function StepFlow({
       });
     });
     return () => cancelAnimationFrame(raf);
-  }, [outputs.length]);
+  }, [outputs]);
 
   const runAndAdvance = useCallback(() => {
     if (!canRun || processing) return;

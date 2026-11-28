@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { StepFlow, type StepOutput } from "@/components/step-flow";
 import type { ToolUIProps } from "@/components/tool-registry";
 import { PdfDrawerPreview } from "@/components/pdf-drawer-preview";
+import { smartCompressPdf } from "@/lib/engines/smart-pdf-compress";
 
 interface CompressionStats {
   originalSize: number;
@@ -20,7 +21,8 @@ function formatBytes(bytes: number): string {
 
 export default function CompressPdfTool({ onProcessing, onError }: ToolUIProps) {
   const [files, setFiles] = useState<File[]>([]);
-  const [level, setLevel] = useState<"low" | "medium" | "high">("medium");
+  const [level, setLevel] = useState<"low" | "medium" | "high" | "target">("medium");
+  const [targetKb, setTargetKb] = useState(300);
   const [pageCount, setPageCount] = useState(0);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [outputs, setOutputs] = useState<StepOutput[]>([]);
@@ -52,96 +54,12 @@ export default function CompressPdfTool({ onProcessing, onError }: ToolUIProps) 
     onProcessing?.(true);
     setStats(null);
     try {
-      const { GlobalWorkerOptions } = await import("pdfjs-dist");
-      const pdfjsLib = await import("pdfjs-dist");
-      const { PDFDocument } = await import("pdf-lib");
-
-      GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
-
       const file = files[0];
-      const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      const totalPages = pdf.numPages;
-
-      // Multi-level compression matching industry standards (iLovePDF)
-      // high (extreme): smallest size, 70-90% reduction
-      // medium (recommended): balanced size & quality, 50-75% reduction
-      // low (less): high resolution, 30-50% reduction
-      let scale = 1.25;
-      let quality = 0.65;
-      if (level === "high") {
-        scale = 0.95;
-        quality = 0.40;
-      } else if (level === "low") {
-        scale = 1.6;
-        quality = 0.82;
-      }
-
-      const newDoc = await PDFDocument.create();
-
-      for (let i = 1; i <= totalPages; i++) {
-        setProgressMsg(`Compressing page ${i} of ${totalPages}...`);
-        const page = await pdf.getPage(i);
-        const viewport = page.getViewport({ scale });
-        const origViewport = page.getViewport({ scale: 1.0 });
-
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.max(1, Math.round(viewport.width));
-        canvas.height = Math.max(1, Math.round(viewport.height));
-        const ctx = canvas.getContext("2d", { alpha: false });
-        if (ctx) {
-          ctx.fillStyle = "#ffffff";
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-
-        await (page.render as any)({
-          canvasContext: ctx,
-          canvas,
-          viewport,
-        }).promise;
-
-        const blob = await new Promise<Blob>((resolve) =>
-          canvas.toBlob((b) => resolve(b!), "image/jpeg", quality)
-        );
-
-        const imgBytes = await blob.arrayBuffer();
-        const embeddedImg = await newDoc.embedJpg(imgBytes);
-
-        const newPage = newDoc.addPage([origViewport.width, origViewport.height]);
-        newPage.drawImage(embeddedImg, {
-          x: 0,
-          y: 0,
-          width: origViewport.width,
-          height: origViewport.height,
-        });
-
-        // Release canvas memory
-        canvas.width = 0;
-        canvas.height = 0;
-      }
-
-      newDoc.setTitle(file.name.replace(/\.pdf$/i, ""));
-      newDoc.setProducer("FilesWow.com");
-      newDoc.setCreator("FilesWow.com");
-
-      const compressedBytes = await newDoc.save({ useObjectStreams: true });
-      let finalBlob = new Blob([new Uint8Array(compressedBytes)], { type: "application/pdf" });
-
-      // If re-rasterizing didn't reduce size (e.g. tiny pure-vector document),
-      // fall back to clean object-stream compression of the original
-      if (finalBlob.size >= file.size) {
-        try {
-          const { loadPdf } = await import("@/lib/engines/pdf");
-          const originalDoc = await loadPdf(file);
-          const cleanBytes = await originalDoc.save({ useObjectStreams: true });
-          const cleanBlob = new Blob([new Uint8Array(cleanBytes)], { type: "application/pdf" });
-          if (cleanBlob.size < finalBlob.size) {
-            finalBlob = cleanBlob;
-          }
-        } catch {
-          // ignore fallback failure
-        }
-      }
+      const finalBlob = await smartCompressPdf(file, {
+        level,
+        targetKb,
+        onProgress: (msg) => setProgressMsg(msg),
+      });
 
       const originalSize = file.size;
       const compressedSize = finalBlob.size;
@@ -166,7 +84,7 @@ export default function CompressPdfTool({ onProcessing, onError }: ToolUIProps) 
       setProgressMsg("");
       onProcessing?.(false);
     }
-  }, [files, level, onProcessing, onError]);
+  }, [files, level, targetKb, onProcessing, onError]);
 
   const handleDownloadAll = useCallback(async () => {
     if (outputs.length === 0) return;
@@ -270,32 +188,38 @@ export default function CompressPdfTool({ onProcessing, onError }: ToolUIProps) 
               <label className="block text-[12.5px] font-semibold text-text-secondary mb-2">
                 Choose Compression Level (Like iLovePDF)
               </label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
                 {[
                   {
                     value: "high" as const,
-                    label: "Extreme Compression",
-                    sub: "~75–90% reduction",
-                    desc: "Smallest size. Best for email and portal limits.",
+                    label: "Extreme",
+                    sub: "~75–90% smaller",
+                    desc: "Smallest preset size for strict limits.",
                   },
                   {
                     value: "medium" as const,
                     label: "Recommended",
-                    sub: "~50–75% reduction",
-                    desc: "Good quality & high compression. Best balance.",
+                    sub: "~50–75% smaller",
+                    desc: "Best balance of quality & size.",
                   },
                   {
                     value: "low" as const,
                     label: "Less Compression",
-                    sub: "~30–50% reduction",
-                    desc: "High quality. Best for printing & sharp details.",
+                    sub: "~30–50% smaller",
+                    desc: "High quality for sharp text & print.",
+                  },
+                  {
+                    value: "target" as const,
+                    label: "Target Size (KB)",
+                    sub: "Exact KB limit",
+                    desc: "Enter max KB; preserves best quality.",
                   },
                 ].map((l) => (
                   <button
                     key={l.value}
                     type="button"
                     onClick={() => setLevel(l.value)}
-                    className={`p-3.5 rounded-xl text-left transition-all border ${
+                    className={`p-3.5 rounded-xl text-left transition-all border cursor-pointer ${
                       level === l.value
                         ? "bg-accent/10 border-accent text-text-primary shadow-xs ring-1 ring-accent"
                         : "bg-bg-elevated text-text-secondary hover:text-text-primary border-border-base"
@@ -312,6 +236,44 @@ export default function CompressPdfTool({ onProcessing, onError }: ToolUIProps) 
                   </button>
                 ))}
               </div>
+
+              {level === "target" && (
+                <div className="mt-3 p-3.5 rounded-xl bg-bg-elevated border border-border-base space-y-2.5">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <label htmlFor="pdf-target-kb" className="text-xs font-semibold text-text-secondary">
+                      Target maximum PDF size (KB):
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        id="pdf-target-kb"
+                        type="number"
+                        min={20}
+                        max={50000}
+                        value={targetKb}
+                        onChange={(e) => setTargetKb(Math.max(20, Number(e.target.value) || 20))}
+                        className="w-24 h-8 px-2.5 rounded-lg border border-border-strong bg-bg-input text-sm font-bold text-text-primary text-right outline-none focus:border-accent"
+                      />
+                      <span className="text-xs font-semibold text-text-tertiary">KB</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[100, 200, 300, 500, 1024].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => setTargetKb(preset)}
+                        className={`px-2.5 py-1 rounded-lg text-[11.5px] font-semibold border transition-colors cursor-pointer ${
+                          targetKb === preset
+                            ? "bg-accent text-white border-accent"
+                            : "bg-bg-input text-text-secondary border-border-base hover:text-text-primary"
+                        }`}
+                      >
+                        {preset >= 1024 ? "1 MB (1024 KB)" : `${preset} KB`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Info hint */}
