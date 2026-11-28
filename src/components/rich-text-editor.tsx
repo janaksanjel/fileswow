@@ -188,6 +188,8 @@ export interface RichTextEditorProps {
   onKeepFormattingChange: (value: boolean) => void;
   /** Report the editor element (export engines read its live DOM). */
   onEditorReady: (el: HTMLDivElement | null) => void;
+  /** Optional initial HTML to populate the editor (e.g. when opening an existing PDF). */
+  initialHtml?: string;
 }
 
 /**
@@ -203,6 +205,7 @@ export default function RichTextEditor({
   keepFormatting,
   onKeepFormattingChange,
   onEditorReady,
+  initialHtml,
 }: RichTextEditorProps) {
   const editorRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -364,6 +367,21 @@ export default function RichTextEditor({
     onEditorReady(editorRef.current);
     return () => onEditorReady(null);
   }, [onEditorReady]);
+
+  // Populate initialHtml whenever provided/changed
+  const lastInitialHtmlRef = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    const editor = editorRef.current;
+    if (!editor || initialHtml === undefined) return;
+    if (lastInitialHtmlRef.current === initialHtml) return;
+    lastInitialHtmlRef.current = initialHtml;
+    const cleaned = initialHtml ? sanitizeHtml(initialHtml) : "";
+    editor.innerHTML = cleaned;
+    queueMicrotask(() => {
+      if (sourceMode) setSourceHtml(formatHtmlSource(cleaned));
+      syncStats();
+    });
+  }, [initialHtml, sourceMode, syncStats]);
 
   const saveSelection = useCallback(() => {
     const sel = window.getSelection();
