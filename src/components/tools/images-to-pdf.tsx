@@ -38,7 +38,8 @@ export default function ImagesToPdfTool({ onProcessing, onError }: ToolUIProps) 
     <StepFlow
       accept="image/*"
       multiple
-      hint="JPG, PNG, WebP and more"
+      maxFiles={50}
+      hint="JPG, PNG, WebP and more (up to 50 images)"
       actionLabel={`Convert ${files.length || ""} image${files.length === 1 ? "" : "s"}`.trim()}
       processingLabel="Converting..."
       outputs={outputs}

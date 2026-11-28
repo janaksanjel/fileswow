@@ -18,40 +18,48 @@ export default function CompressImageTool({ onProcessing, onError }: ToolUIProps
 
   const process = useCallback(async () => {
     if (!files.length) return;
-    const file = files[0];
     setProcessing(true);
     onProcessing?.(true);
     try {
-      const img = new Image();
-      const url = URL.createObjectURL(file);
-      await new Promise<void>((res, rej) => {
-        img.onload = () => res();
-        img.onerror = () => rej(new Error("Failed to load"));
-        img.src = url;
-      });
+      const nextOutputs: StepOutput[] = [];
+      for (let idx = 0; idx < files.length; idx++) {
+        const file = files[idx];
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        await new Promise<void>((res, rej) => {
+          img.onload = () => res();
+          img.onerror = () => rej(new Error(`Failed to load ${file.name}`));
+          img.src = url;
+        });
 
-      const canvas = document.createElement("canvas");
-      canvas.width = img.naturalWidth;
-      canvas.height = img.naturalHeight;
-      const ctx = canvas.getContext("2d")!;
-      ctx.drawImage(img, 0, 0);
-      URL.revokeObjectURL(url);
+        const canvas = document.createElement("canvas");
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0);
+        URL.revokeObjectURL(url);
 
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const d = imageData.data;
-      // Simulate quality reduction by quantizing
-      const q = Math.max(1, Math.round(amount / 5));
-      for (let i = 0; i < d.length; i += 4) {
-        d[i] = Math.round(d[i] / q) * q;
-        d[i + 1] = Math.round(d[i + 1] / q) * q;
-        d[i + 2] = Math.round(d[i + 2] / q) * q;
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const d = imageData.data;
+        const q = Math.max(1, Math.round(amount / 5));
+        for (let i = 0; i < d.length; i += 4) {
+          d[i] = Math.round(d[i] / q) * q;
+          d[i + 1] = Math.round(d[i + 1] / q) * q;
+          d[i + 2] = Math.round(d[i + 2] / q) * q;
+        }
+        ctx.putImageData(imageData, 0, 0);
+
+        const blob = await new Promise<Blob>((res, rej) =>
+          canvas.toBlob((b) => (b ? res(b) : rej(new Error("Failed"))), "image/png")
+        );
+        canvas.width = 0;
+        canvas.height = 0;
+        nextOutputs.push({ name: `compressed-${file.name.replace(/\.[^.]+$/, ".png")}`, blob });
+        if (idx % 3 === 2) {
+          await new Promise((r) => setTimeout(r, 0));
+        }
       }
-      ctx.putImageData(imageData, 0, 0);
-
-      const blob = await new Promise<Blob>((res, rej) =>
-        canvas.toBlob((b) => (b ? res(b) : rej(new Error("Failed"))), "image/png")
-      );
-      setOutputs([{ name: `compressed-${file.name.replace(/\.[^.]+$/, ".png")}`, blob }]);
+      setOutputs(nextOutputs);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to compress image";
       setError(msg);
@@ -65,8 +73,9 @@ export default function CompressImageTool({ onProcessing, onError }: ToolUIProps
   return (
     <StepFlow
       accept="image/*"
-      maxFiles={1}
-      hint="JPG, PNG, WebP"
+      multiple
+      maxFiles={50}
+      hint="JPG, PNG, WebP (up to 50 images)"
       actionLabel="Compress Image"
       processingLabel="Compressing..."
       outputs={outputs}

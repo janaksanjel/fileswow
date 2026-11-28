@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useId } from "react";
 import { PdfDrawerPreview } from "./pdf-drawer-preview";
 import { emitAppleToast } from "./apple-toast";
+import { useToolStep } from "./tool-step-context";
 
 interface DownloadButtonProps {
   blob: Blob;
@@ -10,6 +11,7 @@ interface DownloadButtonProps {
   label?: string;
   className?: string;
   hidePreview?: boolean;
+  inlineOnly?: boolean;
 }
 
 export function DownloadButton({
@@ -18,9 +20,21 @@ export function DownloadButton({
   label,
   className = "btn-primary",
   hidePreview = false,
+  inlineOnly = false,
 }: DownloadButtonProps) {
   const [downloading, setDownloading] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const outputId = useId();
+  const stepCtx = useToolStep();
+
+  useEffect(() => {
+    if (inlineOnly || !stepCtx || stepCtx.hasStepFlow) return;
+    stepCtx.registerDownloadOutput(outputId, blob, filename);
+    return () => {
+      stepCtx.unregisterDownloadOutput(outputId);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [blob, filename, inlineOnly, outputId]);
 
   const handleDownload = useCallback(() => {
     setDownloading(true);

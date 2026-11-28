@@ -213,7 +213,7 @@ export default function OcrPdfTool({ onProcessing, onError }: ToolUIProps) {
                   <UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />
                   Searchable PDF &amp; OCR text ready!
                 </p>
-                <DownloadButton blob={result} filename={`ocr-${file.name}`} />
+                <DownloadButton blob={result} filename={`ocr-${file.name}`} inlineOnly />
               </div>
 
               {extractedText && (

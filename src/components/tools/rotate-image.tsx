@@ -18,38 +18,45 @@ export default function RotateImageTool({ onProcessing, onError }: ToolUIProps) 
 
   const process = useCallback(async () => {
     if (!files.length) return;
-    const file = files[0];
     setProcessing(true);
     onProcessing?.(true);
     try {
-      const img = new Image();
-      const url = URL.createObjectURL(file);
-      await new Promise<void>((res, rej) => { img.onload = () => res(); img.onerror = () => rej(new Error("Failed to load")); img.src = url; });
+      const nextOutputs: StepOutput[] = [];
+      for (let idx = 0; idx < files.length; idx++) {
+        const file = files[idx];
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        await new Promise<void>((res, rej) => { img.onload = () => res(); img.onerror = () => rej(new Error(`Failed to load ${file.name}`)); img.src = url; });
 
-      const w = img.naturalWidth, h = img.naturalHeight;
-      let drawW = w, drawH = h;
+        const w = img.naturalWidth, h = img.naturalHeight;
+        let drawW = w, drawH = h;
 
-      if (mode === "rotate-90" || mode === "rotate-270") { drawW = h; drawH = w; }
-      if (mode === "rotate-180") { /* same */ }
-      if (mode === "flip-h" || mode === "flip-v") { /* same */ }
+        if (mode === "rotate-90" || mode === "rotate-270") { drawW = h; drawH = w; }
 
-      const canvas = document.createElement("canvas");
-      canvas.width = drawW;
-      canvas.height = drawH;
-      const ctx = canvas.getContext("2d")!;
+        const canvas = document.createElement("canvas");
+        canvas.width = drawW;
+        canvas.height = drawH;
+        const ctx = canvas.getContext("2d")!;
 
-      ctx.save();
-      if (mode === "rotate-90") { ctx.translate(drawW, 0); ctx.rotate(Math.PI / 2); }
-      else if (mode === "rotate-180") { ctx.translate(drawW, drawH); ctx.rotate(Math.PI); }
-      else if (mode === "rotate-270") { ctx.translate(0, drawH); ctx.rotate(-Math.PI / 2); }
-      else if (mode === "flip-h") { ctx.translate(drawW, 0); ctx.scale(-1, 1); }
-      else if (mode === "flip-v") { ctx.translate(0, drawH); ctx.scale(1, -1); }
-      ctx.drawImage(img, 0, 0);
-      ctx.restore();
+        ctx.save();
+        if (mode === "rotate-90") { ctx.translate(drawW, 0); ctx.rotate(Math.PI / 2); }
+        else if (mode === "rotate-180") { ctx.translate(drawW, drawH); ctx.rotate(Math.PI); }
+        else if (mode === "rotate-270") { ctx.translate(0, drawH); ctx.rotate(-Math.PI / 2); }
+        else if (mode === "flip-h") { ctx.translate(drawW, 0); ctx.scale(-1, 1); }
+        else if (mode === "flip-v") { ctx.translate(0, drawH); ctx.scale(1, -1); }
+        ctx.drawImage(img, 0, 0);
+        ctx.restore();
 
-      URL.revokeObjectURL(url);
-      const blob = await new Promise<Blob>((res, rej) => canvas.toBlob((b) => b ? res(b) : rej(new Error("Failed")), "image/png"));
-      setOutputs([{ name: "rotated-" + file.name.replace(/\.[^.]+$/, ".png"), blob }]);
+        URL.revokeObjectURL(url);
+        const blob = await new Promise<Blob>((res, rej) => canvas.toBlob((b) => b ? res(b) : rej(new Error("Failed")), "image/png"));
+        canvas.width = 0;
+        canvas.height = 0;
+        nextOutputs.push({ name: "rotated-" + file.name.replace(/\.[^.]+$/, ".png"), blob });
+        if (idx % 3 === 2) {
+          await new Promise((r) => setTimeout(r, 0));
+        }
+      }
+      setOutputs(nextOutputs);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to rotate image";
       setError(msg);
@@ -70,8 +77,9 @@ export default function RotateImageTool({ onProcessing, onError }: ToolUIProps) 
   return (
     <StepFlow
       accept="image/*"
-      maxFiles={1}
-      hint="JPG, PNG, WebP"
+      multiple
+      maxFiles={50}
+      hint="JPG, PNG, WebP (up to 50 images)"
       actionLabel={mode.startsWith("flip") ? "Flip Image" : "Rotate Image"}
       processingLabel="Processing..."
       outputs={outputs}

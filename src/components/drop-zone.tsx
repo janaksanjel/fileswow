@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useToolStep } from "./tool-step-context";
 
 interface DropZoneProps {
   accept?: string;
@@ -28,6 +29,16 @@ export function DropZone({
 }: DropZoneProps) {
   const [isDragging, setIsDragging] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const stepCtx = useToolStep();
+
+  useEffect(() => {
+    if (!stepCtx) return;
+    stepCtx.reportDropZoneMounted();
+    return () => {
+      stepCtx.reportDropZoneUnmounted();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();

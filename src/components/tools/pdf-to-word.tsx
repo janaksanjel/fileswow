@@ -40,16 +40,23 @@ export default function PdfToWordTool({ onProcessing, onError }: ToolUIProps) {
     setError(null);
     onProcessing?.(true);
     try {
-      const blob = await convertPdfToWord(files[0], {
-        ocrMode,
-        onProgress: (p) => setProgress(p),
-      });
-      setOutputs([
-        {
-          name: files[0].name.replace(/\.pdf$/i, ".docx"),
+      const nextOutputs: StepOutput[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i];
+        const blob = await convertPdfToWord(f, {
+          ocrMode,
+          onProgress: (p) =>
+            setProgress({
+              ...p,
+              stage: files.length > 1 ? `[${i + 1}/${files.length}] ${p.stage}` : p.stage,
+            }),
+        });
+        nextOutputs.push({
+          name: f.name.replace(/\.pdf$/i, ".docx"),
           blob,
-        },
-      ]);
+        });
+      }
+      setOutputs(nextOutputs);
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to convert to Word";
       setError(msg);
@@ -75,8 +82,9 @@ export default function PdfToWordTool({ onProcessing, onError }: ToolUIProps) {
     <>
       <StepFlow
         accept=".pdf"
-        maxFiles={1}
-        hint="Single PDF file"
+        multiple
+        maxFiles={10}
+        hint="Single or multiple PDF files (up to 10)"
         actionLabel="Convert to Word"
         processingLabel="Converting to DOCX..."
         outputs={outputs}

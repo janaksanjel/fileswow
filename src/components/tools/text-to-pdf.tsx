@@ -13,8 +13,6 @@ import type {
   RichTextPdfResult,
 } from "@/lib/richtext-pdf";
 
-import { UiIcon } from "@/components/ui-icon";
-
 export default function TextToPdfTool({ onProcessing, onError }: ToolUIProps) {
   const editorElRef = useRef<HTMLDivElement | null>(null);
   const [keepFormatting, setKeepFormatting] = useState(true);
@@ -137,32 +135,15 @@ export default function TextToPdfTool({ onProcessing, onError }: ToolUIProps) {
       </details>
 
       {/* ─── Convert ─── */}
-      {result ? (
-        <div className="p-4 rounded-xl bg-success/[0.04] border border-success/10 text-center space-y-3">
-          <p className="text-sm text-success font-semibold">
-            <UiIcon name="check" size={14} className="inline align-[-3px] mr-1" />
-            PDF created — {result.pageCount} page{result.pageCount === 1 ? "" : "s"}, real selectable text
-          </p>
-          {result.warnings.length > 0 && (
-            <div className="text-left space-y-1.5 px-1">
-              {result.warnings.map((w, i) => (
-                <p key={i} className="text-xs text-text-secondary flex items-start gap-1.5">
-                  <span className="shrink-0"><UiIcon name="warning" size={14} /></span>
-                  {w}
-                </p>
-              ))}
-            </div>
-          )}
-          <div className="flex flex-wrap items-center justify-center gap-2">
-            <DownloadButton blob={result.blob} filename={filename} label="Download PDF" />
-            <button type="button" className="btn-secondary" onClick={() => setResult(null)}>Edit more</button>
-          </div>
+      {result && (
+        <div className="hidden" aria-hidden="true">
+          <DownloadButton blob={result.blob} filename={filename} label="Download PDF" />
         </div>
-      ) : (
-        <button onClick={handleConvert} disabled={processing} className="btn-primary w-full py-3">
-          {processing ? "Creating PDF..." : "Convert to PDF"}
-        </button>
       )}
+
+      <button onClick={handleConvert} disabled={processing} className="btn-primary w-full py-3 cursor-pointer">
+        {processing ? "Creating PDF..." : "Convert to PDF"}
+      </button>
     </div>
   );
 }

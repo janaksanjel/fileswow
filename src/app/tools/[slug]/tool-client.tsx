@@ -5,6 +5,7 @@ import { ToolShell } from "@/components/tool-shell";
 import { recordToolVisit } from "@/lib/usage";
 import { ProgressBar } from "@/components/progress-bar";
 import { emitAppleToast } from "@/components/apple-toast";
+import { AutoToolFinalOutput, AutoToolStepBar, ToolStepProvider } from "@/components/tool-step-context";
 import { ToolRenderer, hasToolComponent } from "@/components/tool-registry";
 import { ToolIcon } from "@/components/icon";
 import { pingIndexNow } from "@/lib/indexnow-ping";
@@ -157,16 +158,21 @@ export function ToolClient({ tool, relatedTools, guide, faq, relatedPost, relate
       )}
 
       {/* Dynamic tool UI — remounts on retry so the tool starts clean */}
-      {hasToolComponent(tool.slug) ? (
-        <ToolRenderer
-          slug={tool.slug}
-          attempt={attempt}
-          onProcessing={handleProcessing}
-          onError={handleError}
-        />
-      ) : (
-        <FallbackToolUI tool={tool} />
-      )}
+      <ToolStepProvider>
+        <AutoToolStepBar />
+        {hasToolComponent(tool.slug) ? (
+          <AutoToolFinalOutput onResetTool={handleRetry}>
+            <ToolRenderer
+              slug={tool.slug}
+              attempt={attempt}
+              onProcessing={handleProcessing}
+              onError={handleError}
+            />
+          </AutoToolFinalOutput>
+        ) : (
+          <FallbackToolUI tool={tool} />
+        )}
+      </ToolStepProvider>
     </ToolShell>
   );
 }
